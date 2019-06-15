@@ -1,0 +1,6 @@
+[submodule "QuestomAssets"]
+	path = QuestomAssets
+	url = https://github.com/emulamer/QuestomAssets
+[submodule "beatsaber-hook"]
+	path = beatsaber-hook
+	url = https://github.com/emulamer/beatsaber-hook
