@@ -25,7 +25,16 @@ namespace BeatOn
         private JSWebViewClient _webViewClient;
         private WebServer _webServer;
         private Mod _mod;
-        
+
+        private QaeConfig _qaeConfig = new QaeConfig()
+        {
+            FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
+            PlaylistArtPath = "Art",
+            AssetsPath = "BeatSaberAssets",
+            ModsPath = "Mods",
+            SongsPath = "CustomSongs"
+        };
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -35,7 +44,7 @@ namespace BeatOn
             if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage)
                 != Android.Content.PM.Permission.Granted)
             {
-                ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.WriteExternalStorage}, 1);
+                ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.WriteExternalStorage }, 1);
             }
             if (CheckSelfPermission(Android.Manifest.Permission.ReadExternalStorage)
                     != Android.Content.PM.Permission.Granted)
@@ -59,7 +68,7 @@ namespace BeatOn
 
         private void _webView_Download(object sender, DownloadEventArgs e)
         {
-            
+
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
@@ -97,6 +106,16 @@ namespace BeatOn
                 var resp = context.Response;
                 try
                 {
+                    /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT
+                     * 
+                     */
+                    resp.Serialize(new ModStatus()
+                    {
+                        IsBeatSaberInstalled = true,
+                        CurrentStatus = ModStatusType.ModInstalled
+                    });
+                    return;
+
                     var model = new ModStatus()
                     {
                         IsBeatSaberInstalled = _mod.IsBeatSaberInstalled
@@ -235,11 +254,27 @@ namespace BeatOn
             }
         }
 
+        private object _qaeLock = new object();
         private void HandleGetConfig(HttpListenerContext context)
         {
-
+            var req = context.Request;
+            var resp = context.Response;
+            lock (_qaeLock)
+            {
+                try
+                {
+                    var qae = new QuestomAssetsEngine(_qaeConfig);
+                    var config = qae.GetCurrentConfig();
+                    resp.Serialize(config);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception getting config!", ex);
+                    resp.StatusCode = 500;
+                }
+            }
         }
-
+        
         private void HandlePutConfig(HttpListenerContext context)
         {
 

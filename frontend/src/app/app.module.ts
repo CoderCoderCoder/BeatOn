@@ -13,6 +13,11 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { SetupStep2Component } from './setup-step2/setup-step2.component';
 import { SetupStep3Component } from './setup-step3/setup-step3.component';
 import { MainComponent } from './main/main.component';
+import { MainPlaylistsComponent } from './main-playlists/main-playlists.component';
+import { MainBrowserComponent } from './main-browser/main-browser.component';
+import {MatTabsModule} from '@angular/material/tabs';
+
+
 
 @NgModule({
   declarations: [
@@ -22,7 +27,9 @@ import { MainComponent } from './main/main.component';
     ProgressSpinnerDialogComponent,
     SetupStep2Component,
     SetupStep3Component,
-    MainComponent
+    MainComponent,
+    MainPlaylistsComponent,
+    MainBrowserComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
@@ -36,7 +43,8 @@ import { MainComponent } from './main/main.component';
     MatDialogModule,
     MatProgressSpinnerModule,
     HttpClientModule,
-    ScrollingModule
+    ScrollingModule,
+    MatTabsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

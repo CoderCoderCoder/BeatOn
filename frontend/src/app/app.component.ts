@@ -20,7 +20,9 @@ export class AppComponent implements OnInit {
   resultJson = '';
   modStatus = { CurrentStatus: '' };
   ngOnInit() {
-    this.checkModStatus();
+   // this.checkModStatus();
+   this.modStatusLoaded = true;
+   this.router.navigateByUrl('/main/browser');
   }
   clientEvent(event : any) {
     this.checkModStatus();

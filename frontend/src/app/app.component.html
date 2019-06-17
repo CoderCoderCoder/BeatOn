@@ -4,11 +4,9 @@
     <span>Beat On!</span>
   </mat-toolbar>
 
-<mat-card [hidden]="modStatusLoaded" class="setup-card">
-
+<mat-card *ngIf="!modStatusLoaded" class="setup-card">
     
-    
-<div [hidden]="modStatusLoaded" class="app-content">
+<div *ngIf="!modStatusLoaded" class="app-content">
   Checking mod installation status
   </div>
 </mat-card>

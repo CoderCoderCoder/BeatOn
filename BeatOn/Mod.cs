@@ -18,8 +18,7 @@ namespace BeatOn
 {
     public class Mod
     {
-        public const string ASSETS_RELOC_PATH = "/sdcard/Android/data/com.beatgames.beatsaber/files/assets/";
-        public const string MODLOADER_MODS_PATH = "/sdcard/Android/data/com.beatgames.beatsaber/files/mods/";
+        
         public const string APK_ASSETS_PATH = "assets/bin/Data/";
         public const string LIBMODLOADER_TARGET_FILE = "lib/armeabi-v7a/libmodloader.so";
         public const string MOD_TAG_FILE = "beaton.modded";
@@ -423,7 +422,7 @@ namespace BeatOn
                         }
                     }
                     Log.LogMsg($"Extracting {assetFilename}...");
-                    string targetFile = Path.Combine(ASSETS_RELOC_PATH, relativeFilename);
+                    string targetFile = Path.Combine(Constants.ASSETS_RELOC_PATH, relativeFilename);
                     string dirName = Path.GetDirectoryName(targetFile);
                     try
                     {
@@ -486,7 +485,7 @@ namespace BeatOn
             UpdateStatus("Installing asset redirection mod ...");
             try
             {
-                string dirName = MODLOADER_MODS_PATH;
+                string dirName = Constants.MODLOADER_MODS_PATH;
                 try
                 {
                     if (!Directory.Exists(dirName))
@@ -503,7 +502,7 @@ namespace BeatOn
                 }
                 using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.libassetredirect))
                 {
-                    using (var fs = File.Open(Path.Combine(MODLOADER_MODS_PATH, "libassetredirect.so"), FileMode.Create, FileAccess.Write))
+                    using (var fs = File.Open(Path.Combine(Constants.MODLOADER_MODS_PATH, "libassetredirect.so"), FileMode.Create, FileAccess.Write))
                     {
                         resStream.CopyTo(fs);
                     }

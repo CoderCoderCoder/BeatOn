@@ -24,4 +24,8 @@ export class BeatOnApiService {
       return this.http.post("/host/mod/install/step3", "");
   }
 
+  getConfig() {
+    return this.http.get("/host/beatsaber/config");
+  }
+
 }
