@@ -1,0 +1,10 @@
+
+  <div (window:host-setup-message)="addMessage($event)" layout="row" layout-align="center">
+  <div><mat-spinner style="margin:0 auto;" ></mat-spinner>
+  </div>
+  <p align="center">{{ mainText }}</p>
+
+  <cdk-virtual-scroll-viewport itemSize="10" class="message-viewport">
+      <div *cdkVirtualFor="let item of messages.slice().reverse()" class="message-item">{{item}}</div>
+    </cdk-virtual-scroll-viewport>
+</div>

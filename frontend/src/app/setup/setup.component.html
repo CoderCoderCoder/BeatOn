@@ -1,0 +1,42 @@
+<mat-card class="setup-card">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon aria-hidden="false" class="setup-icon">update</mat-icon>
+      </div>
+      <mat-card-title>Setup</mat-card-title>
+      <mat-card-subtitle>Intruduction</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <h4>You need:</h4>
+        <ul>
+          <li>Probably a gig or so of free space?  maybe 500-600mb?</li>
+          <li>Beat Saber 1.1.0 (unmodified) installed</li>
+        </ul>
+        <h4>It's going to:</h4>
+        <ul>
+          <li>
+            Step 1:
+            <ul>
+              <li>Prepare for installing Beat On by copying out the APK to external storage</li>
+              <li>Ask you to uninstall Beat Saber (say yes)</li>
+            </ul>
+          </li>
+          <li>
+            Step 2 (not neccesarily in this order):
+            <ul>
+              <li>Patch the copied APK in external storage with jakibaki's mod loader</li>
+              <li>Do all the other stuff, it takes a bit.</li>
+            </ul>
+          </li>
+        </ul>
+          
+        <h3>***IMPORTANT***</h3>
+        <p>              
+          When the modded APK gets installed, it will probably tell you that you don't have "untrusted sources" enabled and will offer to take you to the settings page.  Go to the settings page, and turn on the switch for allowing untrusted sources, then you can continue installing the modded APK.
+        </p>
+          
+    </mat-card-content>
+    <mat-card-actions>
+      <button routerLink="/setupstep1" routerLinkActive="active" mat-raised-button color="accent">Continue</button>
+    </mat-card-actions>
+  </mat-card>

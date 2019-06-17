@@ -4,15 +4,39 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
+import { HttpClientModule } from '@angular/common/http';
+import { SetupComponent } from './setup/setup.component';
+import { SetupStep1Component } from './setup-step1/setup-step1.component';
+import { ProgressSpinnerDialogComponent } from './progress-spinner-dialog/progress-spinner-dialog.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { SetupStep2Component } from './setup-step2/setup-step2.component';
+import { SetupStep3Component } from './setup-step3/setup-step3.component';
+import { MainComponent } from './main/main.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    SetupComponent,
+    SetupStep1Component,
+    ProgressSpinnerDialogComponent,
+    SetupStep2Component,
+    SetupStep3Component,
+    MainComponent
   ],
+  entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatToolbarModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    HttpClientModule,
+    ScrollingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

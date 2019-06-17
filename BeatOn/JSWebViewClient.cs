@@ -12,6 +12,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
+using BeatOn.ClientModels;
 
 namespace BeatOn
 {
@@ -19,11 +20,34 @@ namespace BeatOn
     {
 
         private const string JS_FUNC = "function invokeNative(data){beatOnJSBridge.invokeNative(data);}";
+
+        private const string JS_SEND_MESSAGE = "window.dispatchEvent(new MessageEvent('host-setup-message', {{ data: '{0}'}}));";
+        //should all be event with message just being a type
+        private const string JS_SEND_SETUP_EVENT = "window.dispatchEvent(new MessageEvent('host-setup-event', {{ data: '{0}'}}));";
+
         private JSBridge _bridge;
+        private Activity _activity;
         public WebView WebView { get; private set; }
 
-        public JSWebViewClient(WebView webView, Action<string> jsInvoker)
+        public void SendMessage(string message)
         {
+            _activity.RunOnUiThread(() =>
+            {
+                WebView.EvaluateJavascript(string.Format(JS_SEND_MESSAGE, message.Replace("'", "\'")), null);
+            });
+        }
+
+        public void SendEvent(ClientEventType eventType)
+        {
+            _activity.RunOnUiThread(() =>
+            {
+                WebView.EvaluateJavascript(string.Format(JS_SEND_SETUP_EVENT, eventType.ToString()), null);
+            });
+        }
+
+        public JSWebViewClient(Activity activity, WebView webView, Action<string> jsInvoker)
+        {
+            _activity = activity;
             _bridge = new JSBridge(jsInvoker);
             WebView = webView;
             SetupWebView();
@@ -35,7 +59,7 @@ namespace BeatOn
             this.WebView.AddJavascriptInterface(_bridge, "beatOnJSBridge");
             WebView.Settings.JavaScriptEnabled = true;
             WebView.Settings.AllowContentAccess = true;
-            WebView.Settings.SafeBrowsingEnabled = false;
+           // WebView.Settings.SafeBrowsingEnabled = false;
         }
 
         public override void OnPageFinished(WebView view, string url)

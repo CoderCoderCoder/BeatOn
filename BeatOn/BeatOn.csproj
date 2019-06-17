@@ -63,10 +63,14 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientModels\ClientEventType.cs" />
+    <Compile Include="ClientModels\ModStatus.cs" />
     <Compile Include="JSWebViewClient.cs" />
     <Compile Include="JSBridge.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MimeMap.cs" />
+    <Compile Include="Mod.cs" />
+    <Compile Include="ModException.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleRouter.cs" />
@@ -90,6 +94,8 @@
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
+    <AndroidResource Include="Resources\raw\libassetredirect.so" />
+    <AndroidResource Include="Resources\raw\libmodloader.so" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_main.axml">
@@ -142,6 +148,9 @@
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="28.0.0.1" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
+    <PackageReference Include="Xamarin.Google.Guava">
+      <Version>27.1.0.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InstallHelpers\InstallHelpers.csproj">
@@ -188,6 +197,19 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\polyfills-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\dexlib2-2.2.7.jar">
+      <Link>dexlib2-2.2.7.jar</Link>
+    </AndroidJavaLibrary>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\provider_paths.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\InstallerHelper.jar">
+      <Link>InstallerHelper.jar</Link>
+    </AndroidJavaLibrary>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

@@ -14,8 +14,14 @@ import javax.annotation.Nonnull;
 
 public class DexHelper  {
 
-    public boolean injectDex (File classesDexFilename, File moddedOutputFilename) throws Exception {
+    public boolean checkDexInjection(File classesDexFilename) throws Exception
+    {
         DexBackedDexFile dexFile = DexFileFactory.loadDexFile(classesDexFilename, null);
+        return checkDexInjected(dexFile);
+    }
+
+    private boolean checkDexInjected(DexBackedDexFile dexFile ) throws Exception
+    {
         boolean foundStaticInit = false;
         for (DexBackedClassDef dexClass : dexFile.getClasses()) {
             String type = dexClass.getType();
@@ -31,7 +37,13 @@ public class DexHelper  {
                 break;
             }
         }
-        if (foundStaticInit) {
+        return foundStaticInit;
+    }
+
+    public boolean injectDex (File classesDexFilename, File moddedOutputFilename) throws Exception {
+        DexBackedDexFile dexFile = DexFileFactory.loadDexFile(classesDexFilename, null);
+
+        if (checkDexInjected(dexFile)) {
             return false;
         }
         DexRewriter rewriter = new DexRewriter(new RewriterModule() {

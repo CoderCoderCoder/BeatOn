@@ -8,12 +8,15 @@ import org.jf.dexlib2.immutable.ImmutableMethod;
 import org.jf.dexlib2.immutable.ImmutableMethodImplementation;
 import org.jf.dexlib2.immutable.ImmutableMethodParameter;
 import org.jf.dexlib2.immutable.instruction.ImmutableInstruction;
+import org.jf.dexlib2.immutable.instruction.ImmutableInstruction10x;
 import org.jf.dexlib2.immutable.instruction.ImmutableInstruction21c;
 import org.jf.dexlib2.immutable.instruction.ImmutableInstruction35c;
+import org.jf.dexlib2.immutable.instruction.ImmutableInstructionFactory;
 import org.jf.dexlib2.immutable.reference.ImmutableMethodReference;
 import org.jf.dexlib2.immutable.reference.ImmutableStringReference;
 import org.jf.dexlib2.rewriter.ClassDefRewriter;
 import org.jf.dexlib2.rewriter.Rewriters;
+import org.jf.dexlib2.writer.InstructionFactory;
 import org.jf.dexlib2.writer.builder.BuilderAnnotationSet;
 
 import java.util.ArrayList;
@@ -53,8 +56,11 @@ public class InjectorClassDefRewrite extends ClassDefRewriter
             ImmutableMethodParameter parameter = new ImmutableMethodParameter("Ljava/lang/String;",null,null);
             List<ImmutableInstruction> instructions = Arrays.asList(
                     new ImmutableInstruction21c(Opcode.CONST_STRING, 0, new ImmutableStringReference("modloader")),
-                    new ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, new ImmutableMethodReference("Ljava/lang/System", "loadLibrary()", Arrays.asList(parameter), "V"))
+                    new ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1, 0, 0, 0, 0, 0, new ImmutableMethodReference("Ljava/lang/System;", "loadLibrary", Arrays.asList(parameter), "V")),
+                    new ImmutableInstruction10x(Opcode.RETURN_VOID)
             );
+
+
             ImmutableMethodImplementation methodImplementation = new ImmutableMethodImplementation(
                     1, instructions, null, null);
 
