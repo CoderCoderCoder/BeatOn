@@ -500,9 +500,9 @@ namespace BeatOn
                     UpdateStatus("Failed to create mods directory in external storage!");
                     throw new ModException($"Unable to create directory {dirName}!", ex);
                 }
-                using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.libassetredirect))
+                using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.libbeatonmod))
                 {
-                    using (var fs = File.Open(Path.Combine(Constants.MODLOADER_MODS_PATH, "libassetredirect.so"), FileMode.Create, FileAccess.Write))
+                    using (var fs = File.Open(Path.Combine(Constants.MODLOADER_MODS_PATH, "libbeatonmod.so"), FileMode.Create, FileAccess.Write))
                     {
                         resStream.CopyTo(fs);
                     }
@@ -510,9 +510,9 @@ namespace BeatOn
             }
             catch (Exception ex)
             {
-                Log.LogErr("Error copying libassetredirect.so!", ex);
+                Log.LogErr("Error copying libbeatonmod.so!", ex);
                 UpdateStatus("Error installing asset redirection mod!");
-                throw new ModException("Error copying libassetredirect.so", ex);
+                throw new ModException("Error copying libbeatonmod.so", ex);
             }
         }
 

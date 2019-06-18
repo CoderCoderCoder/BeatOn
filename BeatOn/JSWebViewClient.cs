@@ -14,6 +14,7 @@ using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using BeatOn.ClientModels;
+using Newtonsoft.Json;
 
 namespace BeatOn
 {
@@ -22,28 +23,20 @@ namespace BeatOn
 
         private const string JS_FUNC = "function invokeNative(data){beatOnJSBridge.invokeNative(data);}";
 
-        private const string JS_SEND_MESSAGE = "window.dispatchEvent(new MessageEvent('host-setup-message', {{ data: '{0}'}}));";
-        //should all be event with message just being a type
-        private const string JS_SEND_SETUP_EVENT = "window.dispatchEvent(new MessageEvent('host-setup-event', {{ data: '{0}'}}));";
+        private const string JS_SEND_MESSAGE = "window.dispatchEvent(new MessageEvent('host-message', {{ data: {0}}}));";
+        
 
         private JSBridge _bridge;
         private Activity _activity;
         public WebView WebView { get; private set; }
 
-        public void SendMessage(string message)
+        public void SendHostMessage(HostMessage message)
         {
             _activity.RunOnUiThread(() =>
             {
-                WebView.EvaluateJavascript(string.Format(JS_SEND_MESSAGE, message.Replace("'", "\'")), null);
+                WebView.EvaluateJavascript(string.Format(JS_SEND_MESSAGE, JsonConvert.SerializeObject(message)), null);
             });
-        }
 
-        public void SendEvent(ClientEventType eventType)
-        {
-            _activity.RunOnUiThread(() =>
-            {
-                WebView.EvaluateJavascript(string.Format(JS_SEND_SETUP_EVENT, eventType.ToString()), null);
-            });
         }
 
         public JSWebViewClient(Activity activity, WebView webView, Action<string> jsInvoker)

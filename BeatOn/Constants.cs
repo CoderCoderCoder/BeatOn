@@ -17,6 +17,5 @@ namespace BeatOn
         public const string ROOT_BEAT_ON_DATA_PATH = "/sdcard/BeatOnData/";
         public const string ASSETS_RELOC_PATH = ROOT_BEAT_ON_DATA_PATH + "BeatSaberAssets/";
         public const string MODLOADER_MODS_PATH = "/sdcard/Android/data/com.beatgames.beatsaber/files/mods/";
-        public const string ROOT_DATA_PATH = "/sdcard/BeatOnData";
     }
 }

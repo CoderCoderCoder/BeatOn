@@ -4,7 +4,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
+import { MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -15,9 +15,12 @@ import { SetupStep3Component } from './setup-step3/setup-step3.component';
 import { MainComponent } from './main/main.component';
 import { MainPlaylistsComponent } from './main-playlists/main-playlists.component';
 import { MainBrowserComponent } from './main-browser/main-browser.component';
-import {MatTabsModule} from '@angular/material/tabs';
-
-
+import { MatTabsModule } from '@angular/material/tabs';
+import { SafePipe } from './pipes/safe-pipes'
+import { FlexLayoutModule } from '@angular/flex-layout';
+import { ToastrModule } from 'ngx-toastr';
+import { PlaylistSliderComponent } from './playlist-slider/playlist-slider.component';
+import { NguCarouselModule } from '@ngu/carousel';
 
 @NgModule({
   declarations: [
@@ -29,10 +32,16 @@ import {MatTabsModule} from '@angular/material/tabs';
     SetupStep3Component,
     MainComponent,
     MainPlaylistsComponent,
-    MainBrowserComponent
+    MainBrowserComponent,
+    SafePipe,
+    PlaylistSliderComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-right',
+      preventDuplicates: true,
+    }),
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
@@ -44,9 +53,12 @@ import {MatTabsModule} from '@angular/material/tabs';
     MatProgressSpinnerModule,
     HttpClientModule,
     ScrollingModule,
-    MatTabsModule
+    MatTabsModule,
+    FlexLayoutModule,
+    MatGridListModule,
+    NguCarouselModule
   ],
-  providers: [],
+  providers:[ ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -4136,7 +4136,7 @@ namespace BeatOn
 		{
 			
 			// aapt resource value: 0x7f090000
-			public const int libassetredirect = 2131296256;
+			public const int libbeatonmod = 2131296256;
 			
 			// aapt resource value: 0x7f090001
 			public const int libmodloader = 2131296257;

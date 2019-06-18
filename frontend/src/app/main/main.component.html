@@ -1,17 +1,18 @@
-<div class="container">
-    <div id="content">
-      <div id="main-content">
-        <nav mat-tab-nav-bar>
+   
+<div style="height: 100%" fxLayout="column">
+  <nav fxLayout="row" mat-tab-nav-bar>
     <a mat-tab-link
-       *ngFor="let link of navLinks"
-       [routerLink]="link.path"
-       routerLinkActive #rla="routerLinkActive"
-       [active]="rla.isActive">
-      {{link.label}}
+    *ngFor="let link of navLinks"
+    [routerLink]="link.path"
+    routerLinkActive #rla="routerLinkActive"
+    [active]="rla.isActive">
+    {{link.label}}
     </a>
   </nav>
-  TEST
-  <router-outlet></router-outlet>
+  <div class="fullheight" fxLayout="column" [@routerTransition]="getState(o)">
+  <router-outlet fxLayout="column" #o="outlet"></router-outlet>    
+  </div>
 
 
-</div></div></div>
+
+</div>

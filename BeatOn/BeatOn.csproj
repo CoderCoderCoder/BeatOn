@@ -38,7 +38,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <AndroidUseSharedRuntime>true</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AotAssemblies>false</AotAssemblies>
@@ -58,6 +58,11 @@
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
+    <AndroidSupportedAbis />
+    <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android.Export" />
@@ -69,9 +74,15 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientModels\ClientEventType.cs" />
+    <Compile Include="ClientModels\HostMessage.cs" />
+    <Compile Include="ClientModels\HostSetupEvent.cs" />
+    <Compile Include="ClientModels\HostShowToast.cs" />
+    <Compile Include="ClientModels\MessageType.cs" />
+    <Compile Include="ClientModels\SetupEventType.cs" />
     <Compile Include="ClientModels\ModStatus.cs" />
+    <Compile Include="ClientModels\ToastType.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="ImageUtilsDroid.cs" />
     <Compile Include="JSWebViewClient.cs" />
     <Compile Include="JSBridge.cs" />
     <Compile Include="MainActivity.cs" />
@@ -101,8 +112,8 @@
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
-    <AndroidResource Include="Resources\raw\libassetredirect.so" />
     <AndroidResource Include="Resources\raw\libmodloader.so" />
+    <AndroidResource Include="Resources\raw\libbeatonmod.so" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\activity_main.axml">

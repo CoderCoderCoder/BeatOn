@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { BeatOnApiService } from '../services/beat-on-api.service';
+import { HostMessageService } from '../services/host-message.service';
 
 @Component({
   selector: 'app-setup',
@@ -8,9 +9,13 @@ import { BeatOnApiService } from '../services/beat-on-api.service';
 })
 export class SetupComponent implements OnInit {
 
-  constructor(private beatOnApi: BeatOnApiService) { }
+  constructor(private beatOnApi: BeatOnApiService, private msgSvc: HostMessageService) { }
 
   ngOnInit() {
+    this.msgSvc.setupMessage.subscribe((msg) =>
+    {
+      
+    })
   }
 
 }

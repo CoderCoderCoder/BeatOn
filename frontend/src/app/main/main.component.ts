@@ -1,27 +1,31 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ProgressSpinnerDialogComponent } from "../progress-spinner-dialog/progress-spinner-dialog.component";
 import { MatDialog, MatDialogRef } from '@angular/material';
 import {BeatOnApiService} from '../services/beat-on-api.service';
 import {Router, NavigationStart} from '@angular/router';
+import { routerTransition } from './router.animations';
 
 
 @Component({
   selector: 'app-main',
+  animations: [routerTransition],
   templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss']
+  styleUrls: ['./main.component.scss'],
+  host: {
+    class:'fullheight'
+  }
 })
 export class MainComponent implements OnInit {
-
   constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog, private router : Router) { }
-  
+  activeLinkIndex = -1;
   navLinks = [
     {
         label: 'Playlists',
-        link: './playlists',
+        path: './playlists',
         index: 0
     }, {
         label: 'Browser',
-        link: './browser',
+        path: './browser',
         index: 1
     }
   ];
@@ -32,9 +36,7 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
    // this.refreshConfig();
-    // this.router.events.subscribe((res) => {
-    //   this.activeLinkIndex = this.navLinks.indexOf(this.navLinks.find(tab => tab.link === '.' + this.router.url));
-    // });
+
   }
 
   refreshConfig() : void {
@@ -51,5 +53,7 @@ export class MainComponent implements OnInit {
     );
 
   }
-
+  getState(outlet) {
+    return outlet.activatedRoute.snapshot.routeConfig.path
+  }
 }

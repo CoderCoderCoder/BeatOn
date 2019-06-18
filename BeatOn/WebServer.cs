@@ -65,6 +65,7 @@ namespace BeatOn
                     _listener.Start();
                     _started = true;
                     Port = port;
+                    QuestomAssets.Log.LogMsg($"HttpListener started on port {port}");
                     break;
                 }
                 catch
