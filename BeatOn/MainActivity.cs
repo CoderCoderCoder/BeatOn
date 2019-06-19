@@ -304,12 +304,12 @@ namespace BeatOn
                     /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT
                      * 
                      */
-                    //resp.Serialize(new ModStatus()
-                    //{
-                    //    IsBeatSaberInstalled = true,
-                    //    CurrentStatus = ModStatusType.ModInstalled
-                    //});
-                    //return;
+                    resp.Serialize(new ModStatus()
+                    {
+                        IsBeatSaberInstalled = true,
+                        CurrentStatus = ModStatusType.ModInstalled
+                    });
+                    return;
 
                     var model = new ModStatus()
                     {

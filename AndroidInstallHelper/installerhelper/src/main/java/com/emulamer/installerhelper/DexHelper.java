@@ -32,18 +32,120 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 
-public class DexHelper  {
+public class DexHelper {
 
-    public boolean checkDexInjection(File classesDexFilename) throws Exception
-    {
+    public boolean checkDexInjection(File classesDexFilename) throws Exception {
         DexBackedDexFile dexFile = DexFileFactory.loadDexFile(classesDexFilename, null);
         return checkDexInjected(dexFile);
     }
 
-    private String opName(Opcode code)
-    {
-        return "Opcode."+code.name();
+    private String opName(Opcode code) {
+        return "Opcode." + code.name();
     }
+
+    public String writeJavaBytecodeWritingJavaCode(DexBackedDexFile dexFile) {
+        String output = "";
+        for (DexBackedClassDef dexClass : dexFile.getClasses()) {
+            String type = dexClass.getType();
+
+            int methodCtr = 0;
+            for (DexBackedMethod m : dexClass.getMethods()) {
+
+                String paramsDef = "";
+                int paramCtr = 0;
+                for (MethodParameter mp : m.getParameters()) {
+                    if (paramCtr > 0) {
+                        paramsDef = paramsDef + ", ";
+                    }
+
+                    String paramName = mp.getName();
+                    if (paramName == null)
+                        paramName = "null";
+                    else
+                        paramName = "\"" + paramName + "\"";
+                    String newMP = "new ImmutableMethodParameter(\"" + mp.getType() + "\",null," + paramName + ")";
+                    paramsDef = paramsDef + newMP;
+                    paramCtr++;
+                }
+                if (paramCtr == 0)
+                    paramsDef = "List<ImmutableMethodParameter> parameters" + methodCtr + " = null;";
+                else
+                    paramsDef = "List<ImmutableMethodParameter> parameters" + methodCtr + " = Arrays.asList(" + paramsDef + ");";
+                MethodImplementation impl = m.getImplementation();
+
+                String instructions = "";
+                int instrCtr = 0;
+                for (Instruction inst : impl.getInstructions()) {
+                    if (instrCtr > 0)
+                        instructions += ", ";
+
+                    String instStr = "";
+                    Opcode opcode = inst.getOpcode();
+                    String className = inst.getClass().getName();
+                    if (inst instanceof DexBackedInstruction21c) {
+                        DexBackedInstruction21c typ = (DexBackedInstruction21c) inst;
+                        instStr = "new ImmutableInstruction21c(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + doRef(typ.getReference()) + ")";
+                    } else if (inst instanceof DexBackedInstruction35c) {
+                        DexBackedInstruction35c typ = (DexBackedInstruction35c) inst;
+                        instStr = "new ImmutableInstruction35c(" + opName(inst.getOpcode()) + ", " + typ.getRegisterCount() + "," + typ.getRegisterC() + ", " + typ.getRegisterD() + ", " + typ.getRegisterE() + ", " + typ.getRegisterF() + ", " + typ.getRegisterG() + ", " + doRef(typ.getReference()) + ")";
+                    } else if (inst instanceof DexBackedInstruction10x) {
+                        DexBackedInstruction10x typ = (DexBackedInstruction10x) inst;
+                        instStr = "new ImmutableInstruction10x(" + opName(inst.getOpcode()) + ")";
+                    } else if (inst instanceof DexBackedInstruction22c) {
+                        DexBackedInstruction22c typ = (DexBackedInstruction22c) inst;
+                        instStr = "new ImmutableInstruction22c(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getRegisterB() + ", " + doRef(typ.getReference()) + ")";
+                    } else if (inst instanceof DexBackedInstruction11x) {
+                        DexBackedInstruction11x typ = (DexBackedInstruction11x) inst;
+                        instStr = "new ImmutableInstruction11x(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ")";
+                    } else if (inst instanceof DexBackedInstruction11n) {
+                        DexBackedInstruction11n typ = (DexBackedInstruction11n) inst;
+                        instStr = "new ImmutableInstruction11n(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getNarrowLiteral() + ")";
+                    } else if (inst instanceof DexBackedInstruction22t) {
+                        DexBackedInstruction22t typ = (DexBackedInstruction22t) inst;
+                        instStr = "new ImmutableInstruction22t(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getRegisterB() + ", " + typ.getCodeOffset() + ")";
+                    } else if (inst instanceof DexBackedInstruction10t) {
+                        DexBackedInstruction10t typ = (DexBackedInstruction10t) inst;
+                        instStr = "new ImmutableInstruction10t(" + opName(inst.getOpcode()) + ", " + typ.getCodeOffset() + ")";
+                    } else if (inst instanceof DexBackedInstruction12x) {
+                        DexBackedInstruction12x typ = (DexBackedInstruction12x) inst;
+                        instStr = "new ImmutableInstruction12x(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getRegisterB() + ")";
+                    } else if (inst instanceof DexBackedInstruction21t) {
+                        DexBackedInstruction21t typ = (DexBackedInstruction21t) inst;
+                        instStr = "new ImmutableInstruction21t(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getCodeOffset() + ")";
+                    } else if (inst instanceof DexBackedInstruction23x) {
+                        DexBackedInstruction23x typ = (DexBackedInstruction23x) inst;
+                        instStr = "new ImmutableInstruction23x(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getRegisterB() + ", " + typ.getRegisterC() + ")";
+                    } else if (inst instanceof DexBackedInstruction21s) {
+                        DexBackedInstruction21s typ = (DexBackedInstruction21s) inst;
+                        instStr = "new ImmutableInstruction21s(" + opName(inst.getOpcode()) + ", " + typ.getRegisterA() + ", " + typ.getNarrowLiteral() + ")";
+                    } else {
+                        instStr = "EEEEEERRROOOOOOORRRRRRR unsuported instruction!";
+                    }
+                    instructions += instStr;
+                    instrCtr++;
+                }
+                if (instrCtr > 0)
+                    instructions = "List<ImmutableInstruction> instructions" + methodCtr + " = Arrays.asList(" + instructions + ");";
+                else
+                    instructions = "List<ImmutableInstruction> instructions" + methodCtr + " = null;";
+
+
+                String methodimpl = "ImmutableMethodImplementation methodImplementation" + methodCtr + " = new ImmutableMethodImplementation(" + impl.getRegisterCount() + ", instructions" + methodCtr + ", null, null);";
+
+                String methodDef = "Method method" + methodCtr + " = new ImmutableMethod(\"" + m.getDefiningClass() + "\", \"" + m.getName() + "\", parameters" + methodCtr + ", \"" + m.getReturnType() + "\", " + m.getAccessFlags() + ", null, methodImplementation" + methodCtr + ");";
+                output += "/*************** BEGIN method definition for " + m.getName() + " **********/\n";
+                output += paramsDef + "\n";
+                output += instructions + "\n";
+                output += methodimpl + "\n";
+                output += methodDef += "\n";
+                output += "/*************** END method definition for " + m.getName() + " **********/\n";
+                output += "\n";
+                methodCtr++;
+            }
+        }
+        return output;
+    }
+
 
      boolean checkDexInjected(DexBackedDexFile dexFile ) throws Exception
     {
@@ -51,126 +153,6 @@ public class DexHelper  {
         for (DexBackedClassDef dexClass : dexFile.getClasses()) {
             String type = dexClass.getType();
             if (type.equals("Lcom/unity3d/player/UnityPlayerActivity;")) {
-
-                int methodCtr = 0;
-                for (DexBackedMethod m : dexClass.getMethods()) {
-/*                    String accessFlags = "int accessFlags = " + Integer.toString(m.getAccessFlags()) + ";";
-                    String defininingClass = "String definingClass = \"" + type + "\";";
-                    String name = "String name = \"" + m.getName() +"\";";
-                    String returnType = "String returnType = \"" + m.getReturnType() + "\";";
-
-                    System.out.println(accessFlags);
-                    System.out.println(defininingClass);
-                    System.out.println(name);
-                    System.out.println(returnType);*/
-
-                    String paramsDef = "";
-                    int paramCtr = 0;
-                    for(MethodParameter mp : m.getParameters())
-                    {
-                        if (paramCtr > 0)
-                        {
-                            paramsDef = paramsDef + ", ";
-                        }
-
-                        String paramName = mp.getName();
-                        if (paramName == null)
-                            paramName = "null";
-                        else
-                            paramName = "\"" + paramName + "\"";
-                        String newMP = "new ImmutableMethodParameter(\"" + mp.getType() + "\",null,"+paramName+")";
-                        paramsDef = paramsDef + newMP;
-                        paramCtr++;
-                    }
-                    if (paramCtr == 0)
-                        paramsDef = "List<ImmutableMethodParameter> parameters"+methodCtr+" = null;";
-                    else
-                        paramsDef = "List<ImmutableMethodParameter> parameters"+methodCtr+" = Arrays.asList(" + paramsDef + ");";
-                    MethodImplementation impl = m.getImplementation();
-
-                    String instructions = "";
-                    int instrCtr = 0;
-                    for (Instruction inst : impl.getInstructions())
-                    {
-                        if (instrCtr > 0)
-                            instructions += ", ";
-
-                        String instStr = "";
-                        Opcode opcode = inst.getOpcode();
-                        String className = inst.getClass().getName();
-                        if (inst instanceof DexBackedInstruction21c) {
-                            DexBackedInstruction21c typ = (DexBackedInstruction21c)inst;
-                            instStr = "new ImmutableInstruction21c(" + opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+doRef(typ.getReference())+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction35c) {
-                            DexBackedInstruction35c typ = (DexBackedInstruction35c)inst;
-                            instStr = "new ImmutableInstruction35c("+opName(inst.getOpcode())+", "+typ.getRegisterCount()+","+typ.getRegisterC()+", "+typ.getRegisterD()+", "+typ.getRegisterE()+", "+typ.getRegisterF()+", "+typ.getRegisterG()+", "+doRef(typ.getReference())+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction10x) {
-                            DexBackedInstruction10x typ = (DexBackedInstruction10x)inst;
-                            instStr = "new ImmutableInstruction10x("+opName(inst.getOpcode())+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction22c) {
-                            DexBackedInstruction22c typ = (DexBackedInstruction22c)inst;
-                            instStr = "new ImmutableInstruction22c("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getRegisterB()+", "+doRef(typ.getReference())+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction11x) {
-                            DexBackedInstruction11x typ = (DexBackedInstruction11x)inst;
-                            instStr = "new ImmutableInstruction11x("+opName(inst.getOpcode())+", "+typ.getRegisterA()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction11n) {
-                            DexBackedInstruction11n typ = (DexBackedInstruction11n)inst;
-                            instStr = "new ImmutableInstruction11n("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getNarrowLiteral()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction22t) {
-                            DexBackedInstruction22t typ = (DexBackedInstruction22t)inst;
-                            instStr = "new ImmutableInstruction22t("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getRegisterB()+", "+typ.getCodeOffset()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction10t) {
-                            DexBackedInstruction10t typ = (DexBackedInstruction10t)inst;
-                            instStr = "new ImmutableInstruction10t("+opName(inst.getOpcode())+", "+typ.getCodeOffset()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction12x) {
-                            DexBackedInstruction12x typ = (DexBackedInstruction12x)inst;
-                            instStr = "new ImmutableInstruction12x("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getRegisterB()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction21t) {
-                            DexBackedInstruction21t typ = (DexBackedInstruction21t)inst;
-                            instStr = "new ImmutableInstruction21t("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getCodeOffset()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction23x) {
-                            DexBackedInstruction23x typ = (DexBackedInstruction23x)inst;
-                            instStr = "new ImmutableInstruction23x("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getRegisterB()+", "+typ.getRegisterC()+")";
-                        }
-                        else if (inst instanceof DexBackedInstruction21s) {
-                            DexBackedInstruction21s typ = (DexBackedInstruction21s)inst;
-                            instStr = "new ImmutableInstruction21s("+opName(inst.getOpcode())+", "+typ.getRegisterA()+", "+typ.getNarrowLiteral()+")";
-                        }
-                        else {
-                            instStr = "EEEEEERRROOOOOOORRRRRRR unsuported instruction!";
-                        }
-                        instructions += instStr;
-                        instrCtr++;
-                    }
-                    if (instrCtr > 0)
-                        instructions = "List<ImmutableInstruction> instructions"+methodCtr+" = Arrays.asList(" + instructions + ");";
-                    else
-                        instructions = "List<ImmutableInstruction> instructions"+methodCtr+" = null;";
-
-
-                    String methodimpl = "ImmutableMethodImplementation methodImplementation"+methodCtr+" = new ImmutableMethodImplementation(" + impl.getRegisterCount() + ", instructions"+methodCtr+", null, null);";
-
-                    String methodDef = "Method method"+methodCtr+" = new ImmutableMethod(\""+m.getDefiningClass()+"\", \""+m.getName()+"\", parameters"+methodCtr+", \""+m.getReturnType()+"\", "+m.getAccessFlags()+", null, methodImplementation"+methodCtr+");";
-                    System.out.println("/*************** BEGIN method definition for " + m.getName()+" **********/");
-                    System.out.println(paramsDef);
-                    System.out.println(instructions);
-                    System.out.println(methodimpl);
-                    System.out.println(methodDef);
-                    System.out.println("/*************** END method definition for " + m.getName()+" **********/");
-                    System.out.println("");
-                    methodCtr++;
-                }
-
                 for (DexBackedMethod m : dexClass.getDirectMethods()) {
                     String name = m.getName();
                     if (name.equals("<clinit>")) {
