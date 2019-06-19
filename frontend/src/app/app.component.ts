@@ -52,6 +52,7 @@ export class AppComponent implements OnInit {
   }
 
   private showToast(toastMsg : HostShowToast) {
+    console.log("got toast");
     switch (toastMsg.ToastType)
     {
       case ToastType.Error:
@@ -72,10 +73,10 @@ export class AppComponent implements OnInit {
   checkModStatus() : void
   {
     //TEST FOR NO BACK END
-    this.modStatus = { CurrentStatus: 'ModInstalled'};
-    this.modStatusLoaded = true;
-    this.router.navigateByUrl('/main/playlists');
-    return;
+    // this.modStatus = { CurrentStatus: 'ModInstalled'};
+    // this.modStatusLoaded = true;
+    // this.router.navigateByUrl('/main/playlists');
+    // return;
     this.beatOnApi.getModStatus()
     .subscribe((data: any) => {
        this.modStatusLoaded = true;

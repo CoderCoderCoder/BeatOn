@@ -2,18 +2,21 @@
     <ngu-tile *nguCarouselDef="let item; let i = index"> -->
    <div class="container">
       <ngu-carousel #myCarousel [inputs]="carouselTile" [dataSource]="playlists">
-        <ngu-tile *nguCarouselDef="let item; let j = index" [ngClass]="{'zoomedIn': item === selected, 'zoomedOut': item != selected }" (click)="onTileClick(item)" >
-          <div class="tile"  [style.background]="'url(https://www.office.xerox.com/business-resources/1024x1024_wallpaper_tropical5.jpg)'">
+          <button NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
+        <ngu-item NguCarouselItem class="bannerstyle" *nguCarouselDef="let item; let j = index" [ngClass]="{'zoomedIn': item === selected, 'zoomedOut': item != selected }" (click)="onTileClick(item)" >
+            <div class="tile"  [style.background]="'url(/host/playlistcover?path=' + item.CoverArtFilename + ')'" >
             <div class="titleText">{{ item.PlaylistName }}</div>            
           </div>
           
-        </ngu-tile>
+        </ngu-item>
         <!-- <button NguCarouselPrev class="leftRs" [style.opacity]="myCarousel.isFirst ? 0.5:1">&lt;</button>
         <button NguCarouselNext class="rightRs" [style.opacity]="myCarousel.isLast ? 0.5:1">&gt;</button> -->
         <!-- <ul class="myPoint" NguCarouselPoint>
           <li *ngFor="let j of myCarousel.pointNumbers; let j = index" [class.active]="j==myCarousel.activePoint" (click)="myCarousel.moveTo(j)"
            ></li>
         </ul> -->
+        
+          <button NguCarouselNext class='rightRs'><mat-icon class="arrow">details</mat-icon></button>
       </ngu-carousel>
     </div>
     <!-- </ngu-tile>

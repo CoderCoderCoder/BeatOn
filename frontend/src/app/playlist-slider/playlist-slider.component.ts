@@ -18,7 +18,7 @@ export class PlaylistSliderComponent implements OnInit {
     this.selected = item;
   }
   public carouselTile: NguCarouselConfig = {
-    grid: { xs:5, sm:5, md: 5, lg: 5, all: 0 },
+    grid: { xs:4, sm:4, md: 4, lg: 4, all: 0 },
     slide: 3,
     speed: 250,
     point: {
@@ -30,7 +30,7 @@ export class PlaylistSliderComponent implements OnInit {
     easing: 'cubic-bezier(0, 0, 0.2, 1)',
     vertical: {
       enabled: true,
-      height: 500
+      height: 400
     }
   };
   constructor() {}

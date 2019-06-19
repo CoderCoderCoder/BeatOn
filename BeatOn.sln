@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallHelpers", "InstallHe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatOn", "BeatOn\BeatOn.csproj", "{D27F570C-D0F3-4C71-AB03-F40F90A0171C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuestomAssets.Tests", "QuestomAssets\QuestomAssets.Tests\QuestomAssets.Tests.csproj", "{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,18 @@ Global
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Release|x86.ActiveCfg = Release|Any CPU
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Release|x86.Build.0 = Release|Any CPU
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Release|x86.Deploy.0 = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|x64.Build.0 = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Debug|x86.Build.0 = Debug|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x64.ActiveCfg = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x64.Build.0 = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x86.ActiveCfg = Release|Any CPU
+		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

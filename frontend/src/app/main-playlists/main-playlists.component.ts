@@ -23,7 +23,7 @@ export class MainPlaylistsComponent implements OnInit {
       CoverArtFilename : "something.png",
       PlaylistID : "CustomSongs",
   
-      PlaylistName : "Custom Songs",
+      PlaylistName : "Custom reallo long name Songs",
       SongList: []
     },
     {

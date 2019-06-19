@@ -34,7 +34,8 @@ namespace BeatOn
         {
             _activity.RunOnUiThread(() =>
             {
-                WebView.EvaluateJavascript(string.Format(JS_SEND_MESSAGE, JsonConvert.SerializeObject(message)), null);
+                var msg = string.Format(JS_SEND_MESSAGE, JsonConvert.SerializeObject(message));
+                WebView.EvaluateJavascript(msg, null);
             });
 
         }

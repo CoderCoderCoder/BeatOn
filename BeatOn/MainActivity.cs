@@ -74,14 +74,22 @@ namespace BeatOn
             }
         }
 
-        private QaeConfig _qaeConfig = new QaeConfig()
+        private QaeConfig _qaeConfig
         {
-            FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
-            PlaylistArtPath = "Art",
-            AssetsPath = "BeatSaberAssets",
-            ModsPath = "Mods",
-            SongsPath = "CustomSongs"
-        };
+            get
+            {
+                var q = new QaeConfig()
+                {
+                    FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
+                    PlaylistArtPath = "Art",
+                    AssetsPath = "BeatSaberAssets",
+                    ModsPath = "Mods",
+                    SongsPath = "CustomSongs"
+                };
+                q.SongFileProvider = q.FileProvider;
+                return q;
+            }
+        }
 
         private void SaveCurrentConfig()
         {
@@ -117,6 +125,14 @@ namespace BeatOn
             _webView = FindViewById<WebView>(Resource.Id.webView1);
             _webView.Download += _webView_Download;
             SetupWebApp();
+
+            var cfg = CurrentConfig;
+            cfg.Playlists.Add(new BeatSaberPlaylist()
+            {
+                PlaylistID = "CustomSongs",
+                PlaylistName = "Custom Songs"
+            });
+            SaveCurrentConfig();
         }
 
         private void _mod_StatusUpdated(object sender, string e)
@@ -221,7 +237,10 @@ namespace BeatOn
                     }
                 });
             };
-            c.DownloadDataAsync(uri);
+            lock (_webViewClient)
+            {
+                c.DownloadDataAsync(uri);
+            }
         }
 
         public void TestInject(string songPath)

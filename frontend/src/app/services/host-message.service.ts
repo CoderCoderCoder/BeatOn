@@ -19,6 +19,7 @@ export class HostMessageService {
 
 
   private onHostMessage(data) {
+    console.log("got host message");
     if (data.Type == 'SetupEvent') {
       this.setupMessage.emit(<HostSetupEvent>data);
     } else if (data.Type == 'Toast') {

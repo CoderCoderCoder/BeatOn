@@ -21,6 +21,8 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { ToastrModule } from 'ngx-toastr';
 import { PlaylistSliderComponent } from './playlist-slider/playlist-slider.component';
 import { NguCarouselModule } from '@ngu/carousel';
+import { PlaylistSongsComponent } from './playlist-songs/playlist-songs.component';
+import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +36,9 @@ import { NguCarouselModule } from '@ngu/carousel';
     MainPlaylistsComponent,
     MainBrowserComponent,
     SafePipe,
-    PlaylistSliderComponent
+    PlaylistSliderComponent,
+    PlaylistSongsComponent,
+    DiagnosticsComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
