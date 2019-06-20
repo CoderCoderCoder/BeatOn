@@ -168,7 +168,9 @@ namespace BeatOn
             try
             {
                 //// copy asset files from APK to /sdcard/wherever
-                ExtractAssetsFromApkToExternalStorage(TempApk, null);
+                ExtractAssetsFromApkToExternalStorage(TempApk, new List<string>() {
+                    "Managed",
+                    "boot.config" });
 
                 //// copy libassetredirect.so to the mods folder
                 InstallAssetRedirectMod();
@@ -181,6 +183,9 @@ namespace BeatOn
 
                 //// add libmodloader.so to the apk
                 AddModLoaderToApk(TempApk);
+
+                //// fix the manifest
+                AddManifestModToApk(TempApk);
 
                 //// add a 1 byte file to the APK so we know it's been modded to make verifying it later easier
                 AddTagFileToApk(TempApk);
@@ -405,7 +410,7 @@ namespace BeatOn
             }
         }
 
-        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> includeFiles = null)
+        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null)
         {
             UpdateStatus("Extracting assets files from the APK to external storage...");
             using (var apk = new ApkAssetsFileProvider(apkFilename, FileCacheMode.None, true))
@@ -413,9 +418,9 @@ namespace BeatOn
                 foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
                 {
                     string relativeFilename = assetFilename.Substring(APK_ASSETS_PATH.Length);
-                    if (includeFiles != null)
+                    if (excludePaths != null)
                     {
-                        if (!includeFiles.Contains(relativeFilename))
+                        if (excludePaths.Any(x => relativeFilename.StartsWith(x)))
                         {
                             Log.LogMsg($"The asset file {assetFilename} ({relativeFilename}) is not included in assets that should be extracted, skipping.");
                             continue;
@@ -455,6 +460,28 @@ namespace BeatOn
                         throw new ModException($"Failed to extract {assetFilename} to {targetFile}", ex);
                     }
                 }
+            }
+        }
+
+        private void AddManifestModToApk(string apkFilename)
+        {
+            UpdateStatus("Modding the manifest in the APK...");
+            try
+            {
+                using (var apk = new ApkAssetsFileProvider(apkFilename, FileCacheMode.None, false))
+                {
+                    using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.manifestmod))
+                    {
+                        apk.QueueWriteStream("AndroidManifest.xml", resStream, true, true);
+                        apk.Save();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Error modding the manifest in the APK", ex);
+                UpdateStatus("Error modding the manifest in the APK!");
+                throw new ModException("Error modding the manifest in the APK", ex);
             }
         }
 

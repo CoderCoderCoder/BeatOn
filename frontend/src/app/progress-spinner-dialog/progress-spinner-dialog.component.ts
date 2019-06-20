@@ -32,7 +32,9 @@ export class ProgressSpinnerDialogComponent implements OnInit {
   ngOnInit() {
     this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
     {
+      console.log("Got message in spinner " + msg.SetupEvent);
       if (msg.SetupEvent == SetupEventType.StatusMessage) {
+        console.log("pussing message to view");
         this.messages.push(msg.Message);
       }
     });

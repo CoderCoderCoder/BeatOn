@@ -4141,6 +4141,9 @@ namespace BeatOn
 			// aapt resource value: 0x7f090001
 			public const int libmodloader = 2131296257;
 			
+			// aapt resource value: 0x7f090002
+			public const int manifestmod = 2131296258;
+			
 			static Raw()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();

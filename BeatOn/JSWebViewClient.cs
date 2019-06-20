@@ -21,6 +21,15 @@ namespace BeatOn
     public class JSWebViewClient : WebViewClient
     {
 
+        public class LoggingChromeClient : WebChromeClient
+        {
+            public override bool OnConsoleMessage(ConsoleMessage consoleMessage)
+            {
+                Android.Util.Log.Info("BeatOn", $"WebView Console: {consoleMessage.Message()} (line {consoleMessage.LineNumber()} of {consoleMessage.SourceId()}");
+                return base.OnConsoleMessage(consoleMessage);
+            }
+        }
+
         private const string JS_FUNC = "function invokeNative(data){beatOnJSBridge.invokeNative(data);}";
 
         private const string JS_SEND_MESSAGE = "window.dispatchEvent(new MessageEvent('host-message', {{ data: {0}}}));";
@@ -44,6 +53,7 @@ namespace BeatOn
         {
             _activity = activity;
             _bridge = new JSBridge(jsInvoker);
+            webView.SetWebChromeClient(new LoggingChromeClient());
             WebView = webView;
             SetupWebView();
         }

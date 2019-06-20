@@ -125,14 +125,6 @@ namespace BeatOn
             _webView = FindViewById<WebView>(Resource.Id.webView1);
             _webView.Download += _webView_Download;
             SetupWebApp();
-
-            //var cfg = CurrentConfig;
-            //cfg.Playlists.Add(new BeatSaberPlaylist()
-            //{
-            //    PlaylistID = "CustomSongs",
-            //    PlaylistName = "Custom Songs"
-            //});
-            //SaveCurrentConfig();
         }
 
         private void _mod_StatusUpdated(object sender, string e)
@@ -301,15 +293,15 @@ namespace BeatOn
                 var resp = context.Response;
                 try
                 {
-                    /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT
+                    /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT FOR DEVICE
                      * 
                      */
-                    resp.Serialize(new ModStatus()
-                    {
-                        IsBeatSaberInstalled = true,
-                        CurrentStatus = ModStatusType.ModInstalled
-                    });
-                    return;
+                    //resp.Serialize(new ModStatus()
+                    //{
+                    //    IsBeatSaberInstalled = true,
+                    //    CurrentStatus = ModStatusType.ModInstalled
+                    //});
+                    //return;
 
                     var model = new ModStatus()
                     {

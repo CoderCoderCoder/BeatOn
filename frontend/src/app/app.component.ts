@@ -5,6 +5,8 @@ import {trigger, animate, style, group, query, transition, state} from '@angular
 import { ToastrService } from 'ngx-toastr';
 import { HostMessageService } from './services/host-message.service';
 import { HostShowToast, ToastType } from './models/HostShowToast';
+import { HostSetupEvent, SetupEventType } from './models/HostSetupEvent';
+
 
 @Component({
   selector: 'app-root',
@@ -48,7 +50,21 @@ export class AppComponent implements OnInit {
         this.showRefreshButton = (routeEvent.url == '/main/browser');
      }
    } );
-  // this.router.navigateByUrl('/main/playlists');
+   this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
+    {
+      switch (msg.SetupEvent)
+      {
+        case SetupEventType.Step1Complete:
+          this.router.navigateByUrl("/setupstep2");
+          break;
+        case SetupEventType.Step2Complete:
+          this.router.navigateByUrl('/setupstep3');
+          break;
+        case SetupEventType.Step3Complete:
+          this.router.navigateByUrl('/');
+          break;
+      }
+    })
   }
 
   private showToast(toastMsg : HostShowToast) {
@@ -91,7 +107,7 @@ export class AppComponent implements OnInit {
         this.router.navigateByUrl('/setupstep3');
        }
        else if (this.modStatus.CurrentStatus == 'ModInstalled') {
-        this.router.navigateByUrl('/main');
+        this.router.navigateByUrl('/main/playlists');
        }
     });
   }
