@@ -171,10 +171,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InstallHelpers\InstallHelpers.csproj">
-      <Project>{f6066f57-0767-47df-8b18-ca76e8e0cc8a}</Project>
-      <Name>InstallHelpers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\QuestomAssets\QuestomAssets\QuestomAssets.csproj">
       <Project>{e6acae1d-f608-4d45-a73c-3d2ebc22d7d4}</Project>
       <Name>QuestomAssets</Name>
@@ -217,20 +213,13 @@
     <AndroidAsset Include="Assets\www\polyfills-es5.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\dexlib2-2.2.7.jar">
-      <Link>dexlib2-2.2.7.jar</Link>
-    </AndroidJavaLibrary>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\xml\provider_paths.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\raw\manifestmod.dat" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\InstallerHelper.jar">
-      <Link>InstallerHelper.jar</Link>
-    </AndroidJavaLibrary>
+    <AndroidJavaLibrary Include="InstallerHelper.jar" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
