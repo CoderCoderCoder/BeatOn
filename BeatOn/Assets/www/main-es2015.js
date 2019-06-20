@@ -107,7 +107,7 @@ module.exports = "<div cdkDropList class=\"example-list\" (cdkDropListDropped)=\
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "\n  <div (window:host-message)=\"addMessage($event)\" layout=\"row\" layout-align=\"center\">\n  <div><mat-spinner style=\"margin:0 auto;\" ></mat-spinner>\n  </div>\n  <p align=\"center\">{{ mainText }}</p>\n\n  <cdk-virtual-scroll-viewport itemSize=\"10\" class=\"message-viewport\">\n      <div *cdkVirtualFor=\"let item of messages.slice().reverse()\" class=\"message-item\">{{item}}</div>\n    </cdk-virtual-scroll-viewport>\n</div>\n"
+module.exports = "\n  <div layout=\"row\" layout-align=\"center\">\n  <div><mat-spinner style=\"margin:0 auto;\" ></mat-spinner>\n  </div>\n  <p align=\"center\">{{ mainText }}</p>\n\n  <cdk-virtual-scroll-viewport itemSize=\"10\" class=\"message-viewport\">\n      <div *cdkVirtualFor=\"let item of messages.slice().reverse()\" class=\"message-item\">{{item}}</div>\n    </cdk-virtual-scroll-viewport>\n</div>\n"
 
 /***/ }),
 
