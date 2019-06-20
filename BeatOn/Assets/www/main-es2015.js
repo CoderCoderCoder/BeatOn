@@ -107,7 +107,7 @@ module.exports = "<div cdkDropList class=\"example-list\" (cdkDropListDropped)=\
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "\n  <div layout=\"row\" layout-align=\"center\">\n  <div><mat-spinner style=\"margin:0 auto;\" ></mat-spinner>\n  </div>\n  <p align=\"center\">{{ mainText }}</p>\n\n  <cdk-virtual-scroll-viewport itemSize=\"10\" class=\"message-viewport\">\n      <div *cdkVirtualFor=\"let item of messages.slice().reverse()\" class=\"message-item\">{{item}}</div>\n    </cdk-virtual-scroll-viewport>\n</div>\n"
+module.exports = "\n  <div (window:host-message)=\"addMessage($event)\" layout=\"row\" layout-align=\"center\">\n  <div><mat-spinner style=\"margin:0 auto;\" ></mat-spinner>\n  </div>\n  <p align=\"center\">{{ mainText }}</p>\n\n  <cdk-virtual-scroll-viewport itemSize=\"10\" class=\"message-viewport\">\n      <div *cdkVirtualFor=\"let item of messages.slice().reverse()\" class=\"message-item\">{{item}}</div>\n    </cdk-virtual-scroll-viewport>\n</div>\n"
 
 /***/ }),
 
@@ -1052,16 +1052,17 @@ __webpack_require__.r(__webpack_exports__);
 
 
 let ProgressSpinnerDialogComponent = class ProgressSpinnerDialogComponent {
-    constructor(dialogRef, data, msgSvc) {
+    constructor(dialogRef, data, msgSvc, cdr) {
         this.dialogRef = dialogRef;
         this.data = data;
         this.msgSvc = msgSvc;
+        this.cdr = cdr;
         this.messages = new Array();
         this.mainText = "";
         this.mainText = data.mainText;
     }
     addMessage(event) {
-        this.messages.push(event.data);
+        this.messages.push(event.data.Message);
     }
     ngOnInit() {
         this.msgSvc.setupMessage.subscribe((msg) => {
@@ -1069,6 +1070,7 @@ let ProgressSpinnerDialogComponent = class ProgressSpinnerDialogComponent {
             if (msg.SetupEvent == _models_HostSetupEvent__WEBPACK_IMPORTED_MODULE_4__["SetupEventType"].StatusMessage) {
                 console.log("pussing message to view");
                 this.messages.push(msg.Message);
+                this.cdr.detectChanges();
             }
         });
     }
@@ -1081,7 +1083,7 @@ ProgressSpinnerDialogComponent = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"
         styles: [__webpack_require__(/*! ./progress-spinner-dialog.component.scss */ "./src/app/progress-spinner-dialog/progress-spinner-dialog.component.scss")]
     }),
     tslib__WEBPACK_IMPORTED_MODULE_0__["__param"](1, Object(_angular_core__WEBPACK_IMPORTED_MODULE_1__["Inject"])(_angular_material_dialog__WEBPACK_IMPORTED_MODULE_2__["MAT_DIALOG_DATA"])),
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_angular_material_dialog__WEBPACK_IMPORTED_MODULE_2__["MatDialogRef"], Object, _services_host_message_service__WEBPACK_IMPORTED_MODULE_3__["HostMessageService"]])
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_angular_material_dialog__WEBPACK_IMPORTED_MODULE_2__["MatDialogRef"], Object, _services_host_message_service__WEBPACK_IMPORTED_MODULE_3__["HostMessageService"], _angular_core__WEBPACK_IMPORTED_MODULE_1__["ChangeDetectorRef"]])
 ], ProgressSpinnerDialogComponent);
 
 

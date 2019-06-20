@@ -96,7 +96,15 @@ namespace BeatOn
             if (_currentConfig == null)
                 return;
 
-            Engine.UpdateConfig(CurrentConfig);
+            try
+            {
+                Engine.UpdateConfig(CurrentConfig);
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception updating config", ex);
+                ShowToast("Unable to save configuration", "There was an error saving the configuration!", ToastType.Error, 5);
+            }
             _currentConfig = null;
             _qae = null;
         }
@@ -159,94 +167,98 @@ namespace BeatOn
             {
                 System.Threading.Tasks.Task.Run(() =>
                 {
-                    try
+                    lock (_webViewClient)
                     {
-                        if (dlArgs.Error != null)
+                        try
                         {
-                            Log.LogErr($"Error downloading file '{e.Url}'", dlArgs.Error);
-                            ShowToast("Download file failed!", e.Url.ToString(), ToastType.Error, 8);
-                            return;
-                        }
-                        if (dlArgs.Cancelled)
-                        {
-                            Log.LogErr($"Download of '{e.Url}' was cancelled.");
-                            ShowToast("Download was cancelled", e.Url.ToString(),  ToastType.Warning, 3);
-                            return;
-                        }
-                        if (!(_qaeConfig.FileProvider is FolderFileProvider))
-                            throw new NotImplementedException("This will only work with a FolderFileProvider.");
-                        var fp = _qaeConfig.FileProvider as FolderFileProvider;
-                        using (MemoryStream ms = new MemoryStream(dlArgs.Result))
-                        {
-                            Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(ms, new Ionic.Zip.ReadOptions() { Encoding = System.Text.Encoding.UTF8 });
-                            var targetDir = Path.Combine(_qaeConfig.SongsPath, fileName);
-                            _qaeConfig.FileProvider.MkDir(targetDir);
-                            var firstInfoDat = zip.EntryFileNames.FirstOrDefault(x => x.ToLower() == "info.dat");
-                            if (firstInfoDat == null)
+                            if (dlArgs.Error != null)
                             {
-                                ShowToast("Unable to Download", "Zip file doesn't seem to be a song (no info.dat).", ToastType.Error, 8);
+                                Log.LogErr($"Error downloading file '{e.Url}'", dlArgs.Error);
+                                ShowToast("Download file failed!", e.Url.ToString(), ToastType.Error, 8);
                                 return;
                             }
-                            var infoDatPath = Path.GetDirectoryName(firstInfoDat);
-                            foreach (var ze in zip.Entries)
+                            if (dlArgs.Cancelled)
                             {
-                                string targetName = null;
-                                try
-                                {
-                                    //i've seen nested zip files, don't waste space with those
-                                    if (Path.GetExtension(ze.FileName).ToLower() == "zip")
-                                    {
-                                        Log.LogMsg($"Skipped {ze.FileName} because it looks like a nested zip file.");
-                                        continue;
-                                    }
-                                    //if the file isn't in the same path as the located info.dat, skip it
-                                    if (Path.GetDirectoryName(ze.FileName) != infoDatPath)
-                                    {
-                                        Log.LogMsg($"Skipped zip file {ze.FileName} because it wasn't in the path with info.dat at {infoDatPath}");
-                                        continue;
-                                    }
-                                    targetName = Path.Combine(targetDir, Path.GetFileName(ze.FileName));
-
-                                    using (Stream fs = fp.GetWriteStream(targetName))
-                                    {
-                                        ze.Extract(fs);
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.LogErr($"Error writing zip entry {ze.FileName} to '{targetName ?? "(null)"}'", ex);
-                                    throw;
-                                }
+                                Log.LogErr($"Download of '{e.Url}' was cancelled.");
+                                ShowToast("Download was cancelled", e.Url.ToString(), ToastType.Warning, 3);
+                                return;
                             }
-                            ShowToast("Download Successful", e.Url.ToString(), ToastType.Success, 5);
-                            TestInject(targetDir);
+                            if (!(_qaeConfig.FileProvider is FolderFileProvider))
+                                throw new NotImplementedException("This will only work with a FolderFileProvider.");
+                            var fp = _qaeConfig.FileProvider as FolderFileProvider;
+                            using (MemoryStream ms = new MemoryStream(dlArgs.Result))
+                            {
+                                Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(ms, new Ionic.Zip.ReadOptions() { Encoding = System.Text.Encoding.UTF8 });
+                                var targetDir = Path.Combine(_qaeConfig.SongsPath, fileName);
+                                _qaeConfig.FileProvider.MkDir(targetDir);
+                                var firstInfoDat = zip.EntryFileNames.FirstOrDefault(x => x.ToLower() == "info.dat");
+                                if (firstInfoDat == null)
+                                {
+                                    ShowToast("Unable to Download", "Zip file doesn't seem to be a song (no info.dat).", ToastType.Error, 8);
+                                    return;
+                                }
+                                var infoDatPath = Path.GetDirectoryName(firstInfoDat);
+                                foreach (var ze in zip.Entries)
+                                {
+                                    string targetName = null;
+                                    try
+                                    {
+                                        //i've seen nested zip files, don't waste space with those
+                                        if (Path.GetExtension(ze.FileName).ToLower() == "zip")
+                                        {
+                                            Log.LogMsg($"Skipped {ze.FileName} because it looks like a nested zip file.");
+                                            continue;
+                                        }
+                                        //if the file isn't in the same path as the located info.dat, skip it
+                                        if (Path.GetDirectoryName(ze.FileName) != infoDatPath)
+                                        {
+                                            Log.LogMsg($"Skipped zip file {ze.FileName} because it wasn't in the path with info.dat at {infoDatPath}");
+                                            continue;
+                                        }
+                                        targetName = Path.Combine(targetDir, Path.GetFileName(ze.FileName));
+
+                                        using (Stream fs = fp.GetWriteStream(targetName))
+                                        {
+                                            ze.Extract(fs);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.LogErr($"Error writing zip entry {ze.FileName} to '{targetName ?? "(null)"}'", ex);
+                                        throw;
+                                    }
+                                }
+                                ShowToast("Download Successful", e.Url.ToString(), ToastType.Success, 5);
+                                TestInject(targetDir);
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogErr($"Exception downloading file from {e.Url}!", ex);
-                        ShowToast("Unable to extract file", e.Url.ToString(), ToastType.Error, 8);
+                        catch (Exception ex)
+                        {
+                            Log.LogErr($"Exception downloading file from {e.Url}!", ex);
+                            ShowToast("Unable to extract file", e.Url.ToString(), ToastType.Error, 8);
+                        }
                     }
                 });
             };
-            lock (_webViewClient)
-            {
-                c.DownloadDataAsync(uri);
-            }
+
+            c.DownloadDataAsync(uri);
+            
         }
 
         public void TestInject(string songPath)
         {
-            if (CurrentConfig.Playlists.Count < 1)
+            var playlist = CurrentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+
+            if (playlist == null)
             {
-                CurrentConfig.Playlists.Add(new BeatSaberPlaylist()
+                playlist = new BeatSaberPlaylist()
                 {
                     PlaylistID = "CustomSongs",
                     PlaylistName = "Custom Songs"
-                });
+                };
+                CurrentConfig.Playlists.Add(playlist);
             }
-
-            var playlist = CurrentConfig.Playlists.First();
+           
 
             playlist.SongList.Add(new BeatSaberSong()
             {

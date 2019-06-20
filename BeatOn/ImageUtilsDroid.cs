@@ -187,7 +187,7 @@ namespace BeatOn
                 int[] rowData = new int[bitmap.Width];
                 int width = bitmap.Width;
                 int height = bitmap.Height;
-                for (int row = height - 1; row >= 0; row++)
+                for (int row = height - 1; row >= 0; row--)
                 {
                     bitmap.GetPixels(rowData, 0, width, 0, row, width, 1);
                     for (int col = 0; col < width; col++)
