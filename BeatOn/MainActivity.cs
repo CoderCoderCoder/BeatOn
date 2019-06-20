@@ -126,13 +126,13 @@ namespace BeatOn
             _webView.Download += _webView_Download;
             SetupWebApp();
 
-            var cfg = CurrentConfig;
-            cfg.Playlists.Add(new BeatSaberPlaylist()
-            {
-                PlaylistID = "CustomSongs",
-                PlaylistName = "Custom Songs"
-            });
-            SaveCurrentConfig();
+            //var cfg = CurrentConfig;
+            //cfg.Playlists.Add(new BeatSaberPlaylist()
+            //{
+            //    PlaylistID = "CustomSongs",
+            //    PlaylistName = "Custom Songs"
+            //});
+            //SaveCurrentConfig();
         }
 
         private void _mod_StatusUpdated(object sender, string e)
