@@ -87,29 +87,3 @@ From a workflow standpoint, I hope to be able to accomplish something like this:
 
 3. Do a `git submodule update --init --recursive`
 
-4. Get Embeddinator-4000 working
-
- * Edit `BeatOnLib\EDITME-RegistryPossiblyNeededForEmbeddinator.reg`, set all of the paths correctly, then import the registry file
-
-    * I'm honestly not positive which of those paths it's looking at, it's really not clear in any documentation.  I should go through the source and see what exactly it's looking for.
-  
- * Edit `BeatOnLib\Embeddinator-4000.targets` and either set `<SetEnvironmentVariableTask Name="JAVA_HOME" Value="c:\Program Files\AdoptOpenJDK\jdk-8.0.212.03-hotspot\" />` to your JDK, or remove that element entirely if you have a JAVA_HOME environment variable set already.
-
-5. Open up the solution and restore all the nuget packages.
-
-6. Cross fingers
-
-### Building BeatOn
-
-1. Have Android Studio and some SDKs for Android 9.0 API 28 installed or something.
-
-2. I have no idea what I'm doing with Android development, so you can probably figure it out better than I can.
-
-3. The app is nearly worthless and barely works even as a miserable test harness.  Yes, I am embarassed about the disaster I've made of the stock template project.  I'm trying to find an Android dev to help out or get a WebView and a JS front end framework in there before I hurt myself.
-
-3. Note: This bit in the build.gradle is important if you want to use the BeatOnLib in some other project.  Because Embeddenator-4000 spins up the mono runtime out of the APK, it needs to be able to get to uncompressed assemblies:
-		``` android { .......   
-							aaptOptions {
-											noCompress 'dll'
-									} .......
-						 }```

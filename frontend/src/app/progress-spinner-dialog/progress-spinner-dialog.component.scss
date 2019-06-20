@@ -1,0 +1,14 @@
+.transparent .mat-dialog-container {
+    box-shadow: none;
+    background: rgba(0, 0, 0, 0.0);
+}
+
+.message-viewport {
+    height: 130px;
+    width: 400px;
+    border: 1px solid black;
+  }
+  
+  .message-item {
+      height: 20px;
+  }

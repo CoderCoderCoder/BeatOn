@@ -1,0 +1,86 @@
+@import '~@angular/material/theming';
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat-core;
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue.
+$bsblue: (
+    50 : #e4edf5,
+    100 : #bcd3e6,
+    200 : #90b5d6,
+    300 : #6497c6,
+    400 : #4281b9,
+    500 : #216bad,
+    600 : #1d63a6,
+    700 : #18589c,
+    800 : #144e93,
+    900 : #0b3c83,
+    A100 : #b3ceff,
+    A200 : #80adff,
+    A400 : #4d8cff,
+    A700 : #347cff,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #ffffff,
+    )
+);
+
+$bsred: (
+    50 : #f5e6e6,
+    100 : #e6c0c0,
+    200 : #d69696,
+    300 : #c66b6b,
+    400 : #b94c4c,
+    500 : #ad2c2c,
+    600 : #a62727,
+    700 : #9c2121,
+    800 : #931b1b,
+    900 : #831010,
+    A100 : #ffb6b6,
+    A200 : #ff8383,
+    A400 : #ff5050,
+    A700 : #ff3636,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #ffffff,
+        500 : #ffffff,
+        600 : #ffffff,
+        700 : #ffffff,
+        800 : #ffffff,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #ffffff,
+    )
+);
+
+
+
+$primary: #8a0c0c;
+$accent: #182b94;
+$my-app-primary: mat-palette($bsred);
+$my-app-accent:  mat-palette($bsblue, 500, 900, A100);
+$my-app-warn:    mat-palette($mat-deep-orange);
+
+$my-app-theme: mat-dark-theme($my-app-primary, $my-app-accent, $my-app-warn);
+
+@include angular-material-theme($my-app-theme);
