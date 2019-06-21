@@ -161,7 +161,7 @@ namespace BeatOn
                 return;
             }
             var uri = new Uri(e.Url);
-            ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
+            //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
 
             var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
             if (_qaeConfig.FileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))

@@ -48,6 +48,10 @@ export class AppComponent implements OnInit {
      {
         this.showBackButton = (routeEvent.url == '/main/browser');
         this.showRefreshButton = (routeEvent.url == '/main/browser');
+        if (routeEvent.url == '/') {
+          this.modStatusLoaded = false;
+          this.checkModStatus();
+        }
      }
    } );
    this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
@@ -107,7 +111,7 @@ export class AppComponent implements OnInit {
         this.router.navigateByUrl('/setupstep3');
        }
        else if (this.modStatus.CurrentStatus == 'ModInstalled') {
-        this.router.navigateByUrl('/main/playlists');
+        this.router.navigateByUrl('/main/browser');
        }
     });
   }

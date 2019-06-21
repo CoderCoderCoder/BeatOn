@@ -38,9 +38,27 @@ namespace BeatOn
         public Download DownloadFile(string url, string savePath = null)
         {
             savePath = savePath ?? _defaultSavePath;
+            
+            //prevent the same URL from going in the queue twice.
+            var exists = false;
+            lock (_downloads)
+            {
+                exists = _downloads.Any(x => x.DownloadUrl == new Uri(url));
+            }
+
+            if (exists)
+            {
+                var deadDl = new Download(url, _provider, savePath);
+                deadDl.StatusChanged += StatusChangeHandler;
+                deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
+                return deadDl;
+            }
+             
+            
             Download dl = new Download(url, _provider, savePath);
             _downloads.Add(dl);
-            StatusChanged(dl, new DownloadStatusChangeArgs(DownloadStatus.NotStarted));
+            dl.StatusChanged += StatusChangeHandler;
+            dl.SetStatus(DownloadStatus.NotStarted);
             return dl;
         }
         public event EventHandler<DownloadStatusChangeArgs> StatusChanged;
@@ -78,46 +96,54 @@ namespace BeatOn
                         {
                             newTask = new Task(() =>
                             {
-                                var qae = _engineFactory();
-                                var currentConfig = _configFactory();
-                                var playlist = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
-
-                                if (playlist == null)
-                                {
-                                    playlist = new BeatSaberPlaylist()
-                                    {
-                                        PlaylistID = "CustomSongs",
-                                        PlaylistName = "Custom Songs"
-                                    };
-                                    currentConfig.Playlists.Add(playlist);
-                                }
-
-                                foreach (var toInst in doneDownloads)
-                                {
-                                    playlist.SongList.Add(new BeatSaberSong()
-                                    {
-                                        SongID = Path.GetFileName(toInst.DownloadPath),
-                                        CustomSongPath = toInst.DownloadPath
-                                    });
-                                    toInst.SetStatus(DownloadStatus.Installing);
-                                }
                                 try
                                 {
-                                    //todo: probably want to move the save out to a user driven thing?
-                                    qae.UpdateConfig(currentConfig);
+                                    var qae = _engineFactory();
+                                    var currentConfig = _configFactory();
+                                    var playlist = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+
+                                    if (playlist == null)
+                                    {
+                                        playlist = new BeatSaberPlaylist()
+                                        {
+                                            PlaylistID = "CustomSongs",
+                                            PlaylistName = "Custom Songs"
+                                        };
+                                        currentConfig.Playlists.Add(playlist);
+                                    }
+
                                     foreach (var toInst in doneDownloads)
                                     {
-                                        //dot
-                                        toInst.SetStatus(DownloadStatus.Installed);
+                                        playlist.SongList.Add(new BeatSaberSong()
+                                        {
+                                            SongID = Path.GetFileName(toInst.DownloadPath),
+                                            CustomSongPath = toInst.DownloadPath
+                                        });
+                                        toInst.SetStatus(DownloadStatus.Installing);
+                                    }
+                                    try
+                                    {
+                                        //todo: probably want to move the save out to a user driven thing?
+                                        qae.UpdateConfig(currentConfig);
+                                        foreach (var toInst in doneDownloads)
+                                        {
+                                            //dot
+                                            toInst.SetStatus(DownloadStatus.Installed);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        foreach (var toInst in doneDownloads)
+                                        {
+                                            Log.LogErr($"Unable to install song from {toInst.DownloadPath}!", ex);
+                                            toInst.SetStatus(DownloadStatus.Failed, "Failed to install song!");
+                                        }
                                     }
                                 }
-                                catch (Exception ex)
+                                finally
                                 {
-                                    foreach (var toInst in doneDownloads)
-                                    {
-                                        Log.LogErr($"Unable to install song from {toInst.DownloadPath}!", ex);
-                                        toInst.SetStatus(DownloadStatus.Failed, "Failed to install song!");
-                                    }
+                                    lock (_installLock)
+                                        _currentInstall = null;
                                 }
                             });
                             _currentInstall = newTask;
@@ -125,7 +151,9 @@ namespace BeatOn
                     }
                 }
                 if (newTask != null)
+                {
                     newTask.Start();
+                }
             }
             StatusChanged?.Invoke(sender, args);
         }

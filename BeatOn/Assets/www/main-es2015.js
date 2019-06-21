@@ -74,7 +74,7 @@ module.exports = "   \n<div style=\"height: 100%\" fxLayout=\"column\">\n  <nav 
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<!-- <ngu-carousel #myCarousel [inputs]=\"carouselTile\" [dataSource]=\"carouselTileItems\">\n    <ngu-tile *nguCarouselDef=\"let item; let i = index\"> -->\n   <div class=\"container\">\n      <ngu-carousel #myCarousel [inputs]=\"carouselTile\" [dataSource]=\"playlists\">\n          <button NguCarouselPrev class='leftRs'><mat-icon class=\"arrow\">details</mat-icon></button>\n        <ngu-item NguCarouselItem class=\"bannerstyle\" *nguCarouselDef=\"let item; let j = index\" [ngClass]=\"{'zoomedIn': item === selected, 'zoomedOut': item != selected }\" (click)=\"onTileClick(item)\" >\n            <div class=\"tile\"  [style.background]=\"'url(/host/playlistcover?path=' + item.CoverArtFilename + ')'\" >\n            <div class=\"titleText\">{{ item.PlaylistName }}</div>            \n          </div>\n          \n        </ngu-item>\n        <!-- <button NguCarouselPrev class=\"leftRs\" [style.opacity]=\"myCarousel.isFirst ? 0.5:1\">&lt;</button>\n        <button NguCarouselNext class=\"rightRs\" [style.opacity]=\"myCarousel.isLast ? 0.5:1\">&gt;</button> -->\n        <!-- <ul class=\"myPoint\" NguCarouselPoint>\n          <li *ngFor=\"let j of myCarousel.pointNumbers; let j = index\" [class.active]=\"j==myCarousel.activePoint\" (click)=\"myCarousel.moveTo(j)\"\n           ></li>\n        </ul> -->\n        \n          <button NguCarouselNext class='rightRs'><mat-icon class=\"arrow\">details</mat-icon></button>\n      </ngu-carousel>\n    </div>\n    <!-- </ngu-tile>\n    <button NguCarouselPrev class=\"leftRs\" [style.opacity]=\"myCarousel.isFirst ? 0.5:1\">&lt;</button>\n    <button NguCarouselNext class=\"rightRs\" [style.opacity]=\"myCarousel.isLast ? 0.5:1\">&gt;</button>\n    <ul class=\"myPoint\" NguCarouselPoint>\n      <li *ngFor=\"let i of myCarousel.pointNumbers; let i = index\" [class.active]=\"i==myCarousel.activePoint\" (click)=\"myCarousel.moveTo(i)\"\n        [style.background]=\"'url(' + carouselTileItems[i] + ')'\"></li>\n    </ul>\n  </ngu-carousel> -->"
+module.exports = "<!-- <ngu-carousel #myCarousel [inputs]=\"carouselTile\" [dataSource]=\"carouselTileItems\">\n    <ngu-tile *nguCarouselDef=\"let item; let i = index\"> -->\n   <div class=\"container\">\n      <ngu-carousel #myCarousel [inputs]=\"carouselTile\" [dataSource]=\"playlists\">\n          <button NguCarouselPrev class='leftRs'><mat-icon class=\"arrow\">details</mat-icon></button>\n        <ngu-item NguCarouselItem class=\"bannerstyle\" *nguCarouselDef=\"let item; let j = index\" [ngClass]=\"{'zoomedIn': item === selected, 'zoomedOut': item != selected }\" (click)=\"onTileClick(item)\" >\n            <div class=\"tile\"  [style.background]=\"'url('+AppSettings.API_ENDPOINT+'/host/beatsaber/playlistcover?playlistid=' + item.PlaylistID + ')'\" >\n            <div class=\"titleText\">{{ item.PlaylistName }}</div>            \n          </div>\n          \n        </ngu-item>\n        <!-- <button NguCarouselPrev class=\"leftRs\" [style.opacity]=\"myCarousel.isFirst ? 0.5:1\">&lt;</button>\n        <button NguCarouselNext class=\"rightRs\" [style.opacity]=\"myCarousel.isLast ? 0.5:1\">&gt;</button> -->\n        <!-- <ul class=\"myPoint\" NguCarouselPoint>\n          <li *ngFor=\"let j of myCarousel.pointNumbers; let j = index\" [class.active]=\"j==myCarousel.activePoint\" (click)=\"myCarousel.moveTo(j)\"\n           ></li>\n        </ul> -->\n        \n          <button NguCarouselNext class='rightRs'><mat-icon class=\"arrow\">details</mat-icon></button>\n      </ngu-carousel>\n    </div>\n    <!-- </ngu-tile>\n    <button NguCarouselPrev class=\"leftRs\" [style.opacity]=\"myCarousel.isFirst ? 0.5:1\">&lt;</button>\n    <button NguCarouselNext class=\"rightRs\" [style.opacity]=\"myCarousel.isLast ? 0.5:1\">&gt;</button>\n    <ul class=\"myPoint\" NguCarouselPoint>\n      <li *ngFor=\"let i of myCarousel.pointNumbers; let i = index\" [class.active]=\"i==myCarousel.activePoint\" (click)=\"myCarousel.moveTo(i)\"\n        [style.background]=\"'url(' + carouselTileItems[i] + ')'\"></li>\n    </ul>\n  </ngu-carousel> -->"
 
 /***/ }),
 
@@ -279,6 +279,10 @@ let AppComponent = class AppComponent {
             if (routeEvent instanceof _angular_router__WEBPACK_IMPORTED_MODULE_3__["NavigationStart"]) {
                 this.showBackButton = (routeEvent.url == '/main/browser');
                 this.showRefreshButton = (routeEvent.url == '/main/browser');
+                if (routeEvent.url == '/') {
+                    this.modStatusLoaded = false;
+                    this.checkModStatus();
+                }
             }
         });
         this.msgSvc.setupMessage.subscribe((msg) => {
@@ -332,7 +336,7 @@ let AppComponent = class AppComponent {
                 this.router.navigateByUrl('/setupstep3');
             }
             else if (this.modStatus.CurrentStatus == 'ModInstalled') {
-                this.router.navigateByUrl('/main/playlists');
+                this.router.navigateByUrl('/main/browser');
             }
         });
     }
@@ -476,6 +480,23 @@ AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
     })
 ], AppModule);
 
+
+
+/***/ }),
+
+/***/ "./src/app/appSettings.ts":
+/*!********************************!*\
+  !*** ./src/app/appSettings.ts ***!
+  \********************************/
+/*! exports provided: AppSettings */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AppSettings", function() { return AppSettings; });
+class AppSettings {
+}
+AppSettings.API_ENDPOINT = ''; //http://192.168.1.250:50000';
 
 
 /***/ }),
@@ -1067,33 +1088,36 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var tslib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! tslib */ "./node_modules/tslib/tslib.es6.js");
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm2015/core.js");
 /* harmony import */ var _angular_common_http__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @angular/common/http */ "./node_modules/@angular/common/fesm2015/http.js");
+/* harmony import */ var _appSettings__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../appSettings */ "./src/app/appSettings.ts");
+
 
 
 
 let BeatOnApiService = class BeatOnApiService {
     constructor(http) {
         this.http = http;
+        this.hostname = _appSettings__WEBPACK_IMPORTED_MODULE_3__["AppSettings"].API_ENDPOINT;
     }
     getModStatus() {
-        return this.http.get("/host/mod/status");
+        return this.http.get(this.hostname + "/host/mod/status");
     }
     installModStep1() {
-        return this.http.post("/host/mod/install/step1", "");
+        return this.http.post(this.hostname + "/host/mod/install/step1", "");
     }
     installModStep2() {
-        return this.http.post("/host/mod/install/step2", "");
+        return this.http.post(this.hostname + "/host/mod/install/step2", "");
     }
     installModStep3() {
-        return this.http.post("/host/mod/install/step3", "");
+        return this.http.post(this.hostname + "/host/mod/install/step3", "");
     }
     resetAssets() {
-        return this.http.post("/host/mod/resetassets", "");
+        return this.http.post(this.hostname + "/host/mod/resetassets", "");
     }
     uninstallBeatSaber() {
-        return this.http.post("/host/mod/uninstallbeatsaber", "");
+        return this.http.post(this.hostname + "/host/mod/uninstallbeatsaber", "");
     }
     getConfig() {
-        return this.http.get("/host/beatsaber/config");
+        return this.http.get(this.hostname + "/host/beatsaber/config");
     }
 };
 BeatOnApiService = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
@@ -1315,15 +1339,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _progress_spinner_dialog_progress_spinner_dialog_component__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../progress-spinner-dialog/progress-spinner-dialog.component */ "./src/app/progress-spinner-dialog/progress-spinner-dialog.component.ts");
 /* harmony import */ var _angular_material__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @angular/material */ "./node_modules/@angular/material/esm2015/material.js");
 /* harmony import */ var _services_beat_on_api_service__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../services/beat-on-api.service */ "./src/app/services/beat-on-api.service.ts");
+/* harmony import */ var _angular_router__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @angular/router */ "./node_modules/@angular/router/fesm2015/router.js");
+
 
 
 
 
 
 let SetupStep3Component = class SetupStep3Component {
-    constructor(beatOnApi, dialog) {
+    constructor(beatOnApi, dialog, router) {
         this.beatOnApi = beatOnApi;
         this.dialog = dialog;
+        this.router = router;
     }
     ngOnInit() {
     }
@@ -1337,6 +1364,23 @@ let SetupStep3Component = class SetupStep3Component {
         this.beatOnApi.installModStep3()
             .subscribe((data) => {
             dialogRef.close();
+            let timeoutHandle;
+            let timeoutCount = 0;
+            let checkFn = () => {
+                timeoutCount++;
+                if (timeoutCount > 10) {
+                    this.router.navigateByUrl('/');
+                    return;
+                }
+                this.beatOnApi.getModStatus().subscribe((res) => {
+                    if (res.CurrentStatus == 'ModInstalled') {
+                        this.router.navigateByUrl('/');
+                        return;
+                    }
+                    timeoutHandle = setTimeout(checkFn, 5000);
+                });
+            };
+            timeoutHandle = setTimeout(checkFn, 5000);
         });
     }
 };
@@ -1346,7 +1390,7 @@ SetupStep3Component = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
         template: __webpack_require__(/*! raw-loader!./setup-step3.component.html */ "./node_modules/raw-loader/index.js!./src/app/setup-step3/setup-step3.component.html"),
         styles: [__webpack_require__(/*! ./setup-step3.component.scss */ "./src/app/setup-step3/setup-step3.component.scss")]
     }),
-    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_services_beat_on_api_service__WEBPACK_IMPORTED_MODULE_4__["BeatOnApiService"], _angular_material__WEBPACK_IMPORTED_MODULE_3__["MatDialog"]])
+    tslib__WEBPACK_IMPORTED_MODULE_0__["__metadata"]("design:paramtypes", [_services_beat_on_api_service__WEBPACK_IMPORTED_MODULE_4__["BeatOnApiService"], _angular_material__WEBPACK_IMPORTED_MODULE_3__["MatDialog"], _angular_router__WEBPACK_IMPORTED_MODULE_5__["Router"]])
 ], SetupStep3Component);
 
 
