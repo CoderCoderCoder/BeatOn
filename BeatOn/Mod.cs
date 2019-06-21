@@ -248,6 +248,40 @@ namespace BeatOn
             _context.StartActivity(intent);
         }
 
+        public void ResetAssets()
+        {
+            UpdateStatus("Locating installed Beat Saber app...");
+            string bsApkPath = FindBeatSaberApk();
+            if (bsApkPath == null)
+            {
+                UpdateStatus("Unable to find installed Beat Saber app!");
+                throw new ModException("Beat Saber does not seem to be installed, could not find its APK.");
+            }
+            UpdateStatus("Deleting existing external assets...");
+            if (Directory.Exists(Constants.ASSETS_RELOC_PATH))
+                Directory.Delete(Constants.ASSETS_RELOC_PATH);
+            else
+                UpdateStatus("External assets didn't seem to exist already");
+
+            ExtractAssetsFromApkToExternalStorage(bsApkPath, new List<string>() {
+                    "Managed",
+                    "boot.config" });
+        }
+
+        public void UninstallBeatSaber()
+        {
+            UpdateStatus("Locating installed Beat Saber app...");
+            string bsApkPath = FindBeatSaberApk();
+            if (bsApkPath == null)
+            {
+                UpdateStatus("Unable to find installed Beat Saber app!");
+                throw new ModException("Beat Saber does not seem to be installed, could not find its APK.");
+            }
+
+            UpdateStatus("Triggering uninstall...");
+            TriggerPackageUninstall(bsApkPath);
+        }
+
         private void SignApk(string apkFilename)
         {
             try

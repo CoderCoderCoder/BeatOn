@@ -27,7 +27,11 @@ export class MainComponent implements OnInit {
         label: 'Browser',
         path: './browser',
         index: 1
-    }
+    }, {
+      label: 'Tools',
+      path: './tools',
+      index: 2
+  }
   ];
 
   testHtml : string = "";

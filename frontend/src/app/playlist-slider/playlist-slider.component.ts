@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Output, } from '@angular/core';
 import { NguCarouselConfig } from '@ngu/carousel';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { Observable } from 'rxjs';
+import {AppSettings} from '../appSettings';
 
 @Component({
   selector: 'app-playlist-slider',

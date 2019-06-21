@@ -1,5 +1,6 @@
 package com.emulamer.installerhelper;
 
+import com.sun.istack.internal.NotNull;
 import org.jf.dexlib2.Opcode;
 import org.jf.dexlib2.iface.Annotation;
 import org.jf.dexlib2.iface.ClassDef;
@@ -50,13 +51,7 @@ public class InjectorClassDefRewrite extends ClassDefRewriter
                 return super.getVirtualMethods();
             List<Method> methods = new ArrayList<Method>();
 
-/*************** BEGIN method definition for continueLoad **********/
-            List<ImmutableMethodParameter> parameters2 = null;
-            List<ImmutableInstruction> instructions2 = Arrays.asList(new ImmutableInstruction22c(Opcode.IGET_OBJECT, 0, 1, new ImmutableFieldReference("Lcom/unity3d/player/UnityPlayerActivity;", "mUnityPlayer", "Lcom/unity3d/player/UnityPlayer;")), new ImmutableInstruction35c(Opcode.INVOKE_VIRTUAL, 1,0, 0, 0, 0, 0, new ImmutableMethodReference("Lcom/unity3d/player/UnityPlayer;", "start", (Iterable<? extends CharSequence>)null, "V")), new ImmutableInstruction10x(Opcode.RETURN_VOID));
-            ImmutableMethodImplementation methodImplementation2 = new ImmutableMethodImplementation(2, instructions2, null, null);
-            Method method2 = new ImmutableMethod("Lcom/unity3d/player/UnityPlayerActivity;", "continueLoad", parameters2, "V", 2, null, methodImplementation2);
-/*************** END method definition for continueLoad **********/
-            methods.add(method2);
+
 /*************** BEGIN method definition for onRequestPermissionsResult **********/
             List<ImmutableMethodParameter> parameters13 = Arrays.asList(new ImmutableMethodParameter("I", (Set<? extends Annotation >)null,"requestCode"), new ImmutableMethodParameter("[Ljava/lang/String;",(Set<? extends Annotation >)null,"permissions"), new ImmutableMethodParameter("[I", (Set<? extends Annotation >)null,"grantResults"));
             List<ImmutableInstruction> instructions13 = Arrays.asList(new ImmutableInstruction35c(Opcode.INVOKE_SUPER, 4,2, 3, 4, 5, 0, new ImmutableMethodReference("Landroid/app/Activity;", "onRequestPermissionsResult", Arrays.asList("I", "[Ljava/lang/String;", "[I"), "V")), new ImmutableInstruction12x(Opcode.ARRAY_LENGTH, 0, 5), new ImmutableInstruction11n(Opcode.CONST_4, 1, 0), new ImmutableInstruction21t(Opcode.IF_LEZ, 0, 10), new ImmutableInstruction23x(Opcode.AGET, 0, 5, 1), new ImmutableInstruction21t(Opcode.IF_NEZ, 0, 6), new ImmutableInstruction35c(Opcode.INVOKE_DIRECT, 1,2, 0, 0, 0, 0, new ImmutableMethodReference("Lcom/unity3d/player/UnityPlayerActivity;", "continueLoad", (Iterable<? extends CharSequence>)null, "V")), new ImmutableInstruction10t(Opcode.GOTO, 4), new ImmutableInstruction35c(Opcode.INVOKE_STATIC, 1,1, 0, 0, 0, 0, new ImmutableMethodReference("Ljava/lang/System;", "exit", Arrays.asList("I"), "V")), new ImmutableInstruction10x(Opcode.RETURN_VOID));
@@ -112,6 +107,13 @@ public class InjectorClassDefRewrite extends ClassDefRewriter
                     methodImplementation);
             methods.add(staticInit);
 
+            /*************** BEGIN method definition for continueLoad **********/
+            List<ImmutableMethodParameter> parameters2 = null;
+            List<ImmutableInstruction> instructions2 = Arrays.asList(new ImmutableInstruction22c(Opcode.IGET_OBJECT, 0, 1, new ImmutableFieldReference("Lcom/unity3d/player/UnityPlayerActivity;", "mUnityPlayer", "Lcom/unity3d/player/UnityPlayer;")), new ImmutableInstruction35c(Opcode.INVOKE_VIRTUAL, 1,0, 0, 0, 0, 0, new ImmutableMethodReference("Lcom/unity3d/player/UnityPlayer;", "start", (Iterable<? extends CharSequence>)null, "V")), new ImmutableInstruction10x(Opcode.RETURN_VOID));
+            ImmutableMethodImplementation methodImplementation2 = new ImmutableMethodImplementation(2, instructions2, null, null);
+            Method method2 = new ImmutableMethod("Lcom/unity3d/player/UnityPlayerActivity;", "continueLoad", parameters2, "V", 2, null, methodImplementation2);
+            /*************** END method definition for continueLoad **********/
+            methods.add(method2);
 
 
             for (Method m : this.classDef.getDirectMethods())

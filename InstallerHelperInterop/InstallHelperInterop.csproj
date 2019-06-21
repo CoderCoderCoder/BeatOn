@@ -64,10 +64,10 @@
     <TransformFile Include="Transforms\EnumMethods.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ReferenceJar Include="Jars\dexlib2-2.2.7.jar" />
+    <InputJar Include="Jars\InstallerHelper.jar" />
   </ItemGroup>
   <ItemGroup>
-    <InputJar Include="Jars\InstallerHelper.jar" />
+    <ReferenceJar Include="Jars\dexlib2-2.2.7.jar" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.Bindings.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
