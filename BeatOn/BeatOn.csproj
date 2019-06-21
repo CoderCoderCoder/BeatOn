@@ -74,6 +74,7 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidLogger.cs" />
     <Compile Include="ClientModels\HostMessage.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />
     <Compile Include="ClientModels\HostShowToast.cs" />
@@ -82,6 +83,10 @@
     <Compile Include="ClientModels\ModStatus.cs" />
     <Compile Include="ClientModels\ToastType.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Download.cs" />
+    <Compile Include="DownloadManager.cs" />
+    <Compile Include="DownloadStatus.cs" />
+    <Compile Include="DownloadStatusChangeArgs.cs" />
     <Compile Include="ImageUtilsDroid.cs" />
     <Compile Include="JSWebViewClient.cs" />
     <Compile Include="JSBridge.cs" />
@@ -171,9 +176,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\InstallHelpers\InstallHelpers.csproj">
+    <ProjectReference Include="..\InstallerHelperInterop\InstallHelperInterop.csproj">
       <Project>{f6066f57-0767-47df-8b18-ca76e8e0cc8a}</Project>
-      <Name>InstallHelpers</Name>
+      <Name>InstallHelperInterop</Name>
     </ProjectReference>
     <ProjectReference Include="..\QuestomAssets\QuestomAssets\QuestomAssets.csproj">
       <Project>{e6acae1d-f608-4d45-a73c-3d2ebc22d7d4}</Project>
@@ -217,19 +222,19 @@
     <AndroidAsset Include="Assets\www\polyfills-es5.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\dexlib2-2.2.7.jar">
-      <Link>dexlib2-2.2.7.jar</Link>
-    </AndroidJavaLibrary>
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\xml\provider_paths.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\raw\manifestmod.dat" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidJavaLibrary Include="..\InstallHelpers\Jars\InstallerHelper.jar">
+    <AndroidJavaLibrary Include="..\InstallerHelperInterop\Jars\InstallerHelper.jar">
       <Link>InstallerHelper.jar</Link>
+    </AndroidJavaLibrary>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidJavaLibrary Include="..\InstallerHelperInterop\Jars\dexlib2-2.2.7.jar">
+      <Link>dexlib2-2.2.7.jar</Link>
     </AndroidJavaLibrary>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

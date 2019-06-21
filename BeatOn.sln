@@ -7,11 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuestomAssets", "QuestomAss
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StbSharp.NETStandard", "QuestomAssets\StbSharp\StbSharp\StbSharp.NETStandard.csproj", "{DC823CC6-E535-456D-8401-94596DFA6D8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallHelpers", "InstallHelpers\InstallHelpers.csproj", "{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeatOn", "BeatOn\BeatOn.csproj", "{D27F570C-D0F3-4C71-AB03-F40F90A0171C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuestomAssets.Tests", "QuestomAssets\QuestomAssets.Tests\QuestomAssets.Tests.csproj", "{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallHelperInterop", "InstallerHelperInterop\InstallHelperInterop.csproj", "{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,18 +47,6 @@ Global
 		{DC823CC6-E535-456D-8401-94596DFA6D8F}.Release|x64.Build.0 = Release|Any CPU
 		{DC823CC6-E535-456D-8401-94596DFA6D8F}.Release|x86.ActiveCfg = Release|Any CPU
 		{DC823CC6-E535-456D-8401-94596DFA6D8F}.Release|x86.Build.0 = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x64.Build.0 = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x86.Build.0 = Debug|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x64.ActiveCfg = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x64.Build.0 = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x86.ActiveCfg = Release|Any CPU
-		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x86.Build.0 = Release|Any CPU
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D27F570C-D0F3-4C71-AB03-F40F90A0171C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -89,6 +77,18 @@ Global
 		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x64.Build.0 = Release|Any CPU
 		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADA40C5A-3CA4-4E81-9A36-17FD7A2B50EF}.Release|x86.Build.0 = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x64.Build.0 = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Debug|x86.Build.0 = Debug|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x64.ActiveCfg = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x64.Build.0 = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6066F57-0767-47DF-8B18-CA76E8E0CC8A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

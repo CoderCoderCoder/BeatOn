@@ -4,7 +4,7 @@
       <ngu-carousel #myCarousel [inputs]="carouselTile" [dataSource]="playlists">
           <button NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
         <ngu-item NguCarouselItem class="bannerstyle" *nguCarouselDef="let item; let j = index" [ngClass]="{'zoomedIn': item === selected, 'zoomedOut': item != selected }" (click)="onTileClick(item)" >
-            <div class="tile"  [style.background]="'url(/host/playlistcover?path=' + item.CoverArtFilename + ')'" >
+            <div class="tile"  [style.background]="'url('+AppSettings.API_ENDPOINT+'/host/beatsaber/playlistcover?playlistid=' + item.PlaylistID + ')'" >
             <div class="titleText">{{ item.PlaylistName }}</div>            
           </div>
           

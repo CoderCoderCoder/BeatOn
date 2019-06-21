@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="dexlib2-2.2.7">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/dexlib2-2.2.7.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

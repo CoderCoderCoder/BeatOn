@@ -7,6 +7,7 @@ import { SetupStep3Component } from './setup-step3/setup-step3.component';
 import { MainComponent } from './main/main.component';
 import { MainPlaylistsComponent } from './main-playlists/main-playlists.component';
 import { MainBrowserComponent } from './main-browser/main-browser.component';
+import { ToolsComponent } from './tools/tools.component';
 
 const routes: Routes = [
   { path: 'setup', component: SetupComponent },
@@ -19,6 +20,7 @@ const routes: Routes = [
     children: [
       {path: 'playlists', component: MainPlaylistsComponent},
       {path: 'browser', component: MainBrowserComponent},
+      {path: 'tools', component: ToolsComponent}
     ]
   }
 ];

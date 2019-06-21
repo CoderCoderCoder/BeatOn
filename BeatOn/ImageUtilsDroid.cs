@@ -18,7 +18,6 @@ namespace BeatOn
             byte[] textureBytes = MipmapToRGBBytes(bitmap, targetWidth, targetHeight, targetMips, out actualMips);
             targetTexture.TextureFormat = Texture2DObject.TextureFormatType.RGB24;
 
-
             targetTexture.ForcedFallbackFormat = 4;
             targetTexture.DownscaleFallback = false;
             targetTexture.Width = targetWidth;

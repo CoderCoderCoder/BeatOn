@@ -29,6 +29,7 @@ namespace BeatOn
         }
 
         private WebView _webView;
+        private DownloadManager _SongDownloadManager;
         private JSWebViewClient _webViewClient;
         private WebServer _webServer;
         private Mod _mod;
@@ -56,23 +57,7 @@ namespace BeatOn
             }
         }
 
-        public class AndroidLogger : ILog
-        {
-            public void LogErr(string message, Exception ex)
-            {
-                Android.Util.Log.Error("BeatOn", $"{message} {ex.Message} {ex.StackTrace} {ex?.InnerException?.Message} {ex?.InnerException?.StackTrace}");
-            }
 
-            public void LogErr(string message, params object[] args)
-            {
-                Android.Util.Log.Error("BeatOn", String.Format(message, args));
-            }
-
-            public void LogMsg(string message, params object[] args)
-            {
-                Android.Util.Log.Info("BeatOn", String.Format(message, args));
-            }
-        }
 
         private QaeConfig _qaeConfig
         {
@@ -105,8 +90,9 @@ namespace BeatOn
                 Log.LogErr("Exception updating config", ex);
                 ShowToast("Unable to save configuration", "There was an error saving the configuration!", ToastType.Error, 5);
             }
-            _currentConfig = null;
-            _qae = null;
+            //todo: not sure if I really need to do this, it's faster without forcing a reload
+            // _currentConfig = null;
+            // _qae = null;
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -131,14 +117,37 @@ namespace BeatOn
             _mod = new Mod(this);
             _mod.StatusUpdated += _mod_StatusUpdated;
             _webView = FindViewById<WebView>(Resource.Id.webView1);
+            _SongDownloadManager = new DownloadManager(() => { return Engine; }, () => { return CurrentConfig; }, _qaeConfig.SongFileProvider, _qaeConfig.SongsPath);
+            _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
             _webView.Download += _webView_Download;
             SetupWebApp();
+        }
+
+        private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)
+        {
+            RunOnUiThread(() =>
+            {
+                var dl = sender as Download;
+                switch (e.Status)
+                {
+                    case DownloadStatus.Downloading:
+                        ShowToast("Downloading song...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
+                        break;
+                    case DownloadStatus.Failed:
+                        ShowToast("Song failed to download", dl.DownloadUrl.ToString(), ToastType.Error, 5);
+                        break;
+                    case DownloadStatus.Installed:
+                        ShowToast("Song added to Beat Saber", dl.DownloadUrl.ToString(), ToastType.Success, 3);
+                        break;
+                }
+            });
         }
 
         private void _mod_StatusUpdated(object sender, string e)
         {
             _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = e });
         }
+
         private void ShowToast(string title, string message, ToastType type = ToastType.Info, float durationSec = 3.0F)
         {
             _webViewClient.SendHostMessage(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
@@ -146,128 +155,24 @@ namespace BeatOn
 
         private void _webView_Download(object sender, DownloadEventArgs e)
         {
-            //_webView.StopLoading()
-            //todo: show a spinner
             if (e.Mimetype != "application/zip")
             {
-                ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.",  ToastType.Error, 8);
+                ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
                 return;
             }
             var uri = new Uri(e.Url);
-            ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
-            WebClient c = new WebClient();
-            
+            //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
+
             var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
             if (_qaeConfig.FileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
             {
-                ShowToast("Unable to Download","A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
+                ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
                 return;
             }
-            c.DownloadDataCompleted += (s, dlArgs) =>
-            {
-                System.Threading.Tasks.Task.Run(() =>
-                {
-                    lock (_webViewClient)
-                    {
-                        try
-                        {
-                            if (dlArgs.Error != null)
-                            {
-                                Log.LogErr($"Error downloading file '{e.Url}'", dlArgs.Error);
-                                ShowToast("Download file failed!", e.Url.ToString(), ToastType.Error, 8);
-                                return;
-                            }
-                            if (dlArgs.Cancelled)
-                            {
-                                Log.LogErr($"Download of '{e.Url}' was cancelled.");
-                                ShowToast("Download was cancelled", e.Url.ToString(), ToastType.Warning, 3);
-                                return;
-                            }
-                            if (!(_qaeConfig.FileProvider is FolderFileProvider))
-                                throw new NotImplementedException("This will only work with a FolderFileProvider.");
-                            var fp = _qaeConfig.FileProvider as FolderFileProvider;
-                            using (MemoryStream ms = new MemoryStream(dlArgs.Result))
-                            {
-                                Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(ms, new Ionic.Zip.ReadOptions() { Encoding = System.Text.Encoding.UTF8 });
-                                var targetDir = Path.Combine(_qaeConfig.SongsPath, fileName);
-                                _qaeConfig.FileProvider.MkDir(targetDir);
-                                var firstInfoDat = zip.EntryFileNames.FirstOrDefault(x => x.ToLower() == "info.dat");
-                                if (firstInfoDat == null)
-                                {
-                                    ShowToast("Unable to Download", "Zip file doesn't seem to be a song (no info.dat).", ToastType.Error, 8);
-                                    return;
-                                }
-                                var infoDatPath = Path.GetDirectoryName(firstInfoDat);
-                                foreach (var ze in zip.Entries)
-                                {
-                                    string targetName = null;
-                                    try
-                                    {
-                                        //i've seen nested zip files, don't waste space with those
-                                        if (Path.GetExtension(ze.FileName).ToLower() == "zip")
-                                        {
-                                            Log.LogMsg($"Skipped {ze.FileName} because it looks like a nested zip file.");
-                                            continue;
-                                        }
-                                        //if the file isn't in the same path as the located info.dat, skip it
-                                        if (Path.GetDirectoryName(ze.FileName) != infoDatPath)
-                                        {
-                                            Log.LogMsg($"Skipped zip file {ze.FileName} because it wasn't in the path with info.dat at {infoDatPath}");
-                                            continue;
-                                        }
-                                        targetName = Path.Combine(targetDir, Path.GetFileName(ze.FileName));
-
-                                        using (Stream fs = fp.GetWriteStream(targetName))
-                                        {
-                                            ze.Extract(fs);
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Log.LogErr($"Error writing zip entry {ze.FileName} to '{targetName ?? "(null)"}'", ex);
-                                        throw;
-                                    }
-                                }
-                                ShowToast("Download Successful", e.Url.ToString(), ToastType.Success, 5);
-                                TestInject(targetDir);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.LogErr($"Exception downloading file from {e.Url}!", ex);
-                            ShowToast("Unable to extract file", e.Url.ToString(), ToastType.Error, 8);
-                        }
-                    }
-                });
-            };
-
-            c.DownloadDataAsync(uri);
-            
+            _SongDownloadManager.DownloadFile(e.Url);
         }
 
-        public void TestInject(string songPath)
-        {
-            var playlist = CurrentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
-
-            if (playlist == null)
-            {
-                playlist = new BeatSaberPlaylist()
-                {
-                    PlaylistID = "CustomSongs",
-                    PlaylistName = "Custom Songs"
-                };
-                CurrentConfig.Playlists.Add(playlist);
-            }
-           
-
-            playlist.SongList.Add(new BeatSaberSong()
-            {
-                SongID = Path.GetFileName(songPath),
-                CustomSongPath = songPath
-            });
-            SaveCurrentConfig();
-            ShowToast("Song Added to Beat Saber", $"Added song to {playlist.PlaylistName} successfully.", ToastType.Info, 4);
-        }
+        
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -291,6 +196,9 @@ namespace BeatOn
             _webServer.Router.AddRoute("POST", "mod/install/step1", HandleModInstallStep1);
             _webServer.Router.AddRoute("POST", "mod/install/step2", HandleModInstallStep2);
             _webServer.Router.AddRoute("POST", "mod/install/step3", HandleModInstallStep3);
+            _webServer.Router.AddRoute("POST", "/mod/resetassets", HandleResetAssets);
+            _webServer.Router.AddRoute("POST", "/mod/uninstallbeatsaber", HandleUninstallBeatSaber);
+            
             _webServer.Start();
             _webViewClient = new JSWebViewClient(this, _webView, JavascriptAction);
             _webView.LoadUrl($"http://localhost:{_webServer.Port}");
@@ -373,6 +281,8 @@ namespace BeatOn
                     if (!_mod.IsBeatSaberInstalled)
                     {
                         resp.BadRequest("Beat Saber is not installed!");
+                        _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
+                        _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!"});
                         return;
                     }
                     _mod.CopyOriginalBeatSaberApkAndTriggerUninstall();
@@ -541,6 +451,73 @@ namespace BeatOn
         private void HandleGetSongCover(HttpListenerContext context)
         {
 
+        }
+
+        private void HandleUninstallBeatSaber(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+            if (!Monitor.TryEnter(_modInstallLock))
+                resp.BadRequest("Another mod request is in progress.");
+            try
+            {
+
+                try
+                {
+                    if (!_mod.IsBeatSaberInstalled)
+                    {
+                        ShowToast("Beat Saber Not Installed", "Beat Saber doesn't seem to be installed.", ToastType.Error, 8);
+                        resp.BadRequest("Beat Saber isn't installed.");
+                        return;
+                    }
+                    _mod.UninstallBeatSaber();
+                    resp.Ok();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception handling mod install step 1!", ex);
+                    resp.StatusCode = 500;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_modInstallLock);
+            }
+        }
+
+        private void HandleResetAssets(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+            if (!Monitor.TryEnter(_modInstallLock))
+                resp.BadRequest("Another mod request is in progress.");
+            try
+            {
+
+                try
+                {
+                    if (!_mod.IsBeatSaberInstalled && !_mod.IsInstalledBeatSaberModded)
+                    {
+                        ShowToast("Mod Not Installed", "The mod does not appear to be installed correctly.", ToastType.Error, 8);
+                        resp.BadRequest("The mod does not appear to be installed correctly.");
+                        return;
+                    }
+                    _currentConfig = null;
+                    _qae.Dispose();
+                    _qae = null;
+                    _mod.ResetAssets();
+                    resp.Ok();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception handling mod install step 1!", ex);
+                    resp.StatusCode = 500;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_modInstallLock);
+            }
         }
     }
 

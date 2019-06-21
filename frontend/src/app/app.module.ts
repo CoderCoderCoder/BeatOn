@@ -22,7 +22,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { PlaylistSliderComponent } from './playlist-slider/playlist-slider.component';
 import { NguCarouselModule } from '@ngu/carousel';
 import { PlaylistSongsComponent } from './playlist-songs/playlist-songs.component';
-import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
+import { ToolsComponent } from './tools/tools.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +38,7 @@ import { DiagnosticsComponent } from './diagnostics/diagnostics.component';
     SafePipe,
     PlaylistSliderComponent,
     PlaylistSongsComponent,
-    DiagnosticsComponent
+    ToolsComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
