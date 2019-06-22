@@ -1,19 +1,30 @@
-import { Injectable, EventEmitter, Output } from '@angular/core';
+import { Injectable, EventEmitter, Output, OnInit } from '@angular/core';
 import { BeatOnApiService } from '../services/beat-on-api.service';
-import { QuestomConfig } from '../models/QuestomConfig';
+import { BeatOnConfig } from '../models/BeatOnConfig';
 import { Observable } from 'rxjs';
+import { HostMessageService } from './host-message.service';
+import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
+
 
 @Injectable({
   providedIn: 'root'
 })
-export class ConfigService {
-  @Output() configUpdated = new EventEmitter<QuestomConfig>();
+export class ConfigService implements OnInit {
+  @Output() configUpdated = new EventEmitter<BeatOnConfig>();
 
-  constructor(private beatOnApi : BeatOnApiService) { }
+  constructor(private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) { 
+    console.log("config service subscribing to host config change event");
+    this.msgSvc.configChangeMessage.subscribe((cfg : HostConfigChangeEvent) =>
+    {
+      console.log("config service got updated config message");
+      this.currentConfig = cfg.UpdatedConfig;
+      this.configUpdated.emit(cfg.UpdatedConfig);
+    });
+  }
 
-  public getConfig() : Observable<QuestomConfig>
+  public getConfig() : Observable<BeatOnConfig>
   {
-    return new Observable<QuestomConfig>((observable) =>
+    return new Observable<BeatOnConfig>((observable) =>
     {
       if (this.currentConfig != null) {
         observable.next(this.currentConfig);
@@ -25,7 +36,11 @@ export class ConfigService {
     });
   }
 
-  currentConfig : QuestomConfig;
+  ngOnInit() {
+   
+  }
+
+  currentConfig : BeatOnConfig;
   
   refreshConfig()  {
     

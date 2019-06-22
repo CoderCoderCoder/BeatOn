@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BeatOnApiService } from '../services/beat-on-api.service';
 import { QuestomConfig } from '../models/QuestomConfig';
+import { BeatOnConfig } from '../models/BeatOnConfig';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { ConfigService } from '../services/config.service';
 
@@ -13,8 +14,8 @@ import { ConfigService } from '../services/config.service';
   }
 })
 export class MainPlaylistsComponent implements OnInit {
-   config : QuestomConfig;
-  selectedPlaylist: BeatSaberPlaylist;
+  config : QuestomConfig;
+  selectedPlaylist: BeatSaberPlaylist =<BeatSaberPlaylist>{};
 
   constructor(private beatOnApi : BeatOnApiService, private configSvc : ConfigService) { }
     
@@ -24,8 +25,8 @@ export class MainPlaylistsComponent implements OnInit {
 
 
   ngOnInit() {
-   this.configSvc.getConfig().subscribe((cfg : QuestomConfig) => { this.config = cfg; });
-   this.configSvc.configUpdated.subscribe((cfg : QuestomConfig)=> { this.config = cfg; });
+   this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => { console.log("got config " + JSON.stringify(cfg)); this.config = cfg.Config; });
+   this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> { console.log("got config update"); this.config = cfg.Config; });
   }
 
 }

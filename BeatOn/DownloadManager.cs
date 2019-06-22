@@ -144,8 +144,8 @@ namespace BeatOn
                                     }
                                     try
                                     {
-                                        //todo: probably want to move the save out to a user driven thing?
-                                        qae.UpdateConfig(currentConfig);
+                                        //don't actually commit the config here.  takes too long and didn't work out
+                                        //qae.UpdateConfig(currentConfig);
                                         foreach (var toInst in doneDownloads)
                                         {
                                             //dot

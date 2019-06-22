@@ -37,7 +37,7 @@ namespace BeatOn
         private WebServer _webServer;
         private Mod _mod;
         private QuestomAssetsEngine _qae;
-        private BeatSaberQuestomConfig _currentConfig;
+        private BeatOnConfig _currentConfig;
 
         private QuestomAssetsEngine Engine
         {
@@ -49,12 +49,25 @@ namespace BeatOn
             }
         }
 
-        private BeatSaberQuestomConfig CurrentConfig
+        private BeatOnConfig CurrentConfig
         {
             get
             {
                 if (_currentConfig == null)
-                    _currentConfig = Engine.GetCurrentConfig();
+                {
+                    var config = Engine.GetCurrentConfig();
+                    
+                    _currentConfig = new BeatOnConfig() {
+                        Config = config
+                    };
+                    //stupid, bad, i need to move that debounce
+                    Thread.Sleep(20);
+                    _currentConfig.IsCommitted = true;
+                    _currentConfig.PropertyChanged += (s, e) =>
+                    {
+                        SendConfigChangeMessage();
+                    };
+                }
 
                 return _currentConfig;
             }
@@ -77,14 +90,78 @@ namespace BeatOn
             }
         }
 
+        private object _configFileLock = new object();
+        /// <summary>
+        /// Saves the currently loaded configuration to the config file, but not to the beat saber assets
+        /// </summary>
         private void SaveCurrentConfig()
+        {
+            //save to json in filesystem
+            lock (_configFileLock)
+            {
+                using (StreamWriter sw = new StreamWriter(Constants.CONFIG_FILE, false))
+                {
+                    sw.Write(JsonConvert.SerializeObject(CurrentConfig));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Loads the configuration from the config file into CurrentConfig
+        /// </summary>
+        /// <returns>True if the file was found and loaded, false if there wasn't one or it failed to load</returns>
+        private bool LoadConfigFromFile()
+        {
+            lock (_configFileLock)
+            {
+                try
+                {
+                    //todo: consider whether I should use the fileprovider for this.  seems app centric, so probably not.
+                    if (!File.Exists(Constants.CONFIG_FILE))
+                        return false;
+                    using (StreamReader sr = new StreamReader(Constants.CONFIG_FILE, false))
+                    {
+                        _currentConfig = JsonConvert.DeserializeObject<BeatOnConfig>(sr.ReadToEnd());
+                        //TODO: I should not have put the debounce INSIDE the class.  I need to fix that
+                        Thread.Sleep(20);
+                        _currentConfig.PropertyChanged += (s, e) =>
+                        {
+                            SendConfigChangeMessage();
+                        };
+                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception loading config", ex);
+                }
+                return false;
+            }
+        }
+
+        private void SendConfigChangeMessage()
+        {
+            _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
+        }
+
+        /// <summary>
+        /// Commits the currently loaded configuration to beat saber assets.
+        /// </summary>
+        private void CommitCurrentConfig()
         {
             if (_currentConfig == null)
                 return;
 
             try
             {
-                Engine.UpdateConfig(CurrentConfig);
+                if (!CurrentConfig.IsCommitted)
+                {
+                    Engine.UpdateConfig(CurrentConfig.Config);
+                    CurrentConfig.IsCommitted = true;
+                    //give the debounced change notifier a couple MS to do its thang
+                    Thread.Sleep(20);
+                    SendConfigChangeMessage();
+                }
             }
             catch (Exception ex)
             {
@@ -115,10 +192,12 @@ namespace BeatOn
             _mod = new Mod(this);
             _mod.StatusUpdated += _mod_StatusUpdated;
             _webView = FindViewById<WebView>(Resource.Id.webView1);
-            _SongDownloadManager = new DownloadManager(() => { return Engine; }, () => { return CurrentConfig; }, _qaeConfig.SongFileProvider, _qaeConfig.SongsPath);
+            _SongDownloadManager = new DownloadManager(() => { return Engine; }, () => { return CurrentConfig.Config; }, _qaeConfig.SongFileProvider, _qaeConfig.SongsPath);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
             _webView.Download += _webView_Download;
             SetupWebApp();
+            //force the config to load
+            var x = CurrentConfig;
         }
 
         private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)
@@ -195,6 +274,7 @@ namespace BeatOn
             _webServer.Router.AddRoute("GET", "beatsaber/songcover", HandleGetSongCover);
             _webServer.Router.AddRoute("GET", "beatsaber/playlistcover", HandleGetPlaylistCover);
             _webServer.Router.AddRoute("POST", "beatsaber/upload", HandleFileUpload);
+            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", HandleCommitConfig);
             _webServer.Router.AddRoute("GET", "mod/status", HandleModStatus);
             _webServer.Router.AddRoute("GET", "mod/netinfo", HandleGetNetInfo);
             _webServer.Router.AddRoute("POST", "mod/install/step1", HandleModInstallStep1);
@@ -325,8 +405,6 @@ namespace BeatOn
             var req = context.Request;
             var resp = context.Response;
             
-            var ext = "multipart/form-data; boundary=----WebKitFormBoundaryRNUZfeAd4COPIkMt";
-            //TODO: this code isn't very resilient, not sure if other browsers do things differently
             try
             {
                 if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
@@ -378,6 +456,32 @@ namespace BeatOn
                     s.Dispose();
                     _SongDownloadManager.ProcessFile(b, file);
                 }
+                resp.Ok();
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception handling mod install step 1!", ex);
+                resp.StatusCode = 500;
+            }
+        }
+
+        private void HandleCommitConfig(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+            
+            try
+            {
+                if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
+                {
+                    resp.BadRequest("Modded Beat Saber is not installed!");
+                    ShowToast("Can't commit config.", "Modded Beat Saber is not installed!");
+                    return;
+                }
+                ShowToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 8);
+                Engine.UpdateConfig(CurrentConfig.Config);
+                CurrentConfig.IsCommitted = true;
+                SendConfigChangeMessage();
                 resp.Ok();
             }
             catch (Exception ex)
@@ -480,7 +584,7 @@ namespace BeatOn
                         resp.BadRequest("Expected playlistid");
                         return;
                     }
-                    var playlist = CurrentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == playlistid);
+                    var playlist = CurrentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == playlistid);
                     if (playlist == null)
                     {
                         resp.NotFound();
@@ -517,9 +621,7 @@ namespace BeatOn
             {
                 try
                 {
-                    var qae = new QuestomAssetsEngine(_qaeConfig);
-                    var config = qae.GetCurrentConfig();
-                    resp.Serialize(config);
+                    resp.Serialize(CurrentConfig);
                 }
                 catch (Exception ex)
                 {
@@ -564,7 +666,7 @@ namespace BeatOn
                         resp.BadRequest("Expected songid");
                         return;
                     }
-                    var song = CurrentConfig.Playlists.SelectMany(x=> x.SongList).FirstOrDefault(x => x.SongID == songid);
+                    var song = CurrentConfig.Config.Playlists.SelectMany(x=> x.SongList).FirstOrDefault(x => x.SongID == songid);
                     if (song == null)
                     {
                         resp.NotFound();

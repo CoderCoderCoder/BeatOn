@@ -4,7 +4,8 @@ import { HostShowToast } from '../models/HostShowToast';
 import { AppSettings } from '../appSettings';
 import * as Rx from "rxjs";
 import { HostDownloadStatus } from '../models/HostDownloadStatus';
-
+import { BeatOnConfig } from '../models/BeatOnConfig';
+import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +41,9 @@ export class HostMessageService {
           this.toastMessage.emit(<HostShowToast>msgEvent);
         } else if (msgEvent.Type == 'DownloadStatus') {
           this.downloadStatusMessage.emit(<HostDownloadStatus>msgEvent);
+        } else if (msgEvent.Type == 'ConfigChange') {
+          console.log("emitting config change message");
+          this.configChangeMessage.emit(<HostConfigChangeEvent>msgEvent);
         } else {
           console.log(`Unknown host message: ${msgStr}`)
         }
@@ -68,5 +72,6 @@ export class HostMessageService {
   @Output() setupMessage = new EventEmitter<HostSetupEvent>();
   @Output() toastMessage = new EventEmitter<HostShowToast>();
   @Output() downloadStatusMessage = new EventEmitter<HostDownloadStatus>();
+  @Output() configChangeMessage = new EventEmitter<HostConfigChangeEvent>();
 
 }

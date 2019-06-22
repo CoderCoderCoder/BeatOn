@@ -2,7 +2,12 @@
 <div class="fullheight"  fxLayout="column">
 <mat-toolbar layout="row">
     <span>Beat On!</span>
-    <span class="example-fill-remaining-space" style="flex: 4 1 auto;"></span>
+    <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
+    <button *ngIf="!config.IsCommitted" (click)="commitConfig()" class="warning">
+      Sync to Beat Saber
+    </button>
+    <button mat-button *ngIf="config.IsCommitted" >Beat Saber Synced</button>
+    <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
     <app-download-indicator></app-download-indicator>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
     <button @fade *ngIf="showRefreshButton" mat-button ><mat-icon>cached</mat-icon></button>

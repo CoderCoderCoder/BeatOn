@@ -46,41 +46,7 @@ export class PlaylistSliderComponent implements OnInit {
   constructor() {}
  
   ngOnInit() {
-      // this.playlists = [ {
-      //   CoverArtFilename : "something.png",
-      //   PlaylistID : "CustomSongs",
-    
-      //   PlaylistName : "Custom Songs",
-      //   SongList: []
-      // },
-      // {
-      //   CoverArtFilename : "something.png",
-      //   PlaylistID : "CustomSongs",
-    
-      //   PlaylistName : "Custom Songs",
-      //   SongList: []
-      // },
-      // {
-      //   CoverArtFilename : "something.png",
-      //   PlaylistID : "CustomSongs",
-    
-      //   PlaylistName : "Custom Songs",
-      //   SongList: []
-      // },
-      // {
-      //   CoverArtFilename : "something.png",
-      //   PlaylistID : "CustomSongs",
-    
-      //   PlaylistName : "Custom Songs",
-      //   SongList: []
-      // },
-      // {
-      //   CoverArtFilename : "something.png",
-      //   PlaylistID : "CustomSongs",
-    
-      //   PlaylistName : "Custom Songs",
-      //   SongList: []
-      // }];
+     
   }
  
 }

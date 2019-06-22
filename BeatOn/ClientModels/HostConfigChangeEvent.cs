@@ -9,17 +9,13 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace BeatOn.ClientModels
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MessageType
+    public class HostConfigChangeEvent : HostMessage
     {
-        SetupEvent,
-        Toast,
-        DownloadStatus,
-        ConfigChange
+        public override MessageType Type => MessageType.ConfigChange;
+
+        public BeatOnConfig UpdatedConfig { get; set; }
     }
 }

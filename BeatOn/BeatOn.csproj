@@ -75,6 +75,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidLogger.cs" />
+    <Compile Include="ClientModels\BeatOnConfig.cs" />
+    <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
     <Compile Include="ClientModels\HostMessage.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />

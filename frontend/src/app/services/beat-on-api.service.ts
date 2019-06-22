@@ -49,4 +49,8 @@ export class BeatOnApiService {
     return this.http.post(this.hostname+"/host/beatsaber/upload", fileData);
   }
 
+  commitConfig() {
+    return this.http.post(this.hostname+"/host/beatsaber/commitconfig", "");
+  }
+
 }

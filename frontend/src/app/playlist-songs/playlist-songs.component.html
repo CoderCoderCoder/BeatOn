@@ -4,6 +4,7 @@
           <div class="songNames">
             <div class="songTitle">{{song.SongName}}</div>
             <div class="songArtist">{{song.SongAuthorName}}</div>
+            <div *ngIf="song.LevelAuthorName.length" class="mapper">Mapped By {{song.LevelAuthorName}}</div>
           </div>
         </mat-card>
 </cdk-virtual-scroll-viewport>
