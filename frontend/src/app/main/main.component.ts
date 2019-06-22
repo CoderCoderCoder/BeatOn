@@ -4,7 +4,8 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import {BeatOnApiService} from '../services/beat-on-api.service';
 import {Router, NavigationStart} from '@angular/router';
 import { routerTransition } from './router.animations';
-
+import { QuestomConfig } from '../models/QuestomConfig';
+import { ConfigService } from '../services/config.service';
 
 @Component({
   selector: 'app-main',
@@ -16,47 +17,50 @@ import { routerTransition } from './router.animations';
   }
 })
 export class MainComponent implements OnInit {
-  constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog, private router : Router) { }
+  constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog, 
+      private router : Router, 
+      private configSvc : ConfigService) { }
   activeLinkIndex = -1;
-  navLinks = [
-    {
-        label: 'Playlists',
-        path: './playlists',
-        index: 0
-    }, {
-        label: 'Browser',
-        path: './browser',
-        index: 1
-    }, {
-      label: 'Tools',
-      path: './tools',
-      index: 2
-  }
-  ];
+  navLinks = [ ];
 
   testHtml : string = "";
 
-  config;
-
   ngOnInit() {
-   // this.refreshConfig();
-
+    this.configSvc.refreshConfig();
+   let onQuest : boolean = (<any> window).isQuestHosted();
+   if (!onQuest) {
+    console.log("Not hosted on the quest in Beat On, showing upload rather than browser.");
+   } else {
+    console.log("Hosted in Beat On on the quest, showing browser rather than upload.");
+   }
+   this.navLinks.push({
+      label: 'Playlists',
+      path: './playlists',
+      index: 0
+    });
+    if (onQuest)
+    {
+      this.navLinks.push({
+          label: 'Browser',
+          path: './browser',
+          index: 1
+      });
+    }
+    else
+    {
+      this.navLinks.push({
+        label: 'Upload',
+        path: './upload',
+        index: 1
+      });
+    }
+    this.navLinks.push({
+      label: 'Tools',
+      path: './tools',
+      index: 2
+    });
   }
 
-  refreshConfig() : void {
-    
-    this.beatOnApi.getConfig()
-      .subscribe(
-        (data: any) => { 
-          this.testHtml = JSON.stringify(data);
-          this.config = data;
-        },
-        (err: any) => {
-          this.testHtml = JSON.stringify(err);
-        },
-    );
-
-  }
   getState(outlet) {
     return outlet.activatedRoute.snapshot.routeConfig.path
   }

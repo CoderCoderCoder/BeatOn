@@ -25,7 +25,8 @@ import { HostSetupEvent, SetupEventType } from './models/HostSetupEvent';
   }
 })
 export class AppComponent implements OnInit {
-  constructor(private beatOnApi: BeatOnApiService, private router: Router, private msgSvc: HostMessageService, private toastr: ToastrService) { 
+  constructor(private beatOnApi: BeatOnApiService, private router: Router, private msgSvc: HostMessageService,
+          private toastr: ToastrService) { 
     this.router.events.subscribe((ev) => {
       if (ev instanceof NavigationStart) { 
         //TODO: prevent routing based on mod status?

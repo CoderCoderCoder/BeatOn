@@ -1,0 +1,36 @@
+.example-viewport {
+    height: 94%;
+    width: 350px;
+    border: none;
+    
+  }
+.song {
+    display: flex;
+    width: 300px;
+    height: 60px;
+}
+.song mat-card-title {
+    font-size: 16px;
+    
+}
+.song mat-card-subtitle {
+    font-size: 12px;
+    width: 220px;
+}
+.songArtist {
+    font-size: 12px;
+    margin-left: 8px;
+    margin-top: 3px;
+}
+
+.songTitle {
+    font-size: 16px;
+    margin-left: 8px;
+}
+
+.songCover {
+    width: 60px;
+    display:inline-block;
+    height: 60px;
+    min-width: 60px;
+}

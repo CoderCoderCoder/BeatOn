@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { NguCarouselConfig } from '@ngu/carousel';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { Observable } from 'rxjs';
@@ -10,13 +10,22 @@ import {AppSettings} from '../appSettings';
   styleUrls: ['./playlist-slider.component.scss']
 })
 export class PlaylistSliderComponent implements OnInit {
-  @Output() public selected: BeatSaberPlaylist;
+  @Output() public selectedPlaylist: EventEmitter<BeatSaberPlaylist> = new EventEmitter<BeatSaberPlaylist>();
   @Input() public playlists: BeatSaberPlaylist[] = [];
   
+   selected : BeatSaberPlaylist;
   //public carouselTileItems: Array<any> = [0, 1, 2, 3, 4, 5];
- 
+
+
+
+  getBackground(item) {
+    return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlistcover?playlistid=' + item.PlaylistID + ')';
+  }
+
   onTileClick(item) {
+    console.log("playlist selecteD");
     this.selected = item;
+    this.selectedPlaylist.emit(item);
   }
   public carouselTile: NguCarouselConfig = {
     grid: { xs:4, sm:4, md: 4, lg: 4, all: 0 },
@@ -31,7 +40,7 @@ export class PlaylistSliderComponent implements OnInit {
     easing: 'cubic-bezier(0, 0, 0.2, 1)',
     vertical: {
       enabled: true,
-      height: 400
+      height: 390
     }
   };
   constructor() {}

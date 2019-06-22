@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
-
+import { AppSettings } from '../appSettings';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
@@ -19,5 +19,10 @@ export class PlaylistSongsComponent implements OnInit {
   ngOnInit() {
 
   }
+
+  getBackground(item) {
+    return AppSettings.API_ENDPOINT +'/host/beatsaber/songcover?songid=' + item.SongID ;
+  }
+
 
 }

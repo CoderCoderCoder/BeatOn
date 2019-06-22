@@ -18,7 +18,16 @@ namespace BeatOn
 {
     public class DownloadManager
     {
-
+        public int InProgress
+        {
+            get
+            {
+                lock (_downloads)
+                {
+                    return _downloads.Count(x => x.Status != DownloadStatus.Installed && x.Status != DownloadStatus.Failed);
+                }
+            }
+        }
         private Func<QuestomAssets.QuestomAssetsEngine> _engineFactory;
         private Func<QuestomAssets.Models.BeatSaberQuestomConfig> _configFactory;
         private IAssetsFileProvider _provider;
@@ -52,11 +61,23 @@ namespace BeatOn
                 deadDl.StatusChanged += StatusChangeHandler;
                 deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
                 return deadDl;
-            }
-             
+            }            
             
             Download dl = new Download(url, _provider, savePath);
-            _downloads.Add(dl);
+            lock (_downloads)
+                _downloads.Add(dl);
+            dl.StatusChanged += StatusChangeHandler;
+            dl.SetStatus(DownloadStatus.NotStarted);
+            return dl;
+        }
+
+        public Download ProcessFile(byte[] fileData, string fileName, string savePath = null)
+        {
+            savePath = savePath ?? _defaultSavePath;
+
+            Download dl = new Download(_provider, savePath, fileData, fileName);
+            lock(_downloads)
+                _downloads.Add(dl);
             dl.StatusChanged += StatusChangeHandler;
             dl.SetStatus(DownloadStatus.NotStarted);
             return dl;
@@ -160,7 +181,14 @@ namespace BeatOn
 
         private List<Download> _downloads = new List<Download>();
 
-        public List<Download> Downloads { get => _downloads.ToList(); }
+        public List<Download> Downloads
+        {
+            get
+            {
+                lock (_downloads)
+                    return _downloads.ToList();
+            }
+        }
         
     }
 }

@@ -1,7 +1,10 @@
-<div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
-    <div class="example-box" *ngFor="let song of playlist.SongList" cdkDrag>
+<cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
+        <mat-card class="song" *cdkVirtualFor="let song of playlist.SongList" >
+          <img class="songCover" [src]="getBackground(song)" />
+          <div class="songNames">
+            <div class="songTitle">{{song.SongName}}</div>
+            <div class="songArtist">{{song.SongAuthorName}}</div>
+          </div>
+        </mat-card>
+</cdk-virtual-scroll-viewport>
 
-       
-
-    </div>
-</div>

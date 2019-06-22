@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { BeatOnApiService } from '../services/beat-on-api.service';
 import { QuestomConfig } from '../models/QuestomConfig';
+import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
+import { ConfigService } from '../services/config.service';
+
 @Component({
   selector: 'app-main-playlists',
   templateUrl: './main-playlists.component.html',
@@ -10,62 +13,19 @@ import { QuestomConfig } from '../models/QuestomConfig';
   }
 })
 export class MainPlaylistsComponent implements OnInit {
+   config : QuestomConfig;
+  selectedPlaylist: BeatSaberPlaylist;
 
-  constructor(private beatOnApi : BeatOnApiService) { }
-  config : QuestomConfig = {Playlists:   [{
-      CoverArtFilename : "something.png",
-      PlaylistID : "CustomSongs",
-  
-      PlaylistName : "Custom Songs",
-      SongList: []
-    },
-    {
-      CoverArtFilename : "something.png",
-      PlaylistID : "CustomSongs",
-  
-      PlaylistName : "Custom reallo long name Songs",
-      SongList: []
-    },
-    {
-      CoverArtFilename : "something.png",
-      PlaylistID : "CustomSongs",
-  
-      PlaylistName : "Custom Songs",
-      SongList: []
-    },
-    {
-      CoverArtFilename : "something.png",
-      PlaylistID : "CustomSongs",
-  
-      PlaylistName : "Custom Songs",
-      SongList: []
-    },
-    {
-      CoverArtFilename : "something.png",
-      PlaylistID : "CustomSongs",
-  
-      PlaylistName : "Custom Songs",
-      SongList: []
-    }], LeftColor: null, RightColor: null};
-  
-  refreshConfig() : void {
+  constructor(private beatOnApi : BeatOnApiService, private configSvc : ConfigService) { }
     
-    this.beatOnApi.getConfig()
-      .subscribe(
-        (data: any) => { 
-          console.log("got stuff: "+JSON.stringify(data));
-          this.config = data;
-        },
-        (err: any) => {
-          //this.testHtml = JSON.stringify(err);
-          console.log("ERROR" + err);
-        },
-    );
-
+  selectedPlaylistChanged(ev) {
+    this.selectedPlaylist = ev;
   }
 
+
   ngOnInit() {
-    this.refreshConfig();
+   this.configSvc.getConfig().subscribe((cfg : QuestomConfig) => { this.config = cfg; });
+   this.configSvc.configUpdated.subscribe((cfg : QuestomConfig)=> { this.config = cfg; });
   }
 
 }

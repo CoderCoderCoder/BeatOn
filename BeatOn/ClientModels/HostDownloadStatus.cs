@@ -9,16 +9,12 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace BeatOn.ClientModels
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MessageType
+    public class HostDownloadStatus : HostMessage
     {
-        SetupEvent,
-        Toast,
-        DownloadStatus
+        public override MessageType Type => MessageType.DownloadStatus;
+        public List<HostDownload> Downloads { get; set; } = new List<HostDownload>();
     }
 }

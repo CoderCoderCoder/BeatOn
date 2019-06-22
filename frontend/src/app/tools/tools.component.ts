@@ -3,6 +3,7 @@ import { ProgressSpinnerDialogComponent } from "../progress-spinner-dialog/progr
 import { MatDialog, MatDialogRef } from '@angular/material';
 import {BeatOnApiService} from '../services/beat-on-api.service';
 import { HostShowToast, ToastType } from '../models/HostShowToast';
+import { NetInfo } from '../models/NetInfo';
 
 @Component({
   selector: 'app-tools',
@@ -14,7 +15,7 @@ export class ToolsComponent implements OnInit {
   constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog) { 
    
   }
-
+  netInfo : NetInfo;
   clickUninstallBeatSaber() {
     const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
       width: '450px',
@@ -58,6 +59,10 @@ export class ToolsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.beatOnApi.getNetInfo().subscribe((ni : NetInfo) =>
+    {
+      this.netInfo = ni;
+    });
   }
 
 }

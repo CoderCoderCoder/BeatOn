@@ -15,5 +15,8 @@ export class MainBrowserComponent implements OnInit {
 
   ngOnInit() {
   }
+  iframeLoaded(e) {
+    console.log("iframe has loaded "+ e.src);
+  }
 
 }

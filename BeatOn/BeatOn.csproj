@@ -75,10 +75,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidLogger.cs" />
+    <Compile Include="ClientModels\HostDownload.cs" />
     <Compile Include="ClientModels\HostMessage.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />
+    <Compile Include="ClientModels\HostDownloadStatus.cs" />
     <Compile Include="ClientModels\HostShowToast.cs" />
     <Compile Include="ClientModels\MessageType.cs" />
+    <Compile Include="ClientModels\NetInfo.cs" />
     <Compile Include="ClientModels\SetupEventType.cs" />
     <Compile Include="ClientModels\ModStatus.cs" />
     <Compile Include="ClientModels\ToastType.cs" />
@@ -89,7 +92,6 @@
     <Compile Include="DownloadStatusChangeArgs.cs" />
     <Compile Include="ImageUtilsDroid.cs" />
     <Compile Include="JSWebViewClient.cs" />
-    <Compile Include="JSBridge.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MimeMap.cs" />
     <Compile Include="Mod.cs" />
@@ -154,6 +156,12 @@
   <ItemGroup>
     <PackageReference Include="DotNetZip">
       <Version>1.13.3</Version>
+    </PackageReference>
+    <PackageReference Include="Fleck">
+      <Version>1.1.0</Version>
+    </PackageReference>
+    <PackageReference Include="HttpMultipartParser">
+      <Version>2.2.4</Version>
     </PackageReference>
     <PackageReference Include="lz4net.netcore.signed">
       <Version>1.0.15.93</Version>

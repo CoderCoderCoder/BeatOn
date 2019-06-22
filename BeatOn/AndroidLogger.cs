@@ -27,7 +27,17 @@ namespace BeatOn
 
         public void LogMsg(string message, params object[] args)
         {
-            Android.Util.Log.Info("BeatOn", String.Format(message, args));
+            string logStr = message;
+            if (args.Length > 0 && !(args[0] is object[] && ((object[])args[0]).Length < 1))
+            {
+                try
+                {
+                    logStr = string.Format(logStr, args);
+                }
+                catch
+                { }
+            }
+            Android.Util.Log.Info("BeatOn", logStr);
         }
     }
 }

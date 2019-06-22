@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using Android.App;
 using Android.OS;
@@ -57,8 +60,6 @@ namespace BeatOn
             }
         }
 
-
-
         private QaeConfig _qaeConfig
         {
             get
@@ -90,9 +91,6 @@ namespace BeatOn
                 Log.LogErr("Exception updating config", ex);
                 ShowToast("Unable to save configuration", "There was an error saving the configuration!", ToastType.Error, 5);
             }
-            //todo: not sure if I really need to do this, it's faster without forcing a reload
-            // _currentConfig = null;
-            // _qae = null;
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -128,29 +126,40 @@ namespace BeatOn
             RunOnUiThread(() =>
             {
                 var dl = sender as Download;
-                switch (e.Status)
+                if (e.UpdateType == DownloadStatusChangeArgs.DownloadStatusUpdateType.StatusChange)
                 {
-                    case DownloadStatus.Downloading:
-                        ShowToast("Downloading song...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
-                        break;
-                    case DownloadStatus.Failed:
-                        ShowToast("Song failed to download", dl.DownloadUrl.ToString(), ToastType.Error, 5);
-                        break;
-                    case DownloadStatus.Installed:
-                        ShowToast("Song added to Beat Saber", dl.DownloadUrl.ToString(), ToastType.Success, 3);
-                        break;
+                    switch (e.Status)
+                    {
+                        case DownloadStatus.Downloading:
+                            ShowToast("Downloading song...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
+                            break;
+                        case DownloadStatus.Failed:
+                            ShowToast("Song failed to download", dl.DownloadUrl.ToString(), ToastType.Error, 5);
+                            break;
+                        case DownloadStatus.Installed:
+                            ShowToast("Song added to Beat Saber", dl.DownloadUrl.ToString(), ToastType.Success, 3);
+                            break;
+                    }
+                    var hds = new HostDownloadStatus();
+                    var dls = _SongDownloadManager.Downloads;
+                    dls.ForEach(x => hds.Downloads.Add(new HostDownload() { ID = x.ID, PercentageComplete = x.PercentageComplete, Status = x.Status, Url = x.DownloadUrl.ToString() }));
+                    SendMessageToClient(hds);
                 }
             });
         }
 
         private void _mod_StatusUpdated(object sender, string e)
         {
-            _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = e });
+            SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = e });
         }
 
+        private void SendMessageToClient(HostMessage message)
+        {
+            _webServer.SendMessage(message);
+        }
         private void ShowToast(string title, string message, ToastType type = ToastType.Info, float durationSec = 3.0F)
         {
-            _webViewClient.SendHostMessage(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
+            SendMessageToClient(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
         }
 
         private void _webView_Download(object sender, DownloadEventArgs e)
@@ -172,17 +181,10 @@ namespace BeatOn
             _SongDownloadManager.DownloadFile(e.Url);
         }
 
-        
-
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        private void JavascriptAction(string data)
-        {
-
         }
 
         private void SetupWebApp()
@@ -192,15 +194,17 @@ namespace BeatOn
             _webServer.Router.AddRoute("PUT", "beatsaber/config", HandlePutConfig);
             _webServer.Router.AddRoute("GET", "beatsaber/songcover", HandleGetSongCover);
             _webServer.Router.AddRoute("GET", "beatsaber/playlistcover", HandleGetPlaylistCover);
+            _webServer.Router.AddRoute("POST", "beatsaber/upload", HandleFileUpload);
             _webServer.Router.AddRoute("GET", "mod/status", HandleModStatus);
+            _webServer.Router.AddRoute("GET", "mod/netinfo", HandleGetNetInfo);
             _webServer.Router.AddRoute("POST", "mod/install/step1", HandleModInstallStep1);
             _webServer.Router.AddRoute("POST", "mod/install/step2", HandleModInstallStep2);
             _webServer.Router.AddRoute("POST", "mod/install/step3", HandleModInstallStep3);
-            _webServer.Router.AddRoute("POST", "/mod/resetassets", HandleResetAssets);
-            _webServer.Router.AddRoute("POST", "/mod/uninstallbeatsaber", HandleUninstallBeatSaber);
+            _webServer.Router.AddRoute("POST", "mod/resetassets", HandleResetAssets);
+            _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", HandleUninstallBeatSaber);
             
             _webServer.Start();
-            _webViewClient = new JSWebViewClient(this, _webView, JavascriptAction);
+            _webViewClient = new JSWebViewClient(this, _webView);
             _webView.LoadUrl($"http://localhost:{_webServer.Port}");
         }
 
@@ -266,6 +270,21 @@ namespace BeatOn
             }
         }
 
+        private void HandleGetNetInfo(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+            try
+            {
+                resp.Serialize(new NetInfo() { Url = _webServer.ListeningOnUrl });
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception handling get net info!", ex);
+                resp.StatusCode = 500;
+            }
+        }
+
         private object _modInstallLock = new object();
         private void HandleModInstallStep1(HttpListenerContext context)
         {
@@ -281,12 +300,12 @@ namespace BeatOn
                     if (!_mod.IsBeatSaberInstalled)
                     {
                         resp.BadRequest("Beat Saber is not installed!");
-                        _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
-                        _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!"});
+                        SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
+                        SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!"});
                         return;
                     }
                     _mod.CopyOriginalBeatSaberApkAndTriggerUninstall();
-                    _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step1Complete });
+                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step1Complete });
                     resp.Ok();
                 }
                 catch (Exception ex)
@@ -298,6 +317,73 @@ namespace BeatOn
             finally
             {
                 Monitor.Exit(_modInstallLock);
+            }
+        }
+
+        private void HandleFileUpload(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+            
+            var ext = "multipart/form-data; boundary=----WebKitFormBoundaryRNUZfeAd4COPIkMt";
+            //TODO: this code isn't very resilient, not sure if other browsers do things differently
+            try
+            {
+                if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
+                {
+                    resp.BadRequest("Modded Beat Saber is not installed!");
+                    ShowToast("Can't upload.", "Modded Beat Saber is not installed!");
+                    return;
+                }
+                var ct = req.ContentType;
+                if (!ct.StartsWith("multipart/form-data"))
+                {
+                    resp.BadRequest("Expected content-type of multipart/form-data");
+                    return;
+                }
+
+                Dictionary<string, MemoryStream> files = new Dictionary<string, MemoryStream>();
+                var parser = new HttpMultipartParser.StreamingMultipartFormDataParser(req.InputStream);
+                parser.FileHandler = (name, fileName, type, disposition, buffer, bytes) =>
+                {
+                    if (name != "file")
+                    {
+                        Log.LogMsg($"Got extra form value named {name}, ignoring it");
+                        return;
+                    }
+                    if (type != "application/x-zip-compressed")
+                        throw new NotSupportedException($"Data for file {fileName} isn't a zip");
+                    MemoryStream s = null;
+                    if (files.ContainsKey(fileName))
+                    {
+                        s = files[fileName];
+                    }
+                    else {
+                        s = new MemoryStream();
+                        files.Add(fileName, s);
+                    }
+                    s.Write(buffer, 0, bytes);
+                };
+                parser.Run();
+                if (files.Count < 1)
+                {
+                    resp.BadRequest("Didn't get any useable files.");
+                    return;
+                }
+                foreach (var file in files.Keys.ToList())
+                {
+                    var s = files[file];
+                    byte[] b = s.ToArray();
+                    files.Remove(file);
+                    s.Dispose();
+                    _SongDownloadManager.ProcessFile(b, file);
+                }
+                resp.Ok();
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception handling mod install step 1!", ex);
+                resp.StatusCode = 500;
             }
         }
 
@@ -317,7 +403,7 @@ namespace BeatOn
                         return;
                     }
                     _mod.ApplyModToTempApk();
-                    _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step2Complete });
+                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step2Complete });
                     resp.Ok();
                 }
                 catch (Exception ex)
@@ -348,7 +434,7 @@ namespace BeatOn
                         return;
                     }
                     _mod.TriggerPackageInstall();
-                    _webViewClient.SendHostMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step3Complete });
+                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step3Complete });
                     resp.Ok();
                 }
                 catch (Exception ex)
@@ -416,7 +502,7 @@ namespace BeatOn
                 }
                 catch (Exception ex)
                 {
-                    Log.LogErr("Exception handling mod install step 2!", ex);
+                    Log.LogErr("Exception handling get playlist cover!", ex);
                     resp.StatusCode = 500;
                 }
             }
@@ -450,7 +536,59 @@ namespace BeatOn
 
         private void HandleGetSongCover(HttpListenerContext context)
         {
-
+            var req = context.Request;
+            var resp = context.Response;
+            lock (_playlistCoverLock)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(req.Url.Query))
+                    {
+                        resp.BadRequest("Expected songid");
+                        return;
+                    }
+                    string songid = null;
+                    foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
+                    {
+                        var split = kvp.Split('=');
+                        if (split.Count() < 1)
+                            continue;
+                        if (split[0].ToLower() == "songid")
+                        {
+                            songid = Java.Net.URLDecoder.Decode(split[1]);
+                            break;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(songid))
+                    {
+                        resp.BadRequest("Expected songid");
+                        return;
+                    }
+                    var song = CurrentConfig.Playlists.SelectMany(x=> x.SongList).FirstOrDefault(x => x.SongID == songid);
+                    if (song == null)
+                    {
+                        resp.NotFound();
+                        return;
+                    }
+                    var imgBytes = song.TryGetCoverPngBytes();
+                    if (imgBytes == null)
+                    {
+                        resp.Error();
+                        return;
+                    }
+                    resp.StatusCode = 200;
+                    resp.ContentType = MimeMap.GetMimeType("test.png");
+                    using (MemoryStream ms = new MemoryStream(imgBytes))
+                    {
+                        ms.CopyTo(resp.OutputStream);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception handling get song cover!", ex);
+                    resp.StatusCode = 500;
+                }
+            }
         }
 
         private void HandleUninstallBeatSaber(HttpListenerContext context)

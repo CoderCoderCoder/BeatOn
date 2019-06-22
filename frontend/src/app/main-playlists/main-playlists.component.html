@@ -5,7 +5,7 @@
 <div class="container">
   
 <div >
-  <app-playlist-slider [playlists]="config.Playlists" ></app-playlist-slider>
+  <app-playlist-slider [playlists]="config.Playlists" (selectedPlaylist)="selectedPlaylistChanged($event)" ></app-playlist-slider>
 </div>
-
+   <app-playlist-songs [playlist]="selectedPlaylist"></app-playlist-songs> 
 </div>

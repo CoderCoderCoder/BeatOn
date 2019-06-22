@@ -9,16 +9,11 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace BeatOn.ClientModels
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum MessageType
+    public class NetInfo
     {
-        SetupEvent,
-        Toast,
-        DownloadStatus
+        public string Url { get; set; }
     }
 }

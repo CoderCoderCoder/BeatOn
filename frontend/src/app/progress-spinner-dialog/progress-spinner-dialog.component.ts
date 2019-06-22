@@ -36,7 +36,7 @@ export class ProgressSpinnerDialogComponent implements OnInit {
       if (msg.SetupEvent == SetupEventType.StatusMessage) {
         console.log("pussing message to view");
         this.messages.push(msg.Message);
-        this.cdr.detectChanges();
+        //this.cdr.detectChanges();
       }
     });
   }
