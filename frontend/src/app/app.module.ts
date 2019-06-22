@@ -27,6 +27,7 @@ import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
 import {ScrollDispatchModule} from '@angular/cdk/scrolling';
+import {DragDropDirective} from "./drag-drop.directive";
 @NgModule({
   declarations: [
     AppComponent,
@@ -43,7 +44,8 @@ import {ScrollDispatchModule} from '@angular/cdk/scrolling';
     PlaylistSongsComponent,
     ToolsComponent,
     RemoteUploadComponent,
-    DownloadIndicatorComponent
+    DownloadIndicatorComponent,
+    DragDropDirective
   ],
   entryComponents: [ProgressSpinnerDialogComponent],
   imports: [
