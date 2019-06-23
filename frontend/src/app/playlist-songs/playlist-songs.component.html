@@ -1,11 +1,29 @@
-<cdk-virtual-scroll-viewport itemSize="50" class="example-viewport">
-        <mat-card class="song" *cdkVirtualFor="let song of playlist.SongList" >
+
+    
+    <cdk-virtual-scroll-viewport itemSize="50" class="viewport"
+    cdkDropList id="songs-drop-list" cdkDropListConnectedTo="playlist-drop-list" 
+    [cdkDropListData]="playlist"  (cdkDropListDropped)="drop($event)"> 
+        <!-- *cdkVirtualFor -->
+        <mat-card class="song" *cdkVirtualFor="let song of songlist" cdkDrag>
+          <div cdkDragHandle>
+          <div class="handle" >
+              <hr width="1" height="40" /><hr width="1" height="40" />
+              <hr width="1" height="40" /><hr width="1" height="40" />
+              </div>
           <img class="songCover" [src]="getBackground(song)" />
+        </div>
           <div class="songNames">
-            <div class="songTitle">{{song.SongName}}</div>
-            <div class="songArtist">{{song.SongAuthorName}}</div>
-            <div *ngIf="song.LevelAuthorName.length" class="mapper">Mapped By {{song.LevelAuthorName}}</div>
+            <div class="songTitle">{{song?.SongName}}</div>
+            <div class="songArtist">{{song?.SongAuthorName}}</div>
+            <div *ngIf="song?.LevelAuthorName?.length" class="mapper">Mapped By {{song?.LevelAuthorName}}</div>
           </div>
         </mat-card>
-</cdk-virtual-scroll-viewport>
+      </cdk-virtual-scroll-viewport>
+      <div class="songCount">{{ playlist?.SongList?.length }} song(s) in {{ playlist?.PlaylistName }}</div>
+    
 
+
+
+
+  
+    

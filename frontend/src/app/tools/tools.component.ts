@@ -58,6 +58,27 @@ export class ToolsComponent implements OnInit {
     });
   }
 
+  clickReloadSongsFolder() {
+    const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
+      width: '450px',
+      height: '350px',
+      disableClose: true,
+      data: {mainText:"Loading Songs Folder.  Please wait..."}
+    });
+    this.beatOnApi.reloadSongsFromFolders()
+      .subscribe((data: any) => { 
+        dialogRef.close();
+    }, (err) => {
+      dialogRef.close();
+      window.dispatchEvent(new MessageEvent('host-message', {
+          data:  <HostShowToast> {
+            ToastType : ToastType.Error,
+            Timeout : 8000,        
+            Title : "Error reloading songs folder!",        
+            Message : err} }));
+    });
+  }
+
   ngOnInit() {
     this.beatOnApi.getNetInfo().subscribe((ni : NetInfo) =>
     {

@@ -32,34 +32,57 @@ namespace BeatOn
 
         public int Port { get; } = HTTP_PORT;
 
-        private string _listeningOnUrl = null;
-        public string ListeningOnUrl
+        private string _ip = null;
+        public string IP
         {
             get
             {
-                if (_listeningOnUrl == null)
+                if (_ip == null)
                 {
                     var interfaces = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up).ToList();
                     if (interfaces.Count() < 1)
                     {
                         Log.LogErr("No active network interface found");
-                        _listeningOnUrl = "";
-                        return _listeningOnUrl;
-                    } else if (interfaces.Count() > 1)
+                        _ip = "";
+                        return "";
+                    }
+                    else if (interfaces.Count() > 1)
                     {
                         Log.LogErr("More than one active interface?  Picking the first one");
                     }
                     var addr = interfaces.First().GetIPProperties().UnicastAddresses.Where(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault()?.Address?.ToString();
                     if (string.IsNullOrEmpty(addr))
                     {
-                        _listeningOnUrl = "";
+                        _ip = "";
                     }
                     else
                     {
-                        _listeningOnUrl = $"http://{addr}:{Port}/";
+                        _ip = addr;
                     }
                 }
-                return _listeningOnUrl;
+                return _ip;
+            }
+        }
+        public string ListeningOnUrl
+        {
+            get
+            {
+                
+                if (string.IsNullOrWhiteSpace(IP))
+                    return "";
+                else
+                    return $"http://{IP}:{Port}/";
+            }
+        }
+
+        public string WebSocketUrl
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(IP))
+                    return "";
+                else
+                    return $"ws://{IP}:{WEBSOCKET_PORT}/";
             }
         }
 
@@ -177,7 +200,7 @@ namespace BeatOn
             {
                 if (_wsClients.Count < 1)
                 {
-                    Log.LogErr("Websocket message sent from server, but no clients are connected.");
+                   // Log.LogErr("Websocket message sent from server, but no clients are connected.");
                     return;
                 }
                 string msgString = JsonConvert.SerializeObject(message);
@@ -190,10 +213,9 @@ namespace BeatOn
                    }
                    catch (Exception ex)
                    {
-                       Log.LogErr($"Exception sending web socket message to {x.ConnectionInfo.ClientIpAddress}", ex);
+                     //  Log.LogErr($"Exception sending web socket message to {x.ConnectionInfo.ClientIpAddress}", ex);
                    }
                 });
-                Log.LogMsg($"Sent message {msgString} to {_wsClients.Count} clients");
             }
             
             
@@ -206,10 +228,14 @@ namespace BeatOn
                 var context = _listener.EndGetContext(iar);
                 if (_started)
                     _listener.BeginGetContext(HandleRequest, null);
-
                 var method = context.Request.HttpMethod;
                 var uriPath = context.Request.Url.AbsolutePath;
-                if (uriPath.StartsWith("/host/"))
+                context.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                if (method == "OPTIONS")
+                {
+                    HandleOptions(context);
+                }
+                else if (uriPath.StartsWith("/host/"))
                 {
                     var path = uriPath.TrimStart('/');
                     path = path.Substring(path.IndexOf('/') + 1);
@@ -234,17 +260,17 @@ namespace BeatOn
                     {
                         HandlePost(context);
                     }
-                    else if (method == "OPTIONS")
-                    {
-                        HandleOptions(context);
-                    }
                     else
                     {
                         Log.LogErr($"Got unsupported request for method {context.Request.HttpMethod}");
                         context.Response.StatusCode = 405;
                     }
                 }
-                context.Response.Close();
+                try
+                {
+                    context.Response.Close();
+                }
+                catch { }
             }
             catch (Exception ex)
             {
@@ -260,7 +286,11 @@ namespace BeatOn
 
         private void HandleOptions(HttpListenerContext context)
         {
-
+            context.Response.AppendHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
+            context.Response.AppendHeader("Access-Control-Max-Age", "86400");
+            context.Response.AppendHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+            context.Response.Ok();
+            context.Response.Close();
         }
 
         private void HandleGet(HttpListenerContext context)

@@ -32,7 +32,10 @@ export class AppComponent implements OnInit {
     private msgSvc: HostMessageService,
           private toastr: ToastrService,
           private cfgSvc : ConfigService,
-          private dialog : MatDialog) { 
+          private dialog : MatDialog
+          
+          
+          ) { 
     this.router.events.subscribe((ev) => {
       if (ev instanceof NavigationStart) { 
         //TODO: prevent routing based on mod status?

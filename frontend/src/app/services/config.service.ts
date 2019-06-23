@@ -4,6 +4,7 @@ import { BeatOnConfig } from '../models/BeatOnConfig';
 import { Observable } from 'rxjs';
 import { HostMessageService } from './host-message.service';
 import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
+import { ToastrService } from 'ngx-toastr';
 
 
 @Injectable({
@@ -12,7 +13,7 @@ import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
 export class ConfigService implements OnInit {
   @Output() configUpdated = new EventEmitter<BeatOnConfig>();
 
-  constructor(private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) { 
+  constructor(private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, private toastr: ToastrService) { 
     console.log("config service subscribing to host config change event");
     this.msgSvc.configChangeMessage.subscribe((cfg : HostConfigChangeEvent) =>
     {
@@ -31,7 +32,15 @@ export class ConfigService implements OnInit {
       }
       else {
         this.beatOnApi.getConfig()
-            .subscribe((data: any) => observable.next(data));
+            .subscribe((data: any) => {
+              this.currentConfig = data;
+              observable.next(data);
+            }, (err) =>
+            {
+                this.toastr.error("Unable to load configuration", "Showstopping Error", { timeOut: 30 });
+                this.currentConfig = <BeatOnConfig>{ IsCommitted: true, Config: {}};
+                observable.next(this.currentConfig);
+            });
       }
     });
   }

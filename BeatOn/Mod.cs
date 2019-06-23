@@ -38,6 +38,7 @@ namespace BeatOn
             {
                 if (_tempApk == null)
                 {
+                    CheckCleanupTempApk();
                     TryFindTempApk();
                 }
                 return _tempApk;
@@ -66,6 +67,25 @@ namespace BeatOn
                     throw new ModException("IsTempApkModded was called, but the TempApk does not exist!");
                 }
                 return CheckApkHasModTagFile(TempApk);
+            }
+        }
+
+        public void CheckCleanupTempApk()
+        {
+            try
+            {
+                if (IsBeatSaberInstalled && IsInstalledBeatSaberModded)
+                {
+                    string filename = Path.Combine(_context.ExternalCacheDir.AbsolutePath, "beatsabermod.apk");
+                    if (File.Exists(filename))
+                    {
+                        File.Delete(filename);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception trying to clean up the temp APK", ex);
             }
         }
 
@@ -167,6 +187,10 @@ namespace BeatOn
             List<string> tempFiles = new List<string>();
             try
             {
+                //// delete the assets relocation if it already exists in case the mod has been installed before
+                if (Directory.Exists(Constants.ASSETS_RELOC_PATH))
+                    Directory.Delete(Constants.ASSETS_RELOC_PATH, true);
+
                 //// copy asset files from APK to /sdcard/wherever
                 ExtractAssetsFromApkToExternalStorage(TempApk, new List<string>() {
                     "Managed",
@@ -246,6 +270,7 @@ namespace BeatOn
             intent.AddFlags(ActivityFlags.GrantReadUriPermission);
             //intent.SetDataAndType(Android.Net.Uri.FromFile(new Java.IO.File(packageApkPath)), "application/vnd.android.package-archive");
             _context.StartActivity(intent);
+            _tempApk = null;
         }
 
         public void ResetAssets()
@@ -259,7 +284,7 @@ namespace BeatOn
             }
             UpdateStatus("Deleting existing external assets...");
             if (Directory.Exists(Constants.ASSETS_RELOC_PATH))
-                Directory.Delete(Constants.ASSETS_RELOC_PATH);
+                Directory.Delete(Constants.ASSETS_RELOC_PATH, true);
             else
                 UpdateStatus("External assets didn't seem to exist already");
 

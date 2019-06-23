@@ -7,6 +7,22 @@
   left: 0px;
   font-size: 14px;
 }
+.playlistEdit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  background-color: rgba(0,0,0,200);
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+}
+.addPlaylist {
+  width: 96%;
+  height: 38px;
+}
  
   .tile {
     height: 100px;

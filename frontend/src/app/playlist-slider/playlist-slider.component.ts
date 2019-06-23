@@ -2,7 +2,13 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { NguCarouselConfig } from '@ngu/carousel';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { Observable } from 'rxjs';
-import {AppSettings} from '../appSettings';
+import { AppSettings } from '../appSettings';
+import { BeatSaberSong } from '../models/BeatSaberSong';
+import { ConfigService } from '../services/config.service';
+import { BeatOnApiService } from '../services/beat-on-api.service';
+import { BeatOnConfig } from '../models/BeatOnConfig';
+import { AddEditPlaylistDialogComponent } from '../add-edit-playlist-dialog/add-edit-playlist-dialog.component';
+import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -11,15 +17,40 @@ import {AppSettings} from '../appSettings';
 })
 export class PlaylistSliderComponent implements OnInit {
   @Output() public selectedPlaylist: EventEmitter<BeatSaberPlaylist> = new EventEmitter<BeatSaberPlaylist>();
-  @Input() public playlists: BeatSaberPlaylist[] = [];
+  private _playlists : BeatSaberPlaylist[] = [];
+
+  @Input() public set playlists(playlists : BeatSaberPlaylist[]) {
+    this._playlists = playlists;
+    if (this.selected != null && this.selected.PlaylistID != null) {
+      if (this._playlists == null) {
+        this.selected = null;
+        this.selectedPlaylist.emit(null);
+      } else {
+        var found = null;
+        this._playlists.forEach(p => {
+          if (p.PlaylistID == this.selected.PlaylistID) {
+            found = p;
+          }
+        });
+        this.selected = found;
+        this.selectedPlaylist.emit(found);
+      }
+    }
+  }
+
+  public get playlists() {
+    return this._playlists
+  }
   
    selected : BeatSaberPlaylist;
-  //public carouselTileItems: Array<any> = [0, 1, 2, 3, 4, 5];
+   constructor(private dialog : MatDialog, private configSvc : ConfigService, private beatOnApi : BeatOnApiService) {
+
+   }
 
 
 
   getBackground(item) {
-    return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlistcover?playlistid=' + item.PlaylistID + ')';
+    return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + ')';
   }
 
   onTileClick(item) {
@@ -40,13 +71,117 @@ export class PlaylistSliderComponent implements OnInit {
     easing: 'cubic-bezier(0, 0, 0.2, 1)',
     vertical: {
       enabled: true,
-      height: 390
+      height: 360
     }
   };
-  constructor() {}
  
   ngOnInit() {
      
+  }
+  clickAddPlaylist() {
+    var dialogRef = this.dialog.open(AddEditPlaylistDialogComponent, {
+      width: '450px',
+      height: '320px',
+      disableClose: true,
+      data: {playlist: <BeatSaberPlaylist>{}, isNew: true}
+    });
+    dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
+  }
+
+  clickEditPlaylist(item) {
+    var dialogRef = this.dialog.open(AddEditPlaylistDialogComponent, {
+      width: '450px',
+      height: '320px',
+      disableClose: true,
+      data: {playlist: item, isNew: false}
+    });
+    dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
+  }
+  dialogClosed(result)
+  {
+    //if cancelled
+    if (result == null)
+      return;
+
+    if (result['deletePlaylist'] === true) {
+      //delete playlist
+
+    } else {
+      //must be a save
+      if (result.isNew) {
+        this.configSvc.getConfig().subscribe((cfg) => {
+          cfg.Config.Playlists.push(result.playlist);
+          this.beatOnApi.putConfig(cfg.Config).subscribe((res) =>
+          {
+              console.log("config saved ok from playlist slider on create playlist");
+          });
+        })
+      } else {
+        this.configSvc.getConfig().subscribe((cfg) => {
+          var found = false;
+          cfg.Config.Playlists.forEach(p=>{
+            if (p.PlaylistID == result.playlist.PlaylistID) {
+              found = true;
+              if (result.playlist.CoverImageBytes && result.playlist.CoverImageBytes > 50) {
+                p.CoverImageBytes = result.playlist.CoverImageBytes;
+              }
+              p.PlaylistName = result.playlist.PlaylistName;
+            }
+          });
+          if (found) {
+            this.beatOnApi.putConfig(cfg.Config).subscribe((res) =>
+            {
+              console.log("config saved ok from playlist slider on edit playlist");
+            });
+          }
+        })
+      }
+    }
+  }
+  playlistDrop(item : BeatSaberPlaylist, evt) 
+  {
+    console.log("got a drop!");
+    let oldPlaylist : BeatSaberPlaylist = <BeatSaberPlaylist>evt.previousContainer.data;
+    if (oldPlaylist.PlaylistID === item.PlaylistID) {
+      console.log("dropped a song on the same playlist it is in, doing nothing");
+     // return;
+    }
+    let moveSong : BeatSaberSong = oldPlaylist.SongList.splice(evt.previousIndex,1)[0];
+    oldPlaylist.SongList = oldPlaylist.SongList.slice();
+    if (moveSong != null) {
+      this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {
+        
+        cfg.Config.Playlists.forEach((p) => {
+            if (p.PlaylistID == item.PlaylistID) {
+              p.SongList.push(moveSong);
+            } else {
+
+              var oldIdx;
+              var ctr = -1;
+              p.SongList.forEach((s) =>
+              {
+                ctr = ctr + 1;
+                if (p.PlaylistID == oldPlaylist.PlaylistID) {
+                  oldIdx = ctr;
+                }
+              });
+              if (oldIdx > -1) {
+                p.SongList.splice(oldIdx, 1);
+              } else {
+                console.log("Did not find the song in the playlist it was moving from!");
+              }
+              
+          }
+        });
+        this.beatOnApi.putConfig(cfg.Config).subscribe(res=>
+          {
+            console.log("server finished move");
+          });
+      });      
+    }
+    
+   // evt.previousContainer.data[evt.previousIndex] is song
+   // item.playlistid is playlistid
   }
  
 }

@@ -15,5 +15,6 @@ namespace BeatOn.ClientModels
     public class NetInfo
     {
         public string Url { get; set; }
+        public string WebSocketUrl { get; set; }
     }
 }

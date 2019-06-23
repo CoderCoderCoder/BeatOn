@@ -6,14 +6,26 @@ import * as Rx from "rxjs";
 import { HostDownloadStatus } from '../models/HostDownloadStatus';
 import { BeatOnConfig } from '../models/BeatOnConfig';
 import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
+import { NetInfo } from '../models/NetInfo';
+import { BeatOnApiService } from './beat-on-api.service';
+import { ToastrService } from 'ngx-toastr';
 @Injectable({
   providedIn: 'root'
 })
 export class HostMessageService {
   private websocket : WebSocket;
   private wsObsv : Rx.Observable<MessageEvent>;
-  constructor(private appRef : ApplicationRef) { 
-    this.openSocket();
+  private netConfig: NetInfo;
+
+  constructor(private appRef : ApplicationRef, private beatOnApi: BeatOnApiService) { 
+    beatOnApi.getNetInfo().subscribe((netInfo : NetInfo) => {
+      this.netConfig = netInfo;
+      console.log("HostMessageService got net config info, websocket is at " + this.netConfig.WebSocketUrl);
+      this.openSocket();
+    }, (err) => {
+      console.log("Critical error: could not get net info for web socket!");
+    });
+    
   }
 
   private openSocket() {
@@ -22,7 +34,7 @@ export class HostMessageService {
       return;
     }
 
-    this.websocket = new WebSocket(AppSettings.WEBSOCKET_ENDPOINT);
+    this.websocket = new WebSocket(this.netConfig.WebSocketUrl);
     this.websocket.onopen = (ev:Event) => {
       console.log("Connection opened");
     };

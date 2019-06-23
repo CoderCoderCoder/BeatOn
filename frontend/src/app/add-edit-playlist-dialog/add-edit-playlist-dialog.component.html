@@ -1,0 +1,27 @@
+<button class="deleteButton" *ngIf="!data.isNew" (click)="clickDelete()" mat-raised-button color="warn">Delete</button>
+<mat-card class="setup-card">
+    
+    <mat-card-header>
+        <input type="file" accept="image/*" #file (change)="loadCover(file.files)" hidden>
+        <button (click)="file.click()" mat-raised-button class="coverContainer">
+            <div class="coverPlaceholder">Choose Cover Image</div>
+            <img class="cover" [style.background-image]="getCover()" />
+          </button>
+      <mat-card-title><mat-form-field>
+          <input matInput [(ngModel)]="data.playlist.PlaylistName" placeholder="Playlist Name">
+        </mat-form-field></mat-card-title>
+      <mat-card-subtitle><mat-form-field>
+          <input  [attr.readonly]= "!data.isNew" matInput pattern="[a-zA-Z0-9]" [(ngModel)]="data.playlist.PlaylistID" [placeholder]="makeAutoID(data.playlist.PlaylistName)">
+        </mat-form-field></mat-card-subtitle>
+     
+    </mat-card-header>
+
+    <mat-card-content>
+
+    </mat-card-content>
+    <mat-card-actions>
+      <button (click)="clickSave()" mat-raised-button color="accent">Save</button>
+      <div style="display: inline-block; width: 50%"></div>
+      <button (click)="clickCancel()" mat-raised-button>Cancel</button>
+    </mat-card-actions>
+  </mat-card>

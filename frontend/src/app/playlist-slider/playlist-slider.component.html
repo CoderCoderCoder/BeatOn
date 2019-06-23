@@ -1,11 +1,17 @@
 <!-- <ngu-carousel #myCarousel [inputs]="carouselTile" [dataSource]="carouselTileItems">
     <ngu-tile *nguCarouselDef="let item; let i = index"> -->
-   <div class="container">
-      <ngu-carousel #myCarousel [inputs]="carouselTile" [dataSource]="playlists">
+   <div class="container" >
+        <button layout="center center" (click)="clickAddPlaylist()" class="addPlaylist()" mat-raised-button color="accent"><mat-icon>add_circle</mat-icon></button>
+      <ngu-carousel  #myCarousel [inputs]="carouselTile" [dataSource]="playlists" >
           <button NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
-        <ngu-item NguCarouselItem class="bannerstyle" *nguCarouselDef="let item; let j = index" [ngClass]="{'zoomedIn': item === selected, 'zoomedOut': item != selected }" (click)="onTileClick(item)" >
+        <ngu-item 
+        cdkDropList 
+        (cdkDropListDropped)="playlistDrop(item, $event)" 
+        NguCarouselItem class="bannerstyle" *nguCarouselDef="let item; let j = index" 
+        [ngClass]="{'zoomedIn': item === selected, 'zoomedOut': item != selected }" (click)="onTileClick(item)" >
             <div class="tile"  [style.background]="getBackground(item)" >
-            <div class="titleText">{{ item.PlaylistName }}</div>            
+            <div class="titleText">{{ item.PlaylistName }}</div>
+            <div (click)="clickEditPlaylist(item)" class="playlistEdit"><mat-icon>edit</mat-icon></div>
           </div>
           
         </ngu-item>
