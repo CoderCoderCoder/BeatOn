@@ -274,7 +274,6 @@ namespace BeatOn
             _webServer.Router.AddRoute("GET", "beatsaber/songcover", HandleGetSongCover);
             _webServer.Router.AddRoute("GET", "beatsaber/playlistcover", HandleGetPlaylistCover);
             _webServer.Router.AddRoute("POST", "beatsaber/upload", HandleFileUpload);
-            _webServer.Router.AddRoute("OPTIONS", "beatsaber/upload", HandleFileUpload);
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", HandleCommitConfig);
             _webServer.Router.AddRoute("GET", "mod/status", HandleModStatus);
             _webServer.Router.AddRoute("GET", "mod/netinfo", HandleGetNetInfo);

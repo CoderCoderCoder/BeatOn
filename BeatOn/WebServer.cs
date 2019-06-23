@@ -209,7 +209,6 @@ namespace BeatOn
 
                 var method = context.Request.HttpMethod;
                 var uriPath = context.Request.Url.AbsolutePath;
-                context.Response.AppendHeader("Access-Control-Allow-Origin", "*");
                 if (uriPath.StartsWith("/host/"))
                 {
                     var path = uriPath.TrimStart('/');
@@ -261,11 +260,7 @@ namespace BeatOn
 
         private void HandleOptions(HttpListenerContext context)
         {
-            context.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-            context.Response.AppendHeader("Access-Control-Allow-Methods", "POST, PUT, GET, OPTIONS, DELETE");
-            context.Response.AppendHeader("Access-Control-Max-Age", "86400");
-            context.Response.StatusCode = 204;
-            context.Response.Close();
+
         }
 
         private void HandleGet(HttpListenerContext context)
