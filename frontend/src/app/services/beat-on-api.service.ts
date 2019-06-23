@@ -53,4 +53,11 @@ export class BeatOnApiService {
     return this.http.post(this.hostname+"/host/beatsaber/commitconfig", "");
   }
 
+  reloadSongsFromFolders() {
+    return this.http.post(this.hostname+"/host/beatsaber/reloadsongfolders", "");
+  }
+
+  putConfig(config : QuestomConfig) {
+    return this.http.put(this.hostname+"/host/beatsaber/config", config);
+  }
 }

@@ -24,21 +24,22 @@ export class ProgressSpinnerDialogComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<ProgressSpinnerDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: SpinnerData, private msgSvc: HostMessageService, private cdr : ChangeDetectorRef) { 
     this.mainText = data.mainText;
-  }
-
-  addMessage(event : any) {
-    this.messages.push(event.data.Message);
-  }
-  ngOnInit() {
     this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
     {
       console.log("Got message in spinner " + msg.SetupEvent);
       if (msg.SetupEvent == SetupEventType.StatusMessage) {
         console.log("pussing message to view");
         this.messages.push(msg.Message);
-        //this.cdr.detectChanges();
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  addMessage(event : any) {
+    this.messages.push(event.data.Message);
+  }
+  ngOnInit() {
+   
   }
 
 }

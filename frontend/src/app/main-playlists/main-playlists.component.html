@@ -2,8 +2,7 @@
 <tr height="80%"><td width="50%">list</td><td width="50%">info</td></tr>
 <tr height="20%">bottom content<td colspan="2"></td></tr>
 </table> -->
-<div class="container">
-  
+<div cdkDropListGroup class="container">
 <div >
   <app-playlist-slider [playlists]="config.Playlists" (selectedPlaylist)="selectedPlaylistChanged($event)" ></app-playlist-slider>
 </div>

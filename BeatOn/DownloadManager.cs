@@ -144,8 +144,8 @@ namespace BeatOn
                                     }
                                     try
                                     {
-                                        //don't actually commit the config here.  takes too long and didn't work out
-                                        //qae.UpdateConfig(currentConfig);
+                                        //this is updating the config, but not actually persisting it to the filesystem
+                                        qae.UpdateConfig(currentConfig);
                                         foreach (var toInst in doneDownloads)
                                         {
                                             //dot

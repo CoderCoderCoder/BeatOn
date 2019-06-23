@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidLogger.cs" />
+    <Compile Include="BeatOnUtils.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
     <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="DownloadManager.cs" />
     <Compile Include="DownloadStatus.cs" />
     <Compile Include="DownloadStatusChangeArgs.cs" />
+    <Compile Include="FileLogger.cs" />
     <Compile Include="ImageUtilsDroid.cs" />
     <Compile Include="JSWebViewClient.cs" />
     <Compile Include="MainActivity.cs" />
@@ -101,23 +103,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="SimpleRouter.cs" />
+    <Compile Include="StatusUpdateLogSink.cs" />
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.js.map" />
-    <AndroidAsset Include="Assets\www\polyfills-es2015.js.map" />
-    <AndroidAsset Include="Assets\www\runtime-es5.js.map" />
-    <AndroidAsset Include="Assets\www\runtime-es2015.js.map" />
-    <AndroidAsset Include="Assets\www\styles-es5.js.map" />
-    <AndroidAsset Include="Assets\www\styles-es2015.js.map" />
-    <AndroidAsset Include="Assets\www\vendor-es5.js.map" />
-    <AndroidAsset Include="Assets\www\vendor-es2015.js.map" />
-    <AndroidAsset Include="Assets\www\main-es5.js.map" />
-    <AndroidAsset Include="Assets\www\main-es2015.js.map" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.eot" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.ttf" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff2" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.012cf6a10129e2275d79.woff" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.570eb83859dc23dd0eec.woff2" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.e79bfd88537def476913.eot" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
@@ -196,40 +189,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es2015.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es5.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es2015.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles-es5.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles-es2015.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\vendor-es5.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\vendor-es2015.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\index.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.js" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\xml\provider_paths.xml" />
@@ -246,6 +209,30 @@
     <AndroidJavaLibrary Include="..\InstallerHelperInterop\Jars\dexlib2-2.2.7.jar">
       <Link>dexlib2-2.2.7.jar</Link>
     </AndroidJavaLibrary>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\3rdpartylicenses.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.1ef9a69e85612733daa6.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.c44ef26477f035da7472.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es2015.27661dfa98f6332c27dc.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es5.943113ac054b16d954ae.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es2015.858f8dd898b75fe86926.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es5.741402d1d47331ce975c.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles.89f78f0ff0013ed89664.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

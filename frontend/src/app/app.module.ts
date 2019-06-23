@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import {MatFormFieldModule} from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -27,6 +27,12 @@ import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
 import {ScrollDispatchModule} from '@angular/cdk/scrolling';
+import {DragDropModule} from '@angular/cdk/drag-drop';
+import { AddEditPlaylistDialogComponent } from './add-edit-playlist-dialog/add-edit-playlist-dialog.component';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material';
+
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -43,9 +49,10 @@ import {ScrollDispatchModule} from '@angular/cdk/scrolling';
     PlaylistSongsComponent,
     ToolsComponent,
     RemoteUploadComponent,
-    DownloadIndicatorComponent
+    DownloadIndicatorComponent,
+    AddEditPlaylistDialogComponent
   ],
-  entryComponents: [ProgressSpinnerDialogComponent],
+  entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent],
   imports: [
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right',
@@ -71,7 +78,11 @@ import {ScrollDispatchModule} from '@angular/cdk/scrolling';
     MatProgressBarModule,
     MatChipsModule,
     ScrollDispatchModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    DragDropModule,
+    MatFormFieldModule,
+    FormsModule,
+    MatInputModule
   ],
   providers:[ ],
   bootstrap: [AppComponent]

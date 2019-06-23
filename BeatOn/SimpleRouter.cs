@@ -21,7 +21,6 @@ namespace BeatOn
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)
                 throw new ArgumentException("Path cannot be empty");
-
             var paths = new Stack<string>(split);
 
             method = method.ToUpper();
@@ -48,14 +47,13 @@ namespace BeatOn
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)
                 throw new ArgumentException("Path cannot be empty");
-
             var paths = new Stack<string>(split);
 
             method = method.ToUpper();
             if (!_hostMethodRoutes.ContainsKey(method))
                 return null;
 
-            return _hostMethodRoutes[method].FindNode(paths).Value;
+            return _hostMethodRoutes[method].FindNode(paths)?.Value;
         }
 
         class RouteTreeNode<T> where T : class
@@ -85,6 +83,7 @@ namespace BeatOn
             public bool TryAdd(Stack<string> paths, T value)
             {
                 var path = paths.Pop();
+                RouteTreeNode<T> node = null;
                 if (Nodes.ContainsKey(path))
                 {
                     if (paths.Count == 0)
@@ -99,19 +98,23 @@ namespace BeatOn
                             return true;
                         }
                     }
-                }
-
-                var newNode = new RouteTreeNode<T>(null);
-                Nodes.Add(path, newNode);
-                if (paths.Count == 0)
-                {
-                    newNode.Value = value;
-                    return true;
+                    else
+                    {
+                        node = Nodes[path];
+                    }
                 }
                 else
                 {
-                    return newNode.TryAdd(paths, value);
+                    node = new RouteTreeNode<T>(null);
+                    Nodes.Add(path, node);
+                    if (paths.Count == 0)
+                    {
+                        node.Value = value;
+                        return true;
+                    }
                 }
+                                
+                return node.TryAdd(paths, value);                
             }
         }
     }

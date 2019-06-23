@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using System.Threading.Tasks;
 using Android.App;
 using Android.OS;
 using Android.Runtime;
@@ -23,7 +24,7 @@ using QuestomAssets.Models;
 
 namespace BeatOn
 {
-    [Activity(Name= "com.emulamer.beaton.MainActivity", Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+    [Activity(Name = "com.emulamer.beaton.MainActivity", Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
     public class MainActivity : AppCompatActivity
     {
         public MainActivity()
@@ -49,29 +50,111 @@ namespace BeatOn
             }
         }
 
+        private void ClearCurrentConfig()
+        {
+            if (_currentConfig != null)
+            {
+                _currentConfig.PropertyChanged -= CurrentConfig_PropertyChanged;
+                _currentConfig = null;
+            }
+        }
+
+        private void DisposeEngine()
+        {
+            ClearCurrentConfig();
+            if (_qae != null)
+            {
+                _qae.Dispose();
+            }            
+        }
+
+        private void UpdateConfig(BeatSaberQuestomConfig config)
+        {
+            var currentCfg = Engine.GetCurrentConfig();
+            ClearCurrentConfig();
+            bool matches = config.Matches(currentCfg);
+
+            if (!matches)
+            {
+                Engine.UpdateConfig(config);
+                config = Engine.GetCurrentConfig();
+            } else
+            {
+                config = currentCfg;
+            }
+            _currentConfig = new BeatOnConfig()
+            {
+                Config = config,
+                IsCommitted = matches
+            };
+            _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
+            SendConfigChangeMessage();
+        }
+
         private BeatOnConfig CurrentConfig
         {
             get
             {
                 if (_currentConfig == null)
                 {
-                    var config = Engine.GetCurrentConfig();
-                    
-                    _currentConfig = new BeatOnConfig() {
-                        Config = config
-                    };
-                    //stupid, bad, i need to move that debounce
-                    Thread.Sleep(20);
-                    _currentConfig.IsCommitted = true;
-                    _currentConfig.PropertyChanged += (s, e) =>
+                    try
                     {
-                        SendConfigChangeMessage();
-                    };
+                        var engineNull = _qae == null;
+                        var config = Engine.GetCurrentConfig();
+
+                        _currentConfig = new BeatOnConfig()
+                        {
+                            Config = config
+                        };
+                        _currentConfig.IsCommitted = true;
+                        _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr("Critical exception loading current config", ex);
+                        ShowToast("Critical Error", "Something has gone wrong and Beat On can't function.  Try Reset Assets in the tools menu.", ToastType.Error, 60);
+                    }
                 }
 
                 return _currentConfig;
             }
         }
+
+        object _debounceLock = new object();
+        CancellationTokenSource _debounceTokenSource;
+        private void CurrentConfig_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            lock (_debounceLock)
+            {
+                if (_debounceTokenSource != null)
+                {
+                    _debounceTokenSource.Cancel(true);
+                    _debounceTokenSource = null;
+                }
+                _debounceTokenSource = new CancellationTokenSource();
+                var task = Task.Delay(10, _debounceTokenSource.Token);
+                task.ContinueWith((t) =>
+                {
+                    try
+                    {
+                        try
+                        {
+                            t.Wait();
+                        }
+                        catch (AggregateException aex)
+                        { }
+                        lock (_debounceLock)
+                        {
+                            SendConfigChangeMessage();
+                            _debounceTokenSource = null;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                });
+            }
+        }    
 
         private QaeConfig _qaeConfig
         {
@@ -91,83 +174,37 @@ namespace BeatOn
         }
 
         private object _configFileLock = new object();
+
+        private void LoadConfigFromFile()
+        {
+            //todo: reset engine, load config from json, call UpdateConfig
+        }
+
         /// <summary>
         /// Saves the currently loaded configuration to the config file, but not to the beat saber assets
         /// </summary>
-        private void SaveCurrentConfig()
+        private void SaveCurrentConfigToFile()
         {
             //save to json in filesystem
             lock (_configFileLock)
             {
                 using (StreamWriter sw = new StreamWriter(Constants.CONFIG_FILE, false))
                 {
-                    sw.Write(JsonConvert.SerializeObject(CurrentConfig));
+                    sw.Write(JsonConvert.SerializeObject(CurrentConfig.Config));
                 }
             }
         }
-
-        /// <summary>
-        /// Loads the configuration from the config file into CurrentConfig
-        /// </summary>
-        /// <returns>True if the file was found and loaded, false if there wasn't one or it failed to load</returns>
-        private bool LoadConfigFromFile()
+        
+        private void SendStatusMessage(string message)
         {
-            lock (_configFileLock)
-            {
-                try
-                {
-                    //todo: consider whether I should use the fileprovider for this.  seems app centric, so probably not.
-                    if (!File.Exists(Constants.CONFIG_FILE))
-                        return false;
-                    using (StreamReader sr = new StreamReader(Constants.CONFIG_FILE, false))
-                    {
-                        _currentConfig = JsonConvert.DeserializeObject<BeatOnConfig>(sr.ReadToEnd());
-                        //TODO: I should not have put the debounce INSIDE the class.  I need to fix that
-                        Thread.Sleep(20);
-                        _currentConfig.PropertyChanged += (s, e) =>
-                        {
-                            SendConfigChangeMessage();
-                        };
-                    }
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception loading config", ex);
-                }
-                return false;
-            }
+            SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = message });
         }
 
+        private bool _suppressConfigChangeMessage = false;
         private void SendConfigChangeMessage()
         {
-            _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
-        }
-
-        /// <summary>
-        /// Commits the currently loaded configuration to beat saber assets.
-        /// </summary>
-        private void CommitCurrentConfig()
-        {
-            if (_currentConfig == null)
-                return;
-
-            try
-            {
-                if (!CurrentConfig.IsCommitted)
-                {
-                    Engine.UpdateConfig(CurrentConfig.Config);
-                    CurrentConfig.IsCommitted = true;
-                    //give the debounced change notifier a couple MS to do its thang
-                    Thread.Sleep(20);
-                    SendConfigChangeMessage();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.LogErr("Exception updating config", ex);
-                ShowToast("Unable to save configuration", "There was an error saving the configuration!", ToastType.Error, 5);
-            }
+            if (!_suppressConfigChangeMessage)
+                _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -175,7 +212,11 @@ namespace BeatOn
             base.OnCreate(savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
-            QuestomAssets.Log.SetLogSink(new AndroidLogger());
+
+            Log.SetLogSink(new AndroidLogger());
+            Log.SetLogSink(new FileLogger(Constants.LOGFILE));
+
+
             if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage)
                 != Android.Content.PM.Permission.Granted)
             {
@@ -186,8 +227,18 @@ namespace BeatOn
             {
                 ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.ReadExternalStorage }, 1);
             }
-            //TODO: check that we actually got these
+            //TODO: check that we actually got these permissions above
+            ContinueStartup();
+        }
 
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        {
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        private void ContinueStartup()
+        {
             //has to be the activity context to do the package manager stuff
             _mod = new Mod(this);
             _mod.StatusUpdated += _mod_StatusUpdated;
@@ -229,7 +280,7 @@ namespace BeatOn
 
         private void _mod_StatusUpdated(object sender, string e)
         {
-            SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = e });
+            SendStatusMessage(e);
         }
 
         private void SendMessageToClient(HostMessage message)
@@ -260,21 +311,17 @@ namespace BeatOn
             _SongDownloadManager.DownloadFile(e.Url);
         }
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
-        {
-            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
+        
         private void SetupWebApp()
         {
             _webServer = new WebServer(Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", HandleGetConfig);
             _webServer.Router.AddRoute("PUT", "beatsaber/config", HandlePutConfig);
-            _webServer.Router.AddRoute("GET", "beatsaber/songcover", HandleGetSongCover);
-            _webServer.Router.AddRoute("GET", "beatsaber/playlistcover", HandleGetPlaylistCover);
+            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", HandleGetSongCover);
+            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", HandleGetPlaylistCover);
             _webServer.Router.AddRoute("POST", "beatsaber/upload", HandleFileUpload);
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", HandleCommitConfig);
+            _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", HandleReloadSongFolders);
             _webServer.Router.AddRoute("GET", "mod/status", HandleModStatus);
             _webServer.Router.AddRoute("GET", "mod/netinfo", HandleGetNetInfo);
             _webServer.Router.AddRoute("POST", "mod/install/step1", HandleModInstallStep1);
@@ -350,13 +397,129 @@ namespace BeatOn
             }
         }
 
+        private object _reloadSongsLock = new object();
+        private void HandleReloadSongFolders(HttpListenerContext context)
+        {
+            var req = context.Request;
+            var resp = context.Response;
+
+            if (!Monitor.TryEnter(_reloadSongsLock))
+            {
+                resp.Error("Song reload already in progress");
+                return;
+            }
+            try
+            { 
+                try
+                {
+                    if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
+                    {
+                        resp.BadRequest("Modded Beat Saber is not installed!");
+                        ShowToast("Can't reload song folders.", "Modded Beat Saber is not installed!");
+                        return;
+                    }
+                    var sls = new StatusUpdateLogSink((msg) =>
+                    {
+                        SendStatusMessage(msg);
+                    });
+                    try
+                    {
+                        
+                        _suppressConfigChangeMessage = true;
+                        var folders = BeatOnUtils.GetCustomSongsFromPath(Path.Combine(Constants.ROOT_BEAT_ON_DATA_PATH, _qaeConfig.SongsPath));
+                        if (folders.Count < 1)
+                        {
+                            Log.LogErr("Request to reload songs folder, but didn't find any songs!");
+                            //not found probably isn't the right response code for this, but meh
+                            resp.NotFound();
+                            return;
+                        }
+                        Log.LogMsg($"Starting to reload custom songs from folders.  Found {folders} folders to evaluate");
+                        //todo: probably don't just grab this one
+                        var playlist = CurrentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+                        if (playlist == null)
+                        {
+                            playlist = new BeatSaberPlaylist()
+                            {
+                                PlaylistID = "CustomSongs",
+                                PlaylistName = "Custom Songs"
+                            };
+                            CurrentConfig.Config.Playlists.Add(playlist);
+                        }
+                        int addedCtr = 0;
+
+                        foreach (var folder in folders)
+                        {
+                            string songId = folder.Replace("/", "");
+                            songId = songId.Replace(" ", "");
+                            if (CurrentConfig.Config.Playlists.SelectMany(x => x.SongList).Any(x => x.SongID?.ToLower() == songId.ToLower()))
+                            {
+                                SendStatusMessage($"Folder {folder} already loaded");
+                                Log.LogMsg($"Custom song in folder {folder} appears to already be loaded, skipping it.");
+                                continue;
+                            }
+                            SendStatusMessage($"Adding song in {folder}");
+                            Log.LogMsg($"Adding custom song in folder {folder} to playlist ID {playlist.PlaylistID}");
+                            playlist.SongList.Add(new BeatSaberSong()
+                            {
+                                SongID = songId,
+                                CustomSongPath = Path.Combine(_qaeConfig.SongsPath, folder)
+                            });
+                            addedCtr++;
+                            //maybe limit how many
+                            //if (addedCtr > 200)
+                            //{
+                            //    ShowToast("Too Many Songs", "That's too many at once.  After these finish and you 'Sync to Beat Saber', then try 'Reload Songs Folder' again to load more.", ToastType.Warning, 10);
+                            //    break;
+                            //}
+                        }
+                        if (addedCtr > 0)
+                        {
+                            SendStatusMessage($"{addedCtr} songs will be added");
+                            SendStatusMessage($"Updating configuration...");
+                            Log.LogMsg("Updating config with loaded song folders");
+                            Log.SetLogSink(sls);
+                            Engine.UpdateConfig(CurrentConfig.Config);
+                            Log.RemoveLogSink(sls);
+                            ShowToast("Folder Load Complete", $"{addedCtr} folders were scanned and added to {playlist.PlaylistName}", ToastType.Success, 3);
+                        }
+                        else
+                        {
+                            SendStatusMessage($"No new songs found");
+                            Log.LogMsg("No new songs were found to load.");
+                            ShowToast("Folder Load Complete", "No additional songs were found to add", ToastType.Warning, 3);
+                        }
+                    }
+                    finally
+                    {
+                        _suppressConfigChangeMessage = false;
+                        Log.RemoveLogSink(sls);
+                    }
+                    SendConfigChangeMessage();
+                    resp.Ok();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception reloading song folders!", ex);
+                    resp.StatusCode = 500;
+                }
+            }
+            finally
+            {
+                Monitor.Exit(_reloadSongsLock);
+            }
+        }
+
         private void HandleGetNetInfo(HttpListenerContext context)
         {
             var req = context.Request;
             var resp = context.Response;
             try
             {
-                resp.Serialize(new NetInfo() { Url = _webServer.ListeningOnUrl });
+                resp.Serialize(new NetInfo() {
+                    Url = _webServer.ListeningOnUrl,
+                    WebSocketUrl = _webServer.WebSocketUrl
+                });
             }
             catch (Exception ex)
             {
@@ -479,7 +642,9 @@ namespace BeatOn
                     return;
                 }
                 ShowToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 8);
+                //todo: decide if this really needs to be called again, or if things are going to do their own updates as they go along
                 Engine.UpdateConfig(CurrentConfig.Config);
+                Engine.Save();
                 CurrentConfig.IsCommitted = true;
                 SendConfigChangeMessage();
                 resp.Ok();
@@ -612,12 +777,12 @@ namespace BeatOn
             }
         }
 
-        private object _qaeLock = new object();
+        private object _configLock = new object();
         private void HandleGetConfig(HttpListenerContext context)
         {
             var req = context.Request;
             var resp = context.Response;
-            lock (_qaeLock)
+            lock (_configLock)
             {
                 try
                 {
@@ -633,62 +798,111 @@ namespace BeatOn
         
         private void HandlePutConfig(HttpListenerContext context)
         {
-
-        }
-
-        private void HandleGetSongCover(HttpListenerContext context)
-        {
             var req = context.Request;
             var resp = context.Response;
-            lock (_playlistCoverLock)
+            lock (_configLock)
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(req.Url.Query))
+                    BeatSaberQuestomConfig config;
+                    //todo: check content type header
+                    using (JsonTextReader jtr = new JsonTextReader(new StreamReader(req.InputStream)))
                     {
-                        resp.BadRequest("Expected songid");
-                        return;
+                        config = (new JsonSerializer()).Deserialize<BeatSaberQuestomConfig>(jtr);
                     }
-                    string songid = null;
-                    foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
+                    Log.LogMsg("Read new config on put config");
+                    if (config == null)
                     {
-                        var split = kvp.Split('=');
-                        if (split.Count() < 1)
-                            continue;
-                        if (split[0].ToLower() == "songid")
-                        {
-                            songid = Java.Net.URLDecoder.Decode(split[1]);
-                            break;
-                        }
+                        throw new Exception("Error deserializing config!");
                     }
-                    if (string.IsNullOrEmpty(songid))
-                    {
-                        resp.BadRequest("Expected songid");
-                        return;
-                    }
-                    var song = CurrentConfig.Config.Playlists.SelectMany(x=> x.SongList).FirstOrDefault(x => x.SongID == songid);
-                    if (song == null)
-                    {
-                        resp.NotFound();
-                        return;
-                    }
-                    var imgBytes = song.TryGetCoverPngBytes();
-                    if (imgBytes == null)
-                    {
-                        resp.Error();
-                        return;
-                    }
-                    resp.StatusCode = 200;
-                    resp.ContentType = MimeMap.GetMimeType("test.png");
-                    using (MemoryStream ms = new MemoryStream(imgBytes))
-                    {
-                        ms.CopyTo(resp.OutputStream);
-                    }
+                    UpdateConfig(config);
                 }
                 catch (Exception ex)
                 {
-                    Log.LogErr("Exception handling get song cover!", ex);
+                    Log.LogErr("Exception getting config!", ex);
                     resp.StatusCode = 500;
+                }
+            }
+        }
+
+        private const int MAX_SONG_COVER_REQS = 15;
+        private object _songCounterLock = new object();
+        private int _songRequestCounter = 0;
+        private void HandleGetSongCover(HttpListenerContext context)
+        {
+            try
+            {
+                var req = context.Request;
+                var resp = context.Response;
+                lock (_songCounterLock)
+                {
+                    _songRequestCounter++;
+                    if (_songRequestCounter > MAX_SONG_COVER_REQS)
+                    {
+                        resp.StatusCode = 429;
+                        return;
+                    }
+                }
+
+
+                lock (_playlistCoverLock)
+                {
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(req.Url.Query))
+                        {
+                            resp.BadRequest("Expected songid");
+                            return;
+                        }
+                        string songid = null;
+                        foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
+                        {
+                            var split = kvp.Split('=');
+                            if (split.Count() < 1)
+                                continue;
+                            if (split[0].ToLower() == "songid")
+                            {
+                                songid = Java.Net.URLDecoder.Decode(split[1]);
+                                break;
+                            }
+                        }
+                        if (string.IsNullOrEmpty(songid))
+                        {
+                            resp.BadRequest("Expected songid");
+                            return;
+                        }
+                        var song = CurrentConfig.Config.Playlists.SelectMany(x => x.SongList).FirstOrDefault(x => x.SongID == songid);
+                        if (song == null)
+                        {
+                            resp.NotFound();
+                            return;
+                        }
+                        var imgBytes = song.TryGetCoverPngBytes();
+                        if (imgBytes == null)
+                        {
+                            resp.Error();
+                            return;
+                        }
+                        resp.StatusCode = 200;
+                        resp.ContentType = MimeMap.GetMimeType("test.png");
+                        resp.AppendHeader("Cache-Control", "max-age=86400, public");
+                        using (MemoryStream ms = new MemoryStream(imgBytes))
+                        {
+                            ms.CopyTo(resp.OutputStream);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr("Exception handling get song cover!", ex);
+                        resp.StatusCode = 500;
+                    }
+                }
+            }
+            finally
+            {
+                lock(_songCounterLock)
+                {
+                    _songRequestCounter--;
                 }
             }
         }
@@ -746,6 +960,7 @@ namespace BeatOn
                     _qae.Dispose();
                     _qae = null;
                     _mod.ResetAssets();
+                    SendConfigChangeMessage();
                     resp.Ok();
                 }
                 catch (Exception ex)

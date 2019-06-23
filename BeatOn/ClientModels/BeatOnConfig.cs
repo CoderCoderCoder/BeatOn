@@ -17,45 +17,16 @@ namespace BeatOn.ClientModels
 {
     public class BeatOnConfig : INotifyPropertyChanged
     {
-        public event EventHandler ConfigChanged;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public BeatOnConfig()
         {
         }
 
-        object _debounceLock = new object();
-        CancellationTokenSource _tokenSource;
         private void PropChanged(string name)
         {
             _isCommitted = false;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));            
-            lock (_debounceLock)
-            {
-                if (_tokenSource != null)
-                {
-                    _tokenSource.Cancel(true);
-                    _tokenSource = null;
-                }
-                _tokenSource = new CancellationTokenSource();
-                var task = Task.Delay(10, _tokenSource.Token);
-                task.ContinueWith((t) =>
-                {
-                    try
-                    {
-                        t.Wait();
-                        lock (_debounceLock)
-                        {
-                            ConfigChanged?.Invoke(this, new EventArgs());
-                            _tokenSource = null;
-                        }
-                    }
-                    catch (System.OperationCanceledException)
-                    {
-                    }
-                });
-               // task.Start();
-            }
         }
 
         private bool _isCommitted;
