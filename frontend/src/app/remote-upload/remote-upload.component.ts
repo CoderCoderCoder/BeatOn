@@ -45,7 +45,9 @@ export class RemoteUploadComponent implements OnInit {
       const file = event[index];
       console.log(file)
       this.files.push(file.name)
-      this.beatOnApi.uploadFile(file).subscribe(
+      const formData = new FormData();
+      formData.append('file', file);
+      this.beatOnApi.uploadFile(formData).subscribe(
         (res) => {
           console.log("File uploaded")
         },
