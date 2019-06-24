@@ -30,6 +30,12 @@ namespace BeatOn
         private WebSocketServer _webSocket;
         private List<IWebSocketConnection> _wsClients = new List<IWebSocketConnection>();
 
+        public bool IsRunning { get
+            {
+                //probably should check the web socket along with this, but they get created/killed at the same times
+                return (_listener != null && _listener.IsListening);
+            }
+        }
         public int Port { get; } = HTTP_PORT;
 
         private string _ip = null;

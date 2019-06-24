@@ -210,6 +210,8 @@ namespace BeatOn
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
+            
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
@@ -229,7 +231,26 @@ namespace BeatOn
             }
             //TODO: check that we actually got these permissions above
             ContinueStartup();
+            
         }
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            _webServer.Stop();
+        }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+        }
+
+        protected override void OnStart()
+        {
+            base.OnStart();
+            if (_webServer != null && !_webServer.IsRunning)
+                _webServer.Start();
+        }
+
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -365,7 +386,7 @@ namespace BeatOn
                         {
                             model.CurrentStatus = ModStatusType.ModInstalled;
                         }
-                        else if (_mod.DoesTempApkExist)
+                        else if (!_mod.IsBeatSaberInstalled && _mod.DoesTempApkExist)
                         {
                             if (_mod.IsTempApkModded)
                             {
