@@ -18,23 +18,18 @@ export class RemoteUploadComponent implements OnInit {
     });
   }
 
-  onFileChange(event) {
-    if (event.target.files.length > 0) {
-      const file = event.target.files[0];
-      this.form.get('fileUpload').setValue(file);
+  uploadFile(event) {
+    for (let index = 0; index < event.length; index++) {
+      const file = event[index];
+      const formData = new FormData();
+      formData.append('file', file);
+      this.beatOnApi.uploadFile(formData).subscribe(
+        (res) => {
+          console.log("File uploaded")
+        },
+        (err) => {
+          console.log("Failed to upload: " + err);
+        });
     }
-  }
-
-  onSubmit() {
-    const formData = new FormData();
-    formData.append('file', this.form.get('fileUpload').value);
-    this.beatOnApi.uploadFile(formData).subscribe(
-      (res) => {
-        console.log("File uploaded")
-      },
-      (err) => {
-        console.log("Failed to upload: " + err);
-      }
-    );
   }
 }
