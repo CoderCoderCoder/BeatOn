@@ -19,7 +19,7 @@ using System.Net.NetworkInformation;
 
 namespace BeatOn
 {
-    public class WebServer
+    public class WebServer : IDisposable
     {
         private const int HTTP_PORT = 50000;
         private const int WEBSOCKET_PORT = 50001;
@@ -29,6 +29,13 @@ namespace BeatOn
         private string _baseAssetPath;
         private WebSocketServer _webSocket;
         private List<IWebSocketConnection> _wsClients = new List<IWebSocketConnection>();
+
+        private Dictionary<MessageType, IMessageHandler> _messageHandlers = new Dictionary<MessageType, IMessageHandler>();
+
+        public void AddMessageHandler(MessageType type, IMessageHandler handler)
+        {
+            _messageHandlers.Add(type, handler);
+        }
 
         public bool IsRunning { get
             {
@@ -188,8 +195,7 @@ namespace BeatOn
                     };
                     socket.OnMessage = message =>
                     {
-                       
-                        //got a message.  Right now not handling client -> server messages,
+                        HandleWebSocketMessage(message);
                     };
                 });
                 Log.LogMsg($"Started web socket server on port {WEBSOCKET_PORT}");
@@ -200,7 +206,25 @@ namespace BeatOn
             }
         }
 
-        public void SendMessage(HostMessage message)
+        public void HandleWebSocketMessage(string message)
+        {
+            try
+            {
+                var msg = JsonConvert.DeserializeObject<MessageBase>(message);
+                if (msg == null)
+                    throw new Exception("Unable to deserialize message");
+                if (_messageHandlers.ContainsKey(msg.Type))
+                    _messageHandlers[msg.Type].HandleMessage(msg);
+                else
+                    Log.LogErr($"No message handler for type {msg.Type}");
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr($"Excepction handling websocket message {message}", ex);
+            }
+        }
+
+        public void SendMessage(ClientModels.MessageBase message)
         {
             lock (_wsClients)
             {
@@ -252,7 +276,7 @@ namespace BeatOn
                     }
                     else
                     {
-                        route(context);
+                        route.HandleRequest(context);
                     }
                 }
                 else
@@ -334,5 +358,46 @@ namespace BeatOn
                 }
             }
         }
+
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    try
+                    {
+                        Stop();
+                    }
+                    catch
+                    { }
+                }
+
+                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
+                // TODO: set large fields to null.
+
+                disposedValue = true;
+            }
+        }
+
+        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
+        // ~WebServer()
+        // {
+        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+        //   Dispose(false);
+        // }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+            // TODO: uncomment the following line if the finalizer is overridden above.
+            // GC.SuppressFinalize(this);
+        }
+        #endregion
     }
 }

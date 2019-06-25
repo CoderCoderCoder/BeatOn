@@ -12,9 +12,12 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
-    public class HostDownloadStatus : MessageBase
+    public class ClientMoveSongToPlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.DownloadStatus;
-        public List<HostDownload> Downloads { get; set; } = new List<HostDownload>();
+        public override MessageType Type => MessageType.MoveSongToPlaylist;
+
+        public string SongID { get; set; }
+        public string ToPlaylistID { get; set; }
+
     }
 }

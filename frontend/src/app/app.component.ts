@@ -47,12 +47,8 @@ export class AppComponent implements OnInit {
       {
         console.log("main app got updated config "+JSON.stringify(cfg));
         this.config = cfg;
-      })
-      this.cfgSvc.getConfig().subscribe((cfg) =>
-      {
-        console.log("main app got config manually");
-        this.config = cfg;
       });
+      
   }
   modStatusLoaded: boolean = false;
   title : string = 'Beat On';
@@ -149,7 +145,13 @@ commitConfig(){
         this.router.navigateByUrl('/setupstep3');
        }
        else if (this.modStatus.CurrentStatus == 'ModInstalled') {
-        this.router.navigateByUrl('/main/browser');
+        this.cfgSvc.getConfig().subscribe((cfg) =>
+        {
+          console.log("main app got config manually");
+          this.config = cfg;
+          this.router.navigateByUrl('/main/browser');
+        });
+        
        }
     });
   }

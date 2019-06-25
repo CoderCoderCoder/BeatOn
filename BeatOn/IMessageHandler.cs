@@ -9,13 +9,12 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using BeatOn.ClientModels;
 
-namespace BeatOn.ClientModels
+namespace BeatOn
 {
-    public class HostConfigChangeEvent : MessageBase
+    public interface IMessageHandler
     {
-        public override MessageType Type => MessageType.ConfigChange;
-
-        public BeatOnConfig UpdatedConfig { get; set; }
+        void HandleMessage(MessageBase message);
     }
 }

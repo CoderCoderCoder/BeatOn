@@ -11,6 +11,18 @@
       color: lightgray;
       margin-left: 60px;
   }
+  .deleteSong {
+      position: absolute;
+      top:0;
+      right:0;
+      color: red;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      background-color: rgba(0,0,0,200);
+      font-size: 24px;
+      cursor: pointer;
+  }
 .song {
     display: flex;
     width: 300px;

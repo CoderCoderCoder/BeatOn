@@ -12,9 +12,10 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
-    public class HostDownloadStatus : MessageBase
+    public class ClientDeleteSong : MessageBase
     {
-        public override MessageType Type => MessageType.DownloadStatus;
-        public List<HostDownload> Downloads { get; set; } = new List<HostDownload>();
+        public override MessageType Type => MessageType.DeleteSong;
+
+        public string SongID { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 using Android.App;
@@ -10,12 +11,10 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
-namespace BeatOn.ClientModels
+namespace BeatOn
 {
-    public class HostConfigChangeEvent : MessageBase
+    public interface IHandleRequest
     {
-        public override MessageType Type => MessageType.ConfigChange;
-
-        public BeatOnConfig UpdatedConfig { get; set; }
+        void HandleRequest(HttpListenerContext context);
     }
 }

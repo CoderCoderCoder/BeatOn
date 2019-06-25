@@ -9,6 +9,7 @@ import { BeatOnApiService } from '../services/beat-on-api.service';
 import { BeatOnConfig } from '../models/BeatOnConfig';
 import { AddEditPlaylistDialogComponent } from '../add-edit-playlist-dialog/add-edit-playlist-dialog.component';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { HostMessageService } from '../services/host-message.service';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -43,7 +44,7 @@ export class PlaylistSliderComponent implements OnInit {
   }
   
    selected : BeatSaberPlaylist;
-   constructor(private dialog : MatDialog, private configSvc : ConfigService, private beatOnApi : BeatOnApiService) {
+   constructor(private dialog : MatDialog, private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) {
 
    }
 
@@ -105,23 +106,20 @@ export class PlaylistSliderComponent implements OnInit {
 
     if (result['deletePlaylist'] === true) {
       //delete playlist
-
+      this.msgSvc.sendMessage(JSON.stringify({Type:"DeletePlaylist", PlaylistID: result.playlist.PlaylistID}));
     } else {
       //must be a save
       if (result.isNew) {
         this.configSvc.getConfig().subscribe((cfg) => {
           cfg.Config.Playlists.push(result.playlist);
-          this.beatOnApi.putConfig(cfg.Config).subscribe((res) =>
-          {
-              console.log("config saved ok from playlist slider on create playlist");
-          });
+          this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: result.playlist }));
         })
       } else {
         this.configSvc.getConfig().subscribe((cfg) => {
-          var found = false;
+          var found = null;
           cfg.Config.Playlists.forEach(p=>{
             if (p.PlaylistID == result.playlist.PlaylistID) {
-              found = true;
+              found = p;
               if (result.playlist.CoverImageBytes && result.playlist.CoverImageBytes > 50) {
                 p.CoverImageBytes = result.playlist.CoverImageBytes;
               }
@@ -129,10 +127,7 @@ export class PlaylistSliderComponent implements OnInit {
             }
           });
           if (found) {
-            this.beatOnApi.putConfig(cfg.Config).subscribe((res) =>
-            {
-              console.log("config saved ok from playlist slider on edit playlist");
-            });
+            this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: found }));
           }
         })
       }
@@ -146,7 +141,10 @@ export class PlaylistSliderComponent implements OnInit {
       console.log("dropped a song on the same playlist it is in, doing nothing");
      // return;
     }
-    let moveSong : BeatSaberSong = oldPlaylist.SongList.splice(evt.previousIndex,1)[0];
+    var oldIndex = oldPlaylist.SongList.findIndex(x=> evt.item.element.nativeElement.attributes["songid"] && x.SongID == evt.item.element.nativeElement.attributes["songid"].value);
+    if (oldIndex < 0)
+    return;
+    let moveSong : BeatSaberSong = oldPlaylist.SongList.splice(oldIndex,1)[0];
     oldPlaylist.SongList = oldPlaylist.SongList.slice();
     if (moveSong != null) {
       this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {
@@ -173,10 +171,7 @@ export class PlaylistSliderComponent implements OnInit {
               
           }
         });
-        this.beatOnApi.putConfig(cfg.Config).subscribe(res=>
-          {
-            console.log("server finished move");
-          });
+        this.msgSvc.sendMessage(JSON.stringify({Type:"MoveSongToPlaylist", SongID: moveSong.SongID, ToPlaylistID: item.PlaylistID}));
       });      
     }
     

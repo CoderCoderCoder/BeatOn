@@ -9,12 +9,14 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using QuestomAssets.Models;
 
 namespace BeatOn.ClientModels
 {
-    public class HostDownloadStatus : MessageBase
+    public class ClientAddOrUpdatePlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.DownloadStatus;
-        public List<HostDownload> Downloads { get; set; } = new List<HostDownload>();
+        public override MessageType Type => MessageType.AddOrUpdatePlaylist;
+
+        public BeatSaberPlaylist Playlist { get; set; }
     }
 }

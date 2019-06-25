@@ -58,6 +58,7 @@ export class AddEditPlaylistDialogComponent implements OnInit {
     {
       if (this.data.isNew) {
           this.data.playlist.PlaylistID = this.data.playlist.PlaylistName.replace(/[^a-z0-9]/gmi, "").replace(/\s+/g, "").replace(' ','');
+          this.data.playlist.SongList = [];
       } else {
         //how?
         return;
@@ -73,7 +74,7 @@ export class AddEditPlaylistDialogComponent implements OnInit {
 
   clickDelete() {
     
-    this.dialogRef.close({deletePlaylist: true});
+    this.dialogRef.close({ playlist: this.data.playlist, deletePlaylist: true});
   }
 
   ngOnInit() {

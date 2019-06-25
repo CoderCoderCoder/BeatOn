@@ -64,7 +64,18 @@ namespace BeatOn
                 {
                     if (_builder.Length < 1)
                         return;
-
+                    if (!Directory.Exists(System.IO.Path.GetDirectoryName(_logFile)))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_logFile));
+                        }
+                        catch
+                        {
+                            //may not have permission yet
+                            return;
+                        }
+                    }
                     using (StreamWriter sw = new StreamWriter(_logFile, true))
                     {
                         sw.Write(_builder.ToString());

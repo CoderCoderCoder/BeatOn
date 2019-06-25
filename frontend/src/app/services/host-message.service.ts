@@ -9,6 +9,7 @@ import { HostConfigChangeEvent } from '../models/HostConfigChangeEvent';
 import { NetInfo } from '../models/NetInfo';
 import { BeatOnApiService } from './beat-on-api.service';
 import { ToastrService } from 'ngx-toastr';
+import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
@@ -73,12 +74,17 @@ export class HostMessageService {
     };
 
     this.websocket.onerror = (ev: Event) => {
-      console.log("Web socket error!  Closing and reconnecting in several seconds.");
-      setTimeout(() => {
-        console.log("Trying to reopen socket...");
-        this.openSocket();
-      }, 2000);
+    //   console.log("Web socket error!  Closing and reconnecting in several seconds.");
+    //   setTimeout(() => {
+    //     console.log("Trying to reopen socket...");
+    //     this.openSocket();
+    //   }, 2000);
     };
+  }
+
+  sendMessage(message)
+  {
+      this.websocket.send(message);
   }
 
   @Output() setupMessage = new EventEmitter<HostSetupEvent>();

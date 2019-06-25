@@ -17,6 +17,8 @@ using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using BeatOn.ClientModels;
+using BeatOn.Core.MessageHandlers;
+using BeatOn.Core.RequestHandlers;
 using Com.Emulamer.Installerhelper;
 using Newtonsoft.Json;
 using QuestomAssets;
@@ -45,8 +47,11 @@ namespace BeatOn
             get
             {
                 if (_qae == null)
+                {
                     _qae = new QuestomAssetsEngine(_qaeConfig);
-                return _qae;
+                    _qae.OpManager.OpStatusChanged += OpManager_OpStatusChanged;
+                }
+                    return _qae;
             }
         }
 
@@ -237,7 +242,7 @@ namespace BeatOn
         protected override void OnStop()
         {
             base.OnStop();
-            _webServer.Stop();
+            //_webServer.Stop();
         }
         protected override void OnDestroy()
         {
@@ -247,10 +252,9 @@ namespace BeatOn
         protected override void OnStart()
         {
             base.OnStart();
-            if (_webServer != null && !_webServer.IsRunning)
-                _webServer.Start();
+            //if (_webServer != null && !_webServer.IsRunning)
+            //    _webServer.Start();
         }
-
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -268,8 +272,18 @@ namespace BeatOn
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
             _webView.Download += _webView_Download;
             SetupWebApp();
-            //force the config to load
-            var x = CurrentConfig;
+            //don't force the config to load
+            //var x = CurrentConfig;
+        }
+
+        private void OpManager_OpStatusChanged(object sender, QuestomAssets.AssetOps.AssetOp e)
+        {
+            if (e.Status == QuestomAssets.AssetOps.OpStatus.Complete)
+            {
+              //  ClearCurrentConfig();
+              //  SendConfigChangeMessage();
+            }
+                
         }
 
         private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)
@@ -304,7 +318,7 @@ namespace BeatOn
             SendStatusMessage(e);
         }
 
-        private void SendMessageToClient(HostMessage message)
+        private void SendMessageToClient(ClientModels.MessageBase message)
         {
             _webServer.SendMessage(message);
         }
@@ -332,669 +346,41 @@ namespace BeatOn
             _SongDownloadManager.DownloadFile(e.Url);
         }
 
-        
+
         private void SetupWebApp()
         {
             _webServer = new WebServer(Assets, "www");
-            _webServer.Router.AddRoute("GET", "beatsaber/config", HandleGetConfig);
-            _webServer.Router.AddRoute("PUT", "beatsaber/config", HandlePutConfig);
-            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", HandleGetSongCover);
-            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", HandleGetPlaylistCover);
-            _webServer.Router.AddRoute("POST", "beatsaber/upload", HandleFileUpload);
-            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", HandleCommitConfig);
-            _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", HandleReloadSongFolders);
-            _webServer.Router.AddRoute("GET", "mod/status", HandleModStatus);
-            _webServer.Router.AddRoute("GET", "mod/netinfo", HandleGetNetInfo);
-            _webServer.Router.AddRoute("POST", "mod/install/step1", HandleModInstallStep1);
-            _webServer.Router.AddRoute("POST", "mod/install/step2", HandleModInstallStep2);
-            _webServer.Router.AddRoute("POST", "mod/install/step3", HandleModInstallStep3);
-            _webServer.Router.AddRoute("POST", "mod/resetassets", HandleResetAssets);
-            _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", HandleUninstallBeatSaber);
-            
+            _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
+            _webServer.Router.AddRoute("PUT", "beatsaber/config", new PutConfig(cfg => UpdateConfig(cfg)));
+            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(() => CurrentConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
+            _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => _SongDownloadManager));
+            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
+            _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
+            _webServer.Router.AddRoute("GET", "mod/status", new GetModStatus(_mod));
+            _webServer.Router.AddRoute("GET", "mod/netinfo", new GetNetInfo(_webServer));
+            _webServer.Router.AddRoute("POST", "mod/install/step1", new PostModInstallStep1(_mod, SendMessageToClient));
+            _webServer.Router.AddRoute("POST", "mod/install/step2", new PostModInstallStep2(_mod, SendMessageToClient));
+            _webServer.Router.AddRoute("POST", "mod/install/step3", new PostModInstallStep3(_mod, SendMessageToClient));
+            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
+            {               
+                _currentConfig = null;
+                _qae.Dispose();
+                _qae = null;
+            }));
+            _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
+
+            _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.AddOrUpdatePlaylist, new ClientAddOrUpdatePlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.MoveSongToPlaylist, new ClientMoveSongToPlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.DeleteSong, new ClientDeleteSongHandler(() => Engine, () => CurrentConfig));
+
             _webServer.Start();
             _webViewClient = new JSWebViewClient(this, _webView);
             _webView.LoadUrl($"http://localhost:{_webServer.Port}");
         }
 
-        private object _modStatusLock = new object();
-        private void HandleModStatus(HttpListenerContext context)
-        {
-            lock (_modStatusLock)
-            {
-                var req = context.Request;
-                var resp = context.Response;
-                try
-                {
-                    /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT FOR DEVICE
-                     * 
-                     */
-                    //resp.Serialize(new ModStatus()
-                    //{
-                    //    IsBeatSaberInstalled = true,
-                    //    CurrentStatus = ModStatusType.ModInstalled
-                    //});
-                    //return;
-
-                    var model = new ModStatus()
-                    {
-                        IsBeatSaberInstalled = _mod.IsBeatSaberInstalled
-                    };
-
-                    if (model.IsBeatSaberInstalled)
-                    {
-                        if (_mod.IsInstalledBeatSaberModded)
-                        {
-                            model.CurrentStatus = ModStatusType.ModInstalled;
-                        }
-                        else if (!_mod.IsBeatSaberInstalled && _mod.DoesTempApkExist)
-                        {
-                            if (_mod.IsTempApkModded)
-                            {
-                                model.CurrentStatus = ModStatusType.ReadyForInstall;
-                            }
-                            else
-                            {
-                                model.CurrentStatus = ModStatusType.ReadyForModApply;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (_mod.DoesTempApkExist)
-                        {
-                            if (_mod.IsTempApkModded)
-                                model.CurrentStatus = ModStatusType.ReadyForInstall;
-                            else
-                                model.CurrentStatus = ModStatusType.ReadyForModApply;
-                        }
-                    }
-                    resp.Serialize(model);
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod status!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-        }
-
-        private object _reloadSongsLock = new object();
-        private void HandleReloadSongFolders(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-
-            if (!Monitor.TryEnter(_reloadSongsLock))
-            {
-                resp.Error("Song reload already in progress");
-                return;
-            }
-            try
-            { 
-                try
-                {
-                    if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
-                    {
-                        resp.BadRequest("Modded Beat Saber is not installed!");
-                        ShowToast("Can't reload song folders.", "Modded Beat Saber is not installed!");
-                        return;
-                    }
-                    var sls = new StatusUpdateLogSink((msg) =>
-                    {
-                        SendStatusMessage(msg);
-                    });
-                    try
-                    {
-                        
-                        _suppressConfigChangeMessage = true;
-                        var folders = BeatOnUtils.GetCustomSongsFromPath(Path.Combine(Constants.ROOT_BEAT_ON_DATA_PATH, _qaeConfig.SongsPath));
-                        if (folders.Count < 1)
-                        {
-                            Log.LogErr("Request to reload songs folder, but didn't find any songs!");
-                            //not found probably isn't the right response code for this, but meh
-                            resp.NotFound();
-                            return;
-                        }
-                        Log.LogMsg($"Starting to reload custom songs from folders.  Found {folders} folders to evaluate");
-                        //todo: probably don't just grab this one
-                        var playlist = CurrentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
-                        if (playlist == null)
-                        {
-                            playlist = new BeatSaberPlaylist()
-                            {
-                                PlaylistID = "CustomSongs",
-                                PlaylistName = "Custom Songs"
-                            };
-                            CurrentConfig.Config.Playlists.Add(playlist);
-                        }
-                        int addedCtr = 0;
-
-                        foreach (var folder in folders)
-                        {
-                            string songId = folder.Replace("/", "");
-                            songId = songId.Replace(" ", "");
-                            if (CurrentConfig.Config.Playlists.SelectMany(x => x.SongList).Any(x => x.SongID?.ToLower() == songId.ToLower()))
-                            {
-                                SendStatusMessage($"Folder {folder} already loaded");
-                                Log.LogMsg($"Custom song in folder {folder} appears to already be loaded, skipping it.");
-                                continue;
-                            }
-                            SendStatusMessage($"Adding song in {folder}");
-                            Log.LogMsg($"Adding custom song in folder {folder} to playlist ID {playlist.PlaylistID}");
-                            playlist.SongList.Add(new BeatSaberSong()
-                            {
-                                SongID = songId,
-                                CustomSongPath = Path.Combine(_qaeConfig.SongsPath, folder)
-                            });
-                            addedCtr++;
-                            //maybe limit how many
-                            //if (addedCtr > 200)
-                            //{
-                            //    ShowToast("Too Many Songs", "That's too many at once.  After these finish and you 'Sync to Beat Saber', then try 'Reload Songs Folder' again to load more.", ToastType.Warning, 10);
-                            //    break;
-                            //}
-                        }
-                        if (addedCtr > 0)
-                        {
-                            SendStatusMessage($"{addedCtr} songs will be added");
-                            SendStatusMessage($"Updating configuration...");
-                            Log.LogMsg("Updating config with loaded song folders");
-                            Log.SetLogSink(sls);
-                            Engine.UpdateConfig(CurrentConfig.Config);
-                            Log.RemoveLogSink(sls);
-                            ShowToast("Folder Load Complete", $"{addedCtr} folders were scanned and added to {playlist.PlaylistName}", ToastType.Success, 3);
-                        }
-                        else
-                        {
-                            SendStatusMessage($"No new songs found");
-                            Log.LogMsg("No new songs were found to load.");
-                            ShowToast("Folder Load Complete", "No additional songs were found to add", ToastType.Warning, 3);
-                        }
-                    }
-                    finally
-                    {
-                        _suppressConfigChangeMessage = false;
-                        Log.RemoveLogSink(sls);
-                    }
-                    SendConfigChangeMessage();
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception reloading song folders!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_reloadSongsLock);
-            }
-        }
-
-        private void HandleGetNetInfo(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            try
-            {
-                resp.Serialize(new NetInfo() {
-                    Url = _webServer.ListeningOnUrl,
-                    WebSocketUrl = _webServer.WebSocketUrl
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.LogErr("Exception handling get net info!", ex);
-                resp.StatusCode = 500;
-            }
-        }
-
-        private object _modInstallLock = new object();
-        private void HandleModInstallStep1(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            if (!Monitor.TryEnter(_modInstallLock))
-                resp.BadRequest("Another install request is in progress.");
-            try
-            {
-
-                try
-                {
-                    if (!_mod.IsBeatSaberInstalled)
-                    {
-                        resp.BadRequest("Beat Saber is not installed!");
-                        SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
-                        SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!"});
-                        return;
-                    }
-                    _mod.CopyOriginalBeatSaberApkAndTriggerUninstall();
-                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step1Complete });
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 1!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_modInstallLock);
-            }
-        }
-
-        private void HandleFileUpload(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            
-            try
-            {
-                if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
-                {
-                    resp.BadRequest("Modded Beat Saber is not installed!");
-                    ShowToast("Can't upload.", "Modded Beat Saber is not installed!");
-                    return;
-                }
-                var ct = req.ContentType;
-                if (!ct.StartsWith("multipart/form-data"))
-                {
-                    resp.BadRequest("Expected content-type of multipart/form-data");
-                    return;
-                }
-
-                Dictionary<string, MemoryStream> files = new Dictionary<string, MemoryStream>();
-                var parser = new HttpMultipartParser.StreamingMultipartFormDataParser(req.InputStream);
-                parser.FileHandler = (name, fileName, type, disposition, buffer, bytes) =>
-                {
-                    if (name != "file")
-                    {
-                        Log.LogMsg($"Got extra form value named {name}, ignoring it");
-                        return;
-                    }
-                    if (type != "application/x-zip-compressed")
-                        throw new NotSupportedException($"Data for file {fileName} isn't a zip");
-                    MemoryStream s = null;
-                    if (files.ContainsKey(fileName))
-                    {
-                        s = files[fileName];
-                    }
-                    else {
-                        s = new MemoryStream();
-                        files.Add(fileName, s);
-                    }
-                    s.Write(buffer, 0, bytes);
-                };
-                parser.Run();
-                if (files.Count < 1)
-                {
-                    resp.BadRequest("Didn't get any useable files.");
-                    return;
-                }
-                foreach (var file in files.Keys.ToList())
-                {
-                    var s = files[file];
-                    byte[] b = s.ToArray();
-                    files.Remove(file);
-                    s.Dispose();
-                    _SongDownloadManager.ProcessFile(b, file);
-                }
-                resp.Ok();
-            }
-            catch (Exception ex)
-            {
-                Log.LogErr("Exception handling mod install step 1!", ex);
-                resp.StatusCode = 500;
-            }
-        }
-
-        private void HandleCommitConfig(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            
-            try
-            {
-                if (!_mod.IsBeatSaberInstalled || !_mod.IsInstalledBeatSaberModded)
-                {
-                    resp.BadRequest("Modded Beat Saber is not installed!");
-                    ShowToast("Can't commit config.", "Modded Beat Saber is not installed!");
-                    return;
-                }
-                ShowToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 8);
-                //todo: decide if this really needs to be called again, or if things are going to do their own updates as they go along
-                Engine.UpdateConfig(CurrentConfig.Config);
-                Engine.Save();
-                CurrentConfig.IsCommitted = true;
-                SendConfigChangeMessage();
-                resp.Ok();
-            }
-            catch (Exception ex)
-            {
-                Log.LogErr("Exception handling mod install step 1!", ex);
-                resp.StatusCode = 500;
-            }
-        }
-
-        private void HandleModInstallStep2(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            if (!Monitor.TryEnter(_modInstallLock))
-                resp.BadRequest("Another install request is in progress.");
-            try
-            {
-                try
-                {
-                    if (!_mod.DoesTempApkExist)
-                    {
-                        resp.BadRequest("Step 1 has not completed, temporary APK does not exist!");
-                        return;
-                    }
-                    _mod.ApplyModToTempApk();
-                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step2Complete });
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 2!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_modInstallLock);
-            }
-        }
-
-        private void HandleModInstallStep3(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            if (!Monitor.TryEnter(_modInstallLock))
-                resp.BadRequest("Another install request is in progress.");
-            try
-            {
-                try
-                {
-                    if (!_mod.DoesTempApkExist)
-                    {
-                        resp.BadRequest("Step 2 has not completed, temporary APK does not exist!");
-                        return;
-                    }
-                    _mod.TriggerPackageInstall();
-                    SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.Step3Complete });
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 2!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_modInstallLock);
-            }
-        }
-
-        private object _playlistCoverLock = new object();
-        private void HandleGetPlaylistCover(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            lock (_playlistCoverLock)
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(req.Url.Query))
-                    {
-                        resp.BadRequest("Expected playlistid");
-                        return;
-                    }
-                    string playlistid = null;
-                    foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
-                    {
-                        var split = kvp.Split('=');
-                        if (split.Count() < 1)
-                            continue;
-                        if (split[0].ToLower() == "playlistid")
-                        {
-                            playlistid = Java.Net.URLDecoder.Decode(split[1]);
-                            break;
-                        }
-                    }
-                    if (string.IsNullOrEmpty(playlistid))
-                    {
-                        resp.BadRequest("Expected playlistid");
-                        return;
-                    }
-                    var playlist = CurrentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == playlistid);
-                    if (playlist == null)
-                    {
-                        resp.NotFound();
-                        return;
-                    }
-                    var imgBytes = playlist.TryGetCoverPngBytes();
-                    if (imgBytes == null)
-                    {
-                        resp.Error();
-                        return;
-                    }
-                    resp.StatusCode = 200;
-                    resp.ContentType = MimeMap.GetMimeType("test.png");
-                    using (MemoryStream ms = new MemoryStream(imgBytes))
-                    {
-                        ms.CopyTo(resp.OutputStream);
-                    }
-                    
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling get playlist cover!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-        }
-
-        private object _configLock = new object();
-        private void HandleGetConfig(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            lock (_configLock)
-            {
-                try
-                {
-                    resp.Serialize(CurrentConfig);
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception getting config!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-        }
         
-        private void HandlePutConfig(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            lock (_configLock)
-            {
-                try
-                {
-                    BeatSaberQuestomConfig config;
-                    //todo: check content type header
-                    using (JsonTextReader jtr = new JsonTextReader(new StreamReader(req.InputStream)))
-                    {
-                        config = (new JsonSerializer()).Deserialize<BeatSaberQuestomConfig>(jtr);
-                    }
-                    Log.LogMsg("Read new config on put config");
-                    if (config == null)
-                    {
-                        throw new Exception("Error deserializing config!");
-                    }
-                    UpdateConfig(config);
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception getting config!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-        }
-
-        private const int MAX_SONG_COVER_REQS = 15;
-        private object _songCounterLock = new object();
-        private int _songRequestCounter = 0;
-        private void HandleGetSongCover(HttpListenerContext context)
-        {
-            try
-            {
-                var req = context.Request;
-                var resp = context.Response;
-                lock (_songCounterLock)
-                {
-                    _songRequestCounter++;
-                    if (_songRequestCounter > MAX_SONG_COVER_REQS)
-                    {
-                        resp.StatusCode = 429;
-                        return;
-                    }
-                }
-
-
-                lock (_playlistCoverLock)
-                {
-                    try
-                    {
-                        if (string.IsNullOrWhiteSpace(req.Url.Query))
-                        {
-                            resp.BadRequest("Expected songid");
-                            return;
-                        }
-                        string songid = null;
-                        foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
-                        {
-                            var split = kvp.Split('=');
-                            if (split.Count() < 1)
-                                continue;
-                            if (split[0].ToLower() == "songid")
-                            {
-                                songid = Java.Net.URLDecoder.Decode(split[1]);
-                                break;
-                            }
-                        }
-                        if (string.IsNullOrEmpty(songid))
-                        {
-                            resp.BadRequest("Expected songid");
-                            return;
-                        }
-                        var song = CurrentConfig.Config.Playlists.SelectMany(x => x.SongList).FirstOrDefault(x => x.SongID == songid);
-                        if (song == null)
-                        {
-                            resp.NotFound();
-                            return;
-                        }
-                        var imgBytes = song.TryGetCoverPngBytes();
-                        if (imgBytes == null)
-                        {
-                            resp.Error();
-                            return;
-                        }
-                        resp.StatusCode = 200;
-                        resp.ContentType = MimeMap.GetMimeType("test.png");
-                        resp.AppendHeader("Cache-Control", "max-age=86400, public");
-                        using (MemoryStream ms = new MemoryStream(imgBytes))
-                        {
-                            ms.CopyTo(resp.OutputStream);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogErr("Exception handling get song cover!", ex);
-                        resp.StatusCode = 500;
-                    }
-                }
-            }
-            finally
-            {
-                lock(_songCounterLock)
-                {
-                    _songRequestCounter--;
-                }
-            }
-        }
-
-        private void HandleUninstallBeatSaber(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            if (!Monitor.TryEnter(_modInstallLock))
-                resp.BadRequest("Another mod request is in progress.");
-            try
-            {
-
-                try
-                {
-                    if (!_mod.IsBeatSaberInstalled)
-                    {
-                        ShowToast("Beat Saber Not Installed", "Beat Saber doesn't seem to be installed.", ToastType.Error, 8);
-                        resp.BadRequest("Beat Saber isn't installed.");
-                        return;
-                    }
-                    _mod.UninstallBeatSaber();
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 1!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_modInstallLock);
-            }
-        }
-
-        private void HandleResetAssets(HttpListenerContext context)
-        {
-            var req = context.Request;
-            var resp = context.Response;
-            if (!Monitor.TryEnter(_modInstallLock))
-                resp.BadRequest("Another mod request is in progress.");
-            try
-            {
-
-                try
-                {
-                    if (!_mod.IsBeatSaberInstalled && !_mod.IsInstalledBeatSaberModded)
-                    {
-                        ShowToast("Mod Not Installed", "The mod does not appear to be installed correctly.", ToastType.Error, 8);
-                        resp.BadRequest("The mod does not appear to be installed correctly.");
-                        return;
-                    }
-                    _currentConfig = null;
-                    _qae.Dispose();
-                    _qae = null;
-                    _mod.ResetAssets();
-                    SendConfigChangeMessage();
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 1!", ex);
-                    resp.StatusCode = 500;
-                }
-            }
-            finally
-            {
-                Monitor.Exit(_modInstallLock);
-            }
-        }
     }
 
 

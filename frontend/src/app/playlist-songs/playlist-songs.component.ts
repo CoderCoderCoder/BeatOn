@@ -3,13 +3,15 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { AppSettings } from '../appSettings';
 import { BeatSaberSong } from '../models/BeatSaberSong';
+import { sortAscendingPriority } from '@angular/flex-layout';
+import { HostMessageService } from '../services/host-message.service';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
   styleUrls: ['./playlist-songs.component.scss']
 })
 export class PlaylistSongsComponent implements OnInit {
-  constructor() { }
+  constructor(private msgSvc : HostMessageService) { }
   private _playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   //@Input() playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   songlist : BeatSaberSong[];
@@ -43,5 +45,9 @@ export class PlaylistSongsComponent implements OnInit {
     return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + item.SongID ;
   }
 
+  clickDeleteSong(song) {
+    this.msgSvc.sendMessage(JSON.stringify({Type:"DeleteSong", SongID: song.SongID}));
+
+  }
 
 }

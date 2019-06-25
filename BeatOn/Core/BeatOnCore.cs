@@ -10,12 +10,9 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
-namespace BeatOn.ClientModels
+namespace BeatOn.Core
 {
-    public class HostConfigChangeEvent : MessageBase
+    class BeatOnCore
     {
-        public override MessageType Type => MessageType.ConfigChange;
-
-        public BeatOnConfig UpdatedConfig { get; set; }
     }
 }

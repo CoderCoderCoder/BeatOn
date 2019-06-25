@@ -4,7 +4,7 @@
     cdkDropList id="songs-drop-list" cdkDropListConnectedTo="playlist-drop-list" 
     [cdkDropListData]="playlist"  (cdkDropListDropped)="drop($event)"> 
         <!-- *cdkVirtualFor -->
-        <mat-card class="song" *cdkVirtualFor="let song of songlist" cdkDrag>
+        <mat-card class="song" *cdkVirtualFor="let song of songlist" cdkDrag [attr.songid]="song.SongID">
           <div cdkDragHandle>
           <div class="handle" >
               <hr width="1" height="40" /><hr width="1" height="40" />
@@ -17,6 +17,7 @@
             <div class="songArtist">{{song?.SongAuthorName}}</div>
             <div *ngIf="song?.LevelAuthorName?.length" class="mapper">Mapped By {{song?.LevelAuthorName}}</div>
           </div>
+          <div (click)="clickDeleteSong(song)" class="deleteSong"><mat-icon>delete_forever</mat-icon></div>
         </mat-card>
       </cdk-virtual-scroll-viewport>
       <div class="songCount">{{ playlist?.SongList?.length }} song(s) in {{ playlist?.PlaylistName }}</div>

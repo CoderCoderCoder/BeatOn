@@ -15,8 +15,8 @@ namespace BeatOn
 {
     public class SimpleRouter
     {
-        private Dictionary<string, RouteTreeNode<Action<HttpListenerContext>>> _hostMethodRoutes = new Dictionary<string, RouteTreeNode<Action<HttpListenerContext>>>();
-        public void AddRoute(string method, string path, Action<HttpListenerContext> action)
+        private Dictionary<string, RouteTreeNode<IHandleRequest>> _hostMethodRoutes = new Dictionary<string, RouteTreeNode<IHandleRequest>>();
+        public void AddRoute(string method, string path, IHandleRequest action)
         {
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)
@@ -25,12 +25,12 @@ namespace BeatOn
 
             method = method.ToUpper();
 
-            RouteTreeNode<Action<HttpListenerContext>> node;
+            RouteTreeNode<IHandleRequest> node;
 
             //always have an empty root node
             if (!_hostMethodRoutes.ContainsKey(method))
             {
-                node = new RouteTreeNode<Action<HttpListenerContext>>(null);
+                node = new RouteTreeNode<IHandleRequest>(null);
                 _hostMethodRoutes.Add(method, node);
             }
             else
@@ -42,7 +42,7 @@ namespace BeatOn
                 throw new ArgumentException("Route already exists");
         }
 
-        public Action<HttpListenerContext> FindRoute(string method, string path)
+        public IHandleRequest FindRoute(string method, string path)
         {
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)

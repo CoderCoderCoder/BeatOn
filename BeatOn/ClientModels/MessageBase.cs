@@ -9,10 +9,12 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Newtonsoft.Json;
 
 namespace BeatOn.ClientModels
 {
-    public abstract class HostMessage
+    [JsonConverter(typeof(MessageTypeConverter))]
+    public abstract class MessageBase
     {
         public abstract MessageType Type { get; }
     }

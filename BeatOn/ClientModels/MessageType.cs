@@ -20,6 +20,10 @@ namespace BeatOn.ClientModels
         SetupEvent,
         Toast,
         DownloadStatus,
-        ConfigChange
+        ConfigChange,
+        DeleteSong,
+        MoveSongToPlaylist,
+        DeletePlaylist,
+        AddOrUpdatePlaylist
     }
 }
