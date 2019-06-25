@@ -9,4 +9,6 @@ export interface BeatSaberPlaylist
     PlaylistName : string;
     
     SongList : BeatSaberSong[];
+
+    CoverImageBytes : string;
 }

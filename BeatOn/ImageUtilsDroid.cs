@@ -60,7 +60,7 @@ namespace BeatOn
                     return msPng.ToArray();
                 }
             }
-            else if (texture.TextureFormat == Texture2DObject.TextureFormatType.ETC_RGB4)
+            else if (texture.TextureFormat == Texture2DObject.TextureFormatType.ETC_RGB4 || texture.TextureFormat == Texture2DObject.TextureFormatType.ETC2_RGB)
             {
                 using (MemoryStream msPng = new MemoryStream())
                 {

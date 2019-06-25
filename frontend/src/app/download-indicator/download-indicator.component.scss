@@ -1,0 +1,19 @@
+@import '../../theme.scss';
+
+@include mat-core();
+
+.downloadCount {
+    display: inline-block;
+    font-size: 15px;
+    margin-left: 5px;
+    margin-top: 3px;
+}
+
+mat-icon {
+    font-size: 24px;
+}
+.nodownloads {
+    font-size: 14px;
+    padding: 5px;
+    color: mat-color($my-app-warn);
+}

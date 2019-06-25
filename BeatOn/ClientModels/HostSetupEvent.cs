@@ -12,7 +12,7 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
-    public class HostSetupEvent : HostMessage
+    public class HostSetupEvent : MessageBase
     {
         public override MessageType Type => MessageType.SetupEvent;
 

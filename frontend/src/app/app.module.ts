@@ -1,10 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import {MatFormFieldModule} from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
+import { MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -19,11 +19,19 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { SafePipe } from './pipes/safe-pipes'
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { ToastrModule } from 'ngx-toastr';
+import { ReactiveFormsModule } from '@angular/forms';
 import { PlaylistSliderComponent } from './playlist-slider/playlist-slider.component';
 import { NguCarouselModule } from '@ngu/carousel';
 import { PlaylistSongsComponent } from './playlist-songs/playlist-songs.component';
 import { ToolsComponent } from './tools/tools.component';
-
+import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
+import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
+import {ScrollDispatchModule} from '@angular/cdk/scrolling';
+import {DragDropDirective} from "./drag-drop.directive";
+import {DragDropModule} from '@angular/cdk/drag-drop';
+import { AddEditPlaylistDialogComponent } from './add-edit-playlist-dialog/add-edit-playlist-dialog.component';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material';
 @NgModule({
   declarations: [
     AppComponent,
@@ -38,9 +46,13 @@ import { ToolsComponent } from './tools/tools.component';
     SafePipe,
     PlaylistSliderComponent,
     PlaylistSongsComponent,
-    ToolsComponent
+    ToolsComponent,
+    RemoteUploadComponent,
+    DownloadIndicatorComponent,
+    DragDropDirective,
+    AddEditPlaylistDialogComponent
   ],
-  entryComponents: [ProgressSpinnerDialogComponent],
+  entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent],
   imports: [
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right',
@@ -60,7 +72,17 @@ import { ToolsComponent } from './tools/tools.component';
     MatTabsModule,
     FlexLayoutModule,
     MatGridListModule,
-    NguCarouselModule
+    NguCarouselModule,
+    ReactiveFormsModule,
+    MatMenuModule,
+    MatProgressBarModule,
+    MatChipsModule,
+    ScrollDispatchModule,
+    MatButtonToggleModule,
+    DragDropModule,
+    MatFormFieldModule,
+    FormsModule,
+    MatInputModule
   ],
   providers:[ ],
   bootstrap: [AppComponent]

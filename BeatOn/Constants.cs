@@ -14,9 +14,10 @@ namespace BeatOn
 {
     public static class Constants
     {
+        public const string CONFIG_FILE = ROOT_BEAT_ON_DATA_PATH + "beatonconfig.json";
         public const string ROOT_BEAT_ON_DATA_PATH = "/sdcard/BeatOnData/";
         public const string ASSETS_RELOC_PATH = ROOT_BEAT_ON_DATA_PATH + "BeatSaberAssets/";
         public const string MODLOADER_MODS_PATH = "/sdcard/Android/data/com.beatgames.beatsaber/files/mods/";
-
+        public const string LOGFILE = ROOT_BEAT_ON_DATA_PATH + "beaton.log";
     }
 }

@@ -1,0 +1,80 @@
+.viewport {
+    height: 100%;
+    width: 350px;
+    border: none;
+    
+  }
+
+  .songCount {
+      font-size: 8px;
+      font-style: italic;
+      color: lightgray;
+      margin-left: 60px;
+  }
+  .deleteSong {
+      position: absolute;
+      top:0;
+      right:0;
+      color: red;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      background-color: rgba(0,0,0,200);
+      font-size: 24px;
+      cursor: pointer;
+  }
+.song {
+    display: flex;
+    width: 300px;
+    height: 50px;
+}
+.song mat-card-title {
+    font-size: 16px;
+    
+}
+.song mat-card-subtitle {
+    font-size: 12px;
+    width: 220px;
+}
+.songArtist {
+    font-size: 12px;
+    margin-left: 8px;
+    margin-top: 3px;
+}
+.handle {
+    padding-top: 5px;
+    position: absolute;
+    top: 00px;
+    left: 00px;
+    color: #555;
+    cursor: move;
+    width: 24px;
+    height: 100%;
+  }
+
+.songTitle {
+    font-size: 16px;
+    margin-left: 8px;
+}
+
+.songCover {
+    width: 60px;
+    display:inline-block;
+    height: 60px;
+    min-width: 60px;
+    margin-left: 14px;
+}
+
+.mapper {
+    font-size: 12px;
+    margin-left: 8px;
+    margin-top: 3px;
+    font-style: italic;
+}
+.handle hr {
+    display: inline-block;
+    margin-left: 2.5px;
+    height: 80px;
+    width: 0.1px;
+    border: solid .5px;
+}

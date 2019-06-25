@@ -3,6 +3,7 @@ import { ProgressSpinnerDialogComponent } from "../progress-spinner-dialog/progr
 import { MatDialog, MatDialogRef } from '@angular/material';
 import {BeatOnApiService} from '../services/beat-on-api.service';
 import { HostShowToast, ToastType } from '../models/HostShowToast';
+import { NetInfo } from '../models/NetInfo';
 
 @Component({
   selector: 'app-tools',
@@ -14,7 +15,7 @@ export class ToolsComponent implements OnInit {
   constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog) { 
    
   }
-
+  netInfo : NetInfo;
   clickUninstallBeatSaber() {
     const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
       width: '450px',
@@ -57,7 +58,32 @@ export class ToolsComponent implements OnInit {
     });
   }
 
+  clickReloadSongsFolder() {
+    const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
+      width: '450px',
+      height: '350px',
+      disableClose: true,
+      data: {mainText:"Loading Songs Folder.  Please wait..."}
+    });
+    this.beatOnApi.reloadSongsFromFolders()
+      .subscribe((data: any) => { 
+        dialogRef.close();
+    }, (err) => {
+      dialogRef.close();
+      window.dispatchEvent(new MessageEvent('host-message', {
+          data:  <HostShowToast> {
+            ToastType : ToastType.Error,
+            Timeout : 8000,        
+            Title : "Error reloading songs folder!",        
+            Message : err} }));
+    });
+  }
+
   ngOnInit() {
+    this.beatOnApi.getNetInfo().subscribe((ni : NetInfo) =>
+    {
+      this.netInfo = ni;
+    });
   }
 
 }

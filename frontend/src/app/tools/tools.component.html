@@ -7,6 +7,7 @@
       <mat-card-subtitle>Tools and Utilities</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
+      <span color="primary" class="netInfo">Accessible via browser at <div class="url">{{netInfo.Url}}</div></span>
           <mat-card>
             <mat-card-header>
               <mat-card-title>Reset All Assets</mat-card-title>
@@ -16,11 +17,19 @@
           </mat-card>
           <mat-card>
               <mat-card-header>
+                <mat-card-title>Load Songs from CustomSongs folder</mat-card-title>
+                <mat-card-subtitle>Attempt to load any new songs from folders in /sdcard/BeatOnData/CustomSongs</mat-card-subtitle>
+              </mat-card-header>
+                  <button (click)="clickReloadSongsFolder()" mat-raised-button color="accent">Reload Songs Folder</button>
+            </mat-card>
+          <mat-card>
+              <mat-card-header>
                 <mat-card-title>Uninstall Beat Saber</mat-card-title>
                 <mat-card-subtitle>Uninstall Beat Saber.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</mat-card-subtitle>
               </mat-card-header>
                   <button (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall Beat Saber</button>
             </mat-card>
+
     
     </mat-card-content>
     

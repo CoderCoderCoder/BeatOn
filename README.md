@@ -55,8 +55,20 @@ From a workflow standpoint, I hope to be able to accomplish something like this:
 
 * jakibaki (https://github.com/jakibaki/beatsaber-hook)
 
-* Lots of people on the Beat Saber Modding Group discord (discord.gg/beatsabermods)
+* elliotttate for tons of stuff... getting me started on this whole project even
 
+* Lots of people on the Beat Saber Modding Group discord (discord.gg/beatsabermods), especially other devs who are jumping in
+
+  * Yuuki (https://github.com/brandonhenry)
+  
+  * karldeux
+
+* Thanks to those who helped test as well, specifically those who have given really good, detailed feedback:
+
+  * Agent42
+  
+  * diomark
+  
 ### Libraries Used
 
 * jakibaki's beatsaber-hook (https://github.com/jakibaki/beatsaber-hook)

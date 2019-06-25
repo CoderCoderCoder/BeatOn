@@ -12,7 +12,7 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
-    public class HostShowToast : HostMessage
+    public class HostShowToast : MessageBase
     {
         public override MessageType Type => MessageType.Toast;
 

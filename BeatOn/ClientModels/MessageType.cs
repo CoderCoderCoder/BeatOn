@@ -18,6 +18,12 @@ namespace BeatOn.ClientModels
     public enum MessageType
     {
         SetupEvent,
-        Toast
+        Toast,
+        DownloadStatus,
+        ConfigChange,
+        DeleteSong,
+        MoveSongToPlaylist,
+        DeletePlaylist,
+        AddOrUpdatePlaylist
     }
 }

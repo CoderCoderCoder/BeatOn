@@ -6,7 +6,10 @@ import { ToastrService } from 'ngx-toastr';
 import { HostMessageService } from './services/host-message.service';
 import { HostShowToast, ToastType } from './models/HostShowToast';
 import { HostSetupEvent, SetupEventType } from './models/HostSetupEvent';
-
+import { ConfigService } from './services/config.service';
+import { BeatOnConfig } from './models/BeatOnConfig';
+import { ProgressSpinnerDialogComponent } from "./progress-spinner-dialog/progress-spinner-dialog.component";
+import { MatDialog, MatDialogRef } from '@angular/material';
 
 @Component({
   selector: 'app-root',
@@ -25,13 +28,27 @@ import { HostSetupEvent, SetupEventType } from './models/HostSetupEvent';
   }
 })
 export class AppComponent implements OnInit {
-  constructor(private beatOnApi: BeatOnApiService, private router: Router, private msgSvc: HostMessageService, private toastr: ToastrService) { 
+  constructor(private beatOnApi: BeatOnApiService, private router: Router, 
+    private msgSvc: HostMessageService,
+          private toastr: ToastrService,
+          private cfgSvc : ConfigService,
+          private dialog : MatDialog
+          
+          
+          ) { 
     this.router.events.subscribe((ev) => {
       if (ev instanceof NavigationStart) { 
         //TODO: prevent routing based on mod status?
       }
+      
     });
     this.msgSvc.toastMessage.subscribe((ev) => this.showToast(ev));
+    this.cfgSvc.configUpdated.subscribe((cfg : BeatOnConfig) =>
+      {
+        console.log("main app got updated config "+JSON.stringify(cfg));
+        this.config = cfg;
+      });
+      
   }
   modStatusLoaded: boolean = false;
   title : string = 'Beat On';
@@ -39,8 +56,10 @@ export class AppComponent implements OnInit {
   showBackButton : boolean = false;
   resultJson = '';
   modStatus = { CurrentStatus: '' };
+  config : BeatOnConfig = { IsCommitted: true,
+                            Config: null};
   ngOnInit() {
-
+   
    this.checkModStatus();
 
    this.router.events.subscribe((routeEvent : RouterEvent) => {
@@ -70,7 +89,22 @@ export class AppComponent implements OnInit {
       }
     })
   }
+commitConfig(){
+  const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
+    width: '450px',
+    height: '350px',
+    disableClose: true,
+    data: {mainText:"Updating config...  Do not exit Beat On yet!"}
+  });
+  this.beatOnApi.commitConfig()
+    .subscribe((data: any) => { 
+      dialogRef.close();
+  }, (err) =>
+  {
+    dialogRef.close();
+  });
 
+}
   private showToast(toastMsg : HostShowToast) {
     console.log("got toast");
     switch (toastMsg.ToastType)
@@ -111,7 +145,13 @@ export class AppComponent implements OnInit {
         this.router.navigateByUrl('/setupstep3');
        }
        else if (this.modStatus.CurrentStatus == 'ModInstalled') {
-        this.router.navigateByUrl('/main/browser');
+        this.cfgSvc.getConfig().subscribe((cfg) =>
+        {
+          console.log("main app got config manually");
+          this.config = cfg;
+          this.router.navigateByUrl('/main/browser');
+        });
+        
        }
     });
   }

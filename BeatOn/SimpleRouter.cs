@@ -15,23 +15,22 @@ namespace BeatOn
 {
     public class SimpleRouter
     {
-        private Dictionary<string, RouteTreeNode<Action<HttpListenerContext>>> _hostMethodRoutes = new Dictionary<string, RouteTreeNode<Action<HttpListenerContext>>>();
-        public void AddRoute(string method, string path, Action<HttpListenerContext> action)
+        private Dictionary<string, RouteTreeNode<IHandleRequest>> _hostMethodRoutes = new Dictionary<string, RouteTreeNode<IHandleRequest>>();
+        public void AddRoute(string method, string path, IHandleRequest action)
         {
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)
                 throw new ArgumentException("Path cannot be empty");
-
             var paths = new Stack<string>(split);
 
             method = method.ToUpper();
 
-            RouteTreeNode<Action<HttpListenerContext>> node;
+            RouteTreeNode<IHandleRequest> node;
 
             //always have an empty root node
             if (!_hostMethodRoutes.ContainsKey(method))
             {
-                node = new RouteTreeNode<Action<HttpListenerContext>>(null);
+                node = new RouteTreeNode<IHandleRequest>(null);
                 _hostMethodRoutes.Add(method, node);
             }
             else
@@ -43,19 +42,18 @@ namespace BeatOn
                 throw new ArgumentException("Route already exists");
         }
 
-        public Action<HttpListenerContext> FindRoute(string method, string path)
+        public IHandleRequest FindRoute(string method, string path)
         {
             var split = path.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (split.Length < 1)
                 throw new ArgumentException("Path cannot be empty");
-
             var paths = new Stack<string>(split);
 
             method = method.ToUpper();
             if (!_hostMethodRoutes.ContainsKey(method))
                 return null;
 
-            return _hostMethodRoutes[method].FindNode(paths).Value;
+            return _hostMethodRoutes[method].FindNode(paths)?.Value;
         }
 
         class RouteTreeNode<T> where T : class
@@ -85,6 +83,7 @@ namespace BeatOn
             public bool TryAdd(Stack<string> paths, T value)
             {
                 var path = paths.Pop();
+                RouteTreeNode<T> node = null;
                 if (Nodes.ContainsKey(path))
                 {
                     if (paths.Count == 0)
@@ -99,19 +98,23 @@ namespace BeatOn
                             return true;
                         }
                     }
-                }
-
-                var newNode = new RouteTreeNode<T>(null);
-                Nodes.Add(path, newNode);
-                if (paths.Count == 0)
-                {
-                    newNode.Value = value;
-                    return true;
+                    else
+                    {
+                        node = Nodes[path];
+                    }
                 }
                 else
                 {
-                    return newNode.TryAdd(paths, value);
+                    node = new RouteTreeNode<T>(null);
+                    Nodes.Add(path, node);
+                    if (paths.Count == 0)
+                    {
+                        node.Value = value;
+                        return true;
+                    }
                 }
+                                
+                return node.TryAdd(paths, value);                
             }
         }
     }
