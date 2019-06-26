@@ -64,6 +64,19 @@
     <AndroidSupportedAbis />
     <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Emulator Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Emulator Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EMULATOR</DefineConstants>
+    <DebugType>portable</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android.Export" />
     <Reference Include="System" />
@@ -75,14 +88,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidLogger.cs" />
+    <Compile Include="BeatOnService.cs" />
+    <Compile Include="BeatOnServiceTransciever.cs" />
     <Compile Include="BeatOnUtils.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
     <Compile Include="ClientModels\ClientAddOrUpdatePlaylist.cs" />
+    <Compile Include="ClientModels\ClientGetOps.cs" />
     <Compile Include="ClientModels\ClientDeletePlaylist.cs" />
     <Compile Include="ClientModels\ClientDeleteSong.cs" />
     <Compile Include="ClientModels\ClientMoveSongToPlaylist.cs" />
     <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
+    <Compile Include="ClientModels\HostOp.cs" />
+    <Compile Include="ClientModels\HostOpStatus.cs" />
     <Compile Include="ClientModels\MessageBase.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />
     <Compile Include="ClientModels\HostDownloadStatus.cs" />
@@ -98,12 +116,14 @@
     <Compile Include="Core\MessageHandlers\ClientAddOrUpdatePlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientDeletePlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientDeleteSongHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientGetOpsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientMoveSongToPlaylistHandler.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
     <Compile Include="Core\RequestHandlers\GetModStatus.cs" />
     <Compile Include="Core\RequestHandlers\GetNetInfo.cs" />
     <Compile Include="Core\RequestHandlers\GetPlaylistCover.cs" />
     <Compile Include="Core\RequestHandlers\GetSongCover.cs" />
+    <Compile Include="Core\ResponseExtensions.cs" />
     <Compile Include="IHandleRequest.cs" />
     <Compile Include="Core\RequestHandlers\PostCommitConfig.cs" />
     <Compile Include="Core\RequestHandlers\PostFileUpload.cs" />
@@ -265,10 +285,10 @@
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.b91050cc308eb19d59c6.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.1c1ce0c3a3fe922f0611.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.3386beb54c8b9b7a8d1e.js" />
+    <AndroidAsset Include="Assets\www\main-es5.aa49480a6d5eb105b86c.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

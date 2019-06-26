@@ -1,10 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {MatFormFieldModule} from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
+import { MatTooltipModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -26,12 +26,14 @@ import { PlaylistSongsComponent } from './playlist-songs/playlist-songs.componen
 import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
-import {ScrollDispatchModule} from '@angular/cdk/scrolling';
-import {DragDropDirective} from "./drag-drop.directive";
-import {DragDropModule} from '@angular/cdk/drag-drop';
+import { ScrollDispatchModule } from '@angular/cdk/scrolling';
+import { DragDropDirective } from "./drag-drop.directive";
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { AddEditPlaylistDialogComponent } from './add-edit-playlist-dialog/add-edit-playlist-dialog.component';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material';
+import { OpIndicatorComponent } from './op-indicator/op-indicator.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -50,7 +52,8 @@ import { MatInputModule } from '@angular/material';
     RemoteUploadComponent,
     DownloadIndicatorComponent,
     DragDropDirective,
-    AddEditPlaylistDialogComponent
+    AddEditPlaylistDialogComponent,
+    OpIndicatorComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent],
   imports: [
@@ -82,7 +85,8 @@ import { MatInputModule } from '@angular/material';
     DragDropModule,
     MatFormFieldModule,
     FormsModule,
-    MatInputModule
+    MatInputModule,
+    MatTooltipModule
   ],
   providers:[ ],
   bootstrap: [AppComponent]

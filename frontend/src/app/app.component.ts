@@ -3,7 +3,7 @@ import { BeatOnApiService } from './services/beat-on-api.service';
 import {Router, NavigationStart, RouterEvent} from '@angular/router';
 import {trigger, animate, style, group, query, transition, state} from '@angular/animations';
 import { ToastrService } from 'ngx-toastr';
-import { HostMessageService } from './services/host-message.service';
+import { HostMessageService, ConnectionStatus } from './services/host-message.service';
 import { HostShowToast, ToastType } from './models/HostShowToast';
 import { HostSetupEvent, SetupEventType } from './models/HostSetupEvent';
 import { ConfigService } from './services/config.service';
@@ -48,7 +48,36 @@ export class AppComponent implements OnInit {
         console.log("main app got updated config "+JSON.stringify(cfg));
         this.config = cfg;
       });
-      
+      this.msgSvc.connectionStatusChanged.subscribe(stat => {
+        this.connectionStatus = stat;
+      });
+
+      this.router.events.subscribe((routeEvent : RouterEvent) => {
+        if (routeEvent instanceof NavigationStart)
+        {
+           this.showBackButton = (routeEvent.url == '/main/browser');
+           this.showRefreshButton = (routeEvent.url == '/main/browser');
+           if (routeEvent.url == '/') {
+             this.modStatusLoaded = false;
+             this.checkModStatus();
+           }
+        }
+      } );
+      this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
+       {
+         switch (msg.SetupEvent)
+         {
+           case SetupEventType.Step1Complete:
+             this.router.navigateByUrl("/setupstep2");
+             break;
+           case SetupEventType.Step2Complete:
+             this.router.navigateByUrl('/setupstep3');
+             break;
+           case SetupEventType.Step3Complete:
+             this.router.navigateByUrl('/');
+             break;
+         }
+       })      
   }
   modStatusLoaded: boolean = false;
   title : string = 'Beat On';
@@ -61,35 +90,9 @@ export class AppComponent implements OnInit {
   ngOnInit() {
    
    this.checkModStatus();
-
-   this.router.events.subscribe((routeEvent : RouterEvent) => {
-     if (routeEvent instanceof NavigationStart)
-     {
-        this.showBackButton = (routeEvent.url == '/main/browser');
-        this.showRefreshButton = (routeEvent.url == '/main/browser');
-        if (routeEvent.url == '/') {
-          this.modStatusLoaded = false;
-          this.checkModStatus();
-        }
-     }
-   } );
-   this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
-    {
-      switch (msg.SetupEvent)
-      {
-        case SetupEventType.Step1Complete:
-          this.router.navigateByUrl("/setupstep2");
-          break;
-        case SetupEventType.Step2Complete:
-          this.router.navigateByUrl('/setupstep3');
-          break;
-        case SetupEventType.Step3Complete:
-          this.router.navigateByUrl('/');
-          break;
-      }
-    })
   }
-commitConfig(){
+
+ commitConfig(){
   const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
     width: '450px',
     height: '350px',
@@ -122,6 +125,26 @@ commitConfig(){
           this.toastr.warning(toastMsg.Message, toastMsg.Title, { timeOut: toastMsg.Timeout });
         break;
     }
+  }
+
+  connectionStatus : ConnectionStatus = ConnectionStatus.Disconnected;
+
+  getConnStatusColor() {
+      if (this.connectionStatus == ConnectionStatus.Connected)
+        return "green";
+      else if (this.connectionStatus == ConnectionStatus.Connecting)
+        return "orange";
+      else
+        return "gray";
+  }
+  
+  getConnStatusIcon() {
+    return (this.connectionStatus == ConnectionStatus.Connected || this.connectionStatus == ConnectionStatus.Connecting);
+      
+  }
+
+  reconnect() {
+    this.msgSvc.reconnect();
   }
 
   checkModStatus() : void

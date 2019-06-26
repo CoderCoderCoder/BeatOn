@@ -16,6 +16,7 @@ using QuestomAssets;
 using BeatOn.ClientModels;
 using Newtonsoft.Json;
 using System.Net.NetworkInformation;
+using BeatOn.Core;
 
 namespace BeatOn
 {
@@ -103,6 +104,7 @@ namespace BeatOn
 
         public WebServer(AssetManager assetManager, string baseAssetPath)
         {
+            ServicePointManager.DefaultConnectionLimit = 1000;
             _baseAssetPath = baseAssetPath;
             _assetManager = assetManager;
         }
@@ -150,6 +152,7 @@ namespace BeatOn
             _listener.Prefixes.Add($"http://*:{Port}/");
             try
             {
+                _listener.IgnoreWriteExceptions = true;
                 _listener.Start();
                 _started = true;
                 Log.LogMsg($"HttpListener started on port {Port}");
@@ -320,7 +323,7 @@ namespace BeatOn
             context.Response.AppendHeader("Access-Control-Max-Age", "86400");
             context.Response.AppendHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
             context.Response.Ok();
-            context.Response.Close();
+            
         }
 
         private void HandleGet(HttpListenerContext context)

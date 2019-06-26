@@ -18,7 +18,12 @@
                android:roundIcon="@mipmap/ic_launcher_round" 
                android:theme="@style/AppTheme"
                android:banner="@mipmap/ic_launcher">
-    <!--<meta-data android:name="com.samsung.android.vr.application.mode" android:value="vr_only" />-->
+    <!--<meta-data android:name="com.samsung.android.vr.application.mode" android:value="dual" />-->
+
+    <service
+            android:name="com.emulamer.BeatOnService"
+            android:exported="true"/>
+    
     <meta-data android:name="com.oculus.tv.socialSupport" android:value="true" />
     <activity
     android:name=".MainActivity"

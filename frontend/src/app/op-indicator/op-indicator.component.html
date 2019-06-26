@@ -1,0 +1,25 @@
+<button mat-raised-button color="{{getColor()}}" [matMenuTriggerFor]="menu" mat-button >
+    <div class="iconContainer">
+      <mat-icon [ngClass]="{'spinny': showSpin()}" class="sync">sync</mat-icon>
+      <mat-icon *ngIf="showCheck()" class="check">check</mat-icon>
+      <mat-icon *ngIf="showError()" class="exclamation">priority_high</mat-icon>
+    </div>
+    <div class="opsCount">{{ ops.Ops.length }}</div>
+
+</button> 
+
+
+
+<mat-menu #menu="matMenu">
+  <p class="noops" color="primary" *ngIf="ops.Ops.length < 1">No active operations</p>
+  <button *ngFor="let op of ops.Ops" mat-menu-item  (click)="opClick(op)" >
+
+      <div class="opContainer">
+        <div class="opId">#{{op.ID}}</div>
+          <div  class="opStatus">{{op.Status}}:</div>
+          <div  class="opDesc">{{op.OpDescription}}</div>        
+      </div>
+      <div color="warn" class="errMsg">{{op.Error}}</div>
+  </button>
+  <button mat-raised-button class="clearFailed" color="accent" (click)="clickClearFailedOps()">Clear Failed</button>
+</mat-menu>

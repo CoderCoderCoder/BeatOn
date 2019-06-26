@@ -7,12 +7,15 @@
       Sync to Beat Saber
     </button>
     <button mat-button *ngIf="config?.IsCommitted === true" >Beat Saber Synced</button>
-    <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
+    <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
     <app-download-indicator></app-download-indicator>
+    <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
+    <app-op-indicator></app-op-indicator>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
     <button @fade *ngIf="showRefreshButton" mat-button ><mat-icon>cached</mat-icon></button>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <button @fade *ngIf="showBackButton" mat-button><mat-icon>arrow_back</mat-icon></button>  
+    <button @fade *ngIf="showBackButton" mat-button><mat-icon>arrow_back</mat-icon></button> 
+    <div (click)="reconnect()" class="connectionStatus" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
   </mat-toolbar>
 
 <mat-card fxLayout="column" *ngIf="!modStatusLoaded" class="setup-card">

@@ -1,0 +1,104 @@
+@import '../../theme.scss';
+
+@include mat-core();
+
+.opsCount {
+    display: inline-block;
+    font-size: 15px;
+    margin-left: 5px;
+    margin-top: 3px;
+}
+
+mat-icon {
+    font-size: 24px;
+}
+.noops {
+    font-size: 14px;
+    padding: 5px;
+    color: mat-color($my-app-warn);
+}
+.opDesc {
+    display: inline-block;
+    min-width: 100px;
+}
+.opStatus {
+    display: inline-block;
+    min-width: 50px;
+    padding-right: 3px;
+}
+
+.clearFailed {
+    margin-left: 8px;
+}
+.opId {
+    display: inline-block;
+    min-width: 20px;
+    margin-right: 4px;
+}
+.opContainer {
+    font-size: 12px;
+}
+.check {
+    position: absolute;
+    color: green;
+    top: -3px;
+    left: 24px;
+    font-size: 24px;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+.sync {
+    position: absolute;
+    color: white;
+    top: 3px;
+    left: 0;
+    font-size: 32px;
+    padding: 0px;
+    width: 32px;
+    height: 32px;
+}
+
+.exclamation {
+    position: absolute;
+    color: red;
+    top: 0px;
+    left: 22px;
+    font-size: 24px;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+.iconContainer {
+    width:24px;
+    width:24px;
+    display: inline-block;
+
+}
+
+.spinny {
+    -webkit-animation: spin 1.5s linear infinite;
+    animation: spin 1.5s linear infinite;
+    transform-origin: center center;
+}
+/* include this only once */
+@-webkit-keyframes spin {
+    0%   {
+        -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(0deg);  /* IE 9 */
+        transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+    }
+    100% {
+        -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(360deg);  /* IE 9 */
+        transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+    }
+}
+@keyframes spin {
+    0%   {
+        -webkit-transform: rotate(0deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(0deg);  /* IE 9 */
+        transform: rotate(0deg);  /* Firefox 16+, IE 10+, Opera */
+    }
+    100% {
+        -webkit-transform: rotate(360deg);  /* Chrome, Opera 15+, Safari 3.1+ */
+        -ms-transform: rotate(360deg);  /* IE 9 */
+        transform: rotate(360deg);  /* Firefox 16+, IE 10+, Opera */
+    }
+}

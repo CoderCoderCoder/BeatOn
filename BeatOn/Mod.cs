@@ -26,10 +26,13 @@ namespace BeatOn
         public event EventHandler<string> StatusUpdated;
         private Context _context;
         private string _tempApk;
-
-        public Mod(Context context)
+        Action<string> _triggerUninstall;
+        Action<string> _triggerInstall;
+        public Mod(Context context, Action<string> triggerUninstall, Action<string> triggerInstall)
         {
             _context = context;
+            _triggerInstall = triggerInstall;
+            _triggerUninstall = triggerUninstall;
         }
 
         private string TempApk
@@ -93,6 +96,9 @@ namespace BeatOn
         {
             get
             {
+#if EMULATOR
+                return true;
+#endif
                 string bsApk = FindBeatSaberApk();
                 if (bsApk == null)
                 {
@@ -115,6 +121,9 @@ namespace BeatOn
         {
             get
             {
+#if EMULATOR
+                return true;
+#endif
                 return FindBeatSaberApk() != null;
             }
         }
@@ -257,15 +266,22 @@ namespace BeatOn
             UpdateStatus("Modding has completed!");
         }
 
-        public void TriggerPackageInstall()
+        public void TriggerPackageInstall(string package = null)
         {
             if (TempApk == null)
                 throw new Exception("TempApk is null, can't install it!");
+            if (package == null)
+                package = TempApk;
+            if (_triggerInstall != null)
+            {
+                _triggerInstall(package);
+                return;
+            }
             PackageManager pkgMgr = _context.PackageManager;
             Intent intent = new Intent(Intent.ActionView);
             Android.Net.Uri apkURI = FileProvider.GetUriForFile(
                          _context,
-                         _context.PackageName + ".provider", new Java.IO.File(TempApk));
+                         _context.PackageName + ".provider", new Java.IO.File(package));
             intent.SetDataAndType(apkURI, "application/vnd.android.package-archive");
             intent.AddFlags(ActivityFlags.GrantReadUriPermission);
             //intent.SetDataAndType(Android.Net.Uri.FromFile(new Java.IO.File(packageApkPath)), "application/vnd.android.package-archive");
@@ -359,8 +375,13 @@ namespace BeatOn
             StatusUpdated?.Invoke(this, message);
         }
 
-        private void TriggerPackageUninstall(string packageApkPath)
+        public void TriggerPackageUninstall(string packageApkPath)
         {
+            if (_triggerUninstall != null)
+            {
+                _triggerUninstall(packageApkPath);
+                return;
+            }
             PackageManager pkgMgr = _context.PackageManager;
 
             Intent intent = new Intent(Intent.ActionDelete, Android.Net.Uri.FromParts("package",

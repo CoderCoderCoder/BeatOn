@@ -10,6 +10,9 @@ import { BeatOnConfig } from '../models/BeatOnConfig';
 import { AddEditPlaylistDialogComponent } from '../add-edit-playlist-dialog/add-edit-playlist-dialog.component';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { HostMessageService } from '../services/host-message.service';
+import { ClientMoveSongToPlaylist } from '../models/ClientMoveSongToPlaylist';
+import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
+import { ClientDeletePlaylist } from '../models/ClientDeletePlaylist';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -106,13 +109,17 @@ export class PlaylistSliderComponent implements OnInit {
 
     if (result['deletePlaylist'] === true) {
       //delete playlist
-      this.msgSvc.sendMessage(JSON.stringify({Type:"DeletePlaylist", PlaylistID: result.playlist.PlaylistID}));
+      var msg = new ClientDeletePlaylist();
+      msg.PlaylistID = result.playlist.PlaylistID;
+      this.msgSvc.sendClientMessage(msg);
     } else {
       //must be a save
       if (result.isNew) {
         this.configSvc.getConfig().subscribe((cfg) => {
           cfg.Config.Playlists.push(result.playlist);
-          this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: result.playlist }));
+          var msg = new ClientAddOrUpdatePlaylist();
+          msg.Playlist =  result.playlist;
+          this.msgSvc.sendClientMessage(msg);
         })
       } else {
         this.configSvc.getConfig().subscribe((cfg) => {
@@ -127,7 +134,9 @@ export class PlaylistSliderComponent implements OnInit {
             }
           });
           if (found) {
-            this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: found }));
+            var msg = new ClientAddOrUpdatePlaylist();
+            msg.Playlist = found;
+            this.msgSvc.sendClientMessage(msg);
           }
         })
       }
@@ -171,7 +180,10 @@ export class PlaylistSliderComponent implements OnInit {
               
           }
         });
-        this.msgSvc.sendMessage(JSON.stringify({Type:"MoveSongToPlaylist", SongID: moveSong.SongID, ToPlaylistID: item.PlaylistID}));
+        var msg = new ClientMoveSongToPlaylist();
+        msg.SongID = moveSong.SongID;
+        msg.ToPlaylistID = item.PlaylistID;
+        this.msgSvc.sendClientMessage(msg);
       });      
     }
     

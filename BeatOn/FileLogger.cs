@@ -97,6 +97,7 @@ namespace BeatOn
         {
             lock (_builder)
             {
+                _builder.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": ");
                 _builder.Append($"{message} {ex.Message} {ex.StackTrace} {ex?.InnerException?.Message} {ex?.InnerException?.StackTrace}\n");
             }
         }
@@ -105,6 +106,7 @@ namespace BeatOn
         {
             lock (_builder)
             {
+                _builder.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": ");
                 _builder.Append($"{String.Format(message, args)}\n");
             }
         }
@@ -121,9 +123,10 @@ namespace BeatOn
                         logStr = string.Format(logStr, args);
                     }
                     catch
-                    { }
+                    {}
                 }
-               _builder.Append($"{logStr}\n");
+                _builder.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + ": ");
+                _builder.Append($"{logStr}\n");
             }
         }        
 

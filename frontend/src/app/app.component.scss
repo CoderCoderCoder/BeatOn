@@ -2,7 +2,37 @@
     display: block;
     height: 100%;
   }
-
+.goodCon {
+  color: green;
+}
+.badCon {
+  color: red;
+}
+.orangeCon {
+  color: orange
+}
+.nowifi {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  color: red;
+  font-size:32px;
+  //text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+}
+.connectionStatus {
+  margin-top: 9px;
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+.wifi {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size:32;
+}
  .warning {
     background-color: #004A7F;
     -webkit-border-radius: 10px;

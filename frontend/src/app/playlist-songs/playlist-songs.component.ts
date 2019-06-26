@@ -5,6 +5,7 @@ import { AppSettings } from '../appSettings';
 import { BeatSaberSong } from '../models/BeatSaberSong';
 import { sortAscendingPriority } from '@angular/flex-layout';
 import { HostMessageService } from '../services/host-message.service';
+import { ClientDeleteSong } from '../models/ClientDeleteSong.cs';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
@@ -30,9 +31,11 @@ export class PlaylistSongsComponent implements OnInit {
       this.songlist = this._playlist.SongList.slice();
     }
   }
+
   ngOnInit() {
 
   }
+  
   drop(e : CdkDragDrop<string>) 
   {
     if (e.container != e.previousContainer) {
@@ -41,13 +44,14 @@ export class PlaylistSongsComponent implements OnInit {
     }
     
   }
+
   getBackground(item) {
     return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + item.SongID ;
   }
 
   clickDeleteSong(song) {
-    this.msgSvc.sendMessage(JSON.stringify({Type:"DeleteSong", SongID: song.SongID}));
-
+    var msg = new ClientDeleteSong();
+    msg.SongID = song.SongID;
+    this.msgSvc.sendClientMessage(msg);
   }
-
 }
