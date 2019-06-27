@@ -47,8 +47,6 @@ namespace BeatOn.Core.RequestHandlers
                     return;
                 }
                 _showToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 3);
-                //todo: decide if this really needs to be called again, or if things are going to do their own updates as they go along
-                _getQae().UpdateConfig(_getConfig().Config);
                 _getQae().Save();
                 _getConfig().IsCommitted = true;
                 _triggerConfigChanged();

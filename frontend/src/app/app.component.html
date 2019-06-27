@@ -3,7 +3,7 @@
 <mat-toolbar layout="row">
     <span>Beat On!</span>
     <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
-    <button *ngIf="config?.IsCommitted === false" (click)="commitConfig()" class="warning">
+    <button [disabled]="opInProgress" *ngIf="config?.IsCommitted === false" (click)="commitConfig()" class="warning">
       Sync to Beat Saber
     </button>
     <button mat-button *ngIf="config?.IsCommitted === true" >Beat Saber Synced</button>

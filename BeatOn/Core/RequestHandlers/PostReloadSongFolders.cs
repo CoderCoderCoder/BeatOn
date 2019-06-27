@@ -80,7 +80,7 @@ namespace BeatOn.Core.RequestHandlers
                             resp.NotFound();
                             return;
                         }
-                        Log.LogMsg($"Starting to reload custom songs from folders.  Found {folders} folders to evaluate");
+                        Log.LogMsg($"Starting to reload custom songs from folders.  Found {folders.Count} folders to evaluate");
                         //todo: probably don't just grab this one
                         var playlist = _getConfig().Config.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
                         if (playlist == null)
@@ -141,6 +141,7 @@ namespace BeatOn.Core.RequestHandlers
                         _setSuppressMsg(false);
                         Log.RemoveLogSink(sls);
                     }
+                    _getConfig().Config = _getQae().GetCurrentConfig();
                     _triggerConfigChanged();
                     resp.Ok();
                 }

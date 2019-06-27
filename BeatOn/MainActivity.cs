@@ -28,10 +28,11 @@ using QuestomAssets.Models;
 namespace BeatOn
 {
     [Activity(Name = "com.emulamer.beaton.MainActivity", Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : Activity
     {
         public MainActivity()
         {
+            
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
         }
 
@@ -49,15 +50,12 @@ namespace BeatOn
         
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
-
-
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
             Log.SetLogSink(new AndroidLogger());
             Log.SetLogSink(new FileLogger(Constants.LOGFILE));
-
+            base.OnCreate(savedInstanceState);
             _webView = FindViewById<WebView>(Resource.Id.webView1);
             _webView.Download += _webView_Download;
             //has to be the activity context to do the package manager stuff

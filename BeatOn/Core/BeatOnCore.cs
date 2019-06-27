@@ -193,7 +193,7 @@ namespace BeatOn.Core
                     {
                         try
                         {
-                            t.Wait();
+                          //  t.Wait();
                         }
                         catch (AggregateException aex)
                         { }
@@ -219,7 +219,7 @@ namespace BeatOn.Core
                     FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
                     PlaylistArtPath = "Art",
                     AssetsPath = "BeatSaberAssets",
-                    ModsPath = "Mods",
+                    ModsSourcePath = "Mods",
                     SongsPath = "CustomSongs"
                 };
                 q.SongFileProvider = q.FileProvider;

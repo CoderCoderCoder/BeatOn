@@ -4,6 +4,7 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import {BeatOnApiService} from '../services/beat-on-api.service';
 import { HostShowToast, ToastType } from '../models/HostShowToast';
 import { NetInfo } from '../models/NetInfo';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tools',
@@ -12,7 +13,7 @@ import { NetInfo } from '../models/NetInfo';
 })
 export class ToolsComponent implements OnInit {
 
-  constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog) { 
+  constructor(private beatOnApi: BeatOnApiService, private dialog : MatDialog, private router: Router) { 
    
   }
   netInfo : NetInfo;
@@ -26,6 +27,7 @@ export class ToolsComponent implements OnInit {
     this.beatOnApi.uninstallBeatSaber()
       .subscribe((data: any) => { 
         dialogRef.close();
+        this.router.navigateByUrl('/');
     }, (err) => {
       dialogRef.close();
     });

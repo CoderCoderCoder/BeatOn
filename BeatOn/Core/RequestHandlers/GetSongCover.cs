@@ -43,7 +43,6 @@ namespace BeatOn.Core.RequestHandlers
                     }
                 }
 
-
                 lock (_songCoverLock)
                 {
                     try
