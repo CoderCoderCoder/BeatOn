@@ -490,10 +490,10 @@ namespace BeatOn
             }
         }
 
-        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null)
+        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null, bool fromBakFiles = false)
         {
             UpdateStatus("Extracting assets files from the APK to external storage...");
-            using (var apk = new ApkAssetsFileProvider(apkFilename, FileCacheMode.None, true))
+            using (var apk = new ApkAssetsFileProvider(apkFilename, FileCacheMode.None, false))
             {
                 foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
                 {
@@ -527,11 +527,16 @@ namespace BeatOn
                     {
                         using (var readStream = apk.GetReadStream(assetFilename, true))
                         {
+                            if (targetFile.EndsWith(".bobak"))
+                                targetFile = targetFile.Substring(0, targetFile.Length - 6);
+
                             using (var fs = File.Open(targetFile, FileMode.Create, FileAccess.Write))
                             {
                                 readStream.CopyTo(fs);
                             }
                         }
+                        if (!assetFilename.EndsWith(".bobak"))
+                            apk.Rename(assetFilename, assetFilename + ".bobak");
                     }
                     catch (Exception ex)
                     {
@@ -540,6 +545,7 @@ namespace BeatOn
                         throw new ModException($"Failed to extract {assetFilename} to {targetFile}", ex);
                     }
                 }
+                apk.Save();
             }
         }
 

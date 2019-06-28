@@ -21,8 +21,19 @@
 <mat-card fxLayout="column" *ngIf="!modStatusLoaded" class="setup-card">
     
 <div fxLayout="column" *ngIf="!modStatusLoaded" >
-  Checking mod installation status
-  </div>
+  <h2>Checking mod installation status...</h2>
+  <p></p>
+  <h3>Credits to folks in BSMG while you wait:</h3>
+  <ul>
+    <li>Sc2ad: code contributor, code reviewer, lots of work on hook mods, lots of discussion and feedback</li>
+    <li>jakibaki: beat-saber hook (making the really cool stuff possible)</li>
+    <li>Agent42: extraordinary testing and support (if it works at all, thank him)</li>
+    <li>Yuuki: code contributor, code documentarian</li>
+    <li>lolpants: everything.  Also, soon songe converter for old to new song format conversion</li>
+    <li>elliotttate: inspiration, support and art</li>    
+  </ul>
+  
+</div>
 </mat-card>
 <div class="fullheight"  fxLayout="column">
 <router-outlet fxLayout="column" [hidden]="!modStatusLoaded" ></router-outlet>

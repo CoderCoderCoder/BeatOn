@@ -31,24 +31,20 @@ namespace BeatOn
         }
         private Func<QuestomAssets.QuestomAssetsEngine> _engineFactory;
         private Func<QuestomAssets.Models.BeatSaberQuestomConfig> _configFactory;
-        private IAssetsFileProvider _provider;
-        private string _defaultSavePath;
         private int _maxConcurrentDownloads;
-        public DownloadManager(Func<QuestomAssets.QuestomAssetsEngine> engineFactory, Func<QuestomAssets.Models.BeatSaberQuestomConfig> configFactory, IAssetsFileProvider provider, string defaultSavePath, int maxConcurrentDownloads = 5)
+        private QaeConfig _qaeConfig;
+        public DownloadManager(Func<QuestomAssets.QuestomAssetsEngine> engineFactory, Func<QuestomAssets.Models.BeatSaberQuestomConfig> configFactory, QaeConfig config, int maxConcurrentDownloads = 5)
         {
             _engineFactory = engineFactory;
-            _configFactory = configFactory;                
-            _provider = provider;
-            _defaultSavePath = defaultSavePath;
+            _configFactory = configFactory;
+            _qaeConfig = config;
             _maxConcurrentDownloads = maxConcurrentDownloads;
         }
         private object _installLock = new object();
         private Task _currentInstall;
 
-        public Download DownloadFile(string url, string savePath = null)
+        public Download DownloadFile(string url, string overrideSavePath = null)
         {
-            savePath = savePath ?? _defaultSavePath;
-            
             //prevent the same URL from going in the queue twice.
             var exists = false;
             lock (_downloads)
@@ -58,13 +54,13 @@ namespace BeatOn
 
             if (exists)
             {
-                var deadDl = new Download(url, _provider, savePath);
+                var deadDl = new Download(url, _qaeConfig, _engineFactory);
                 deadDl.StatusChanged += StatusChangeHandler;
                 deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
                 return deadDl;
             }            
             
-            Download dl = new Download(url, _provider, savePath);
+            Download dl = new Download(url, _qaeConfig, _engineFactory);
             lock (_downloads)
                 _downloads.Add(dl);
             dl.StatusChanged += StatusChangeHandler;
@@ -72,11 +68,10 @@ namespace BeatOn
             return dl;
         }
 
-        public Download ProcessFile(byte[] fileData, string fileName, string savePath = null)
+        public Download ProcessFile(byte[] fileData, string filename)
         {
-            savePath = savePath ?? _defaultSavePath;
 
-            Download dl = new Download(_provider, savePath, fileData, fileName);
+            Download dl = new Download(_qaeConfig, fileData, filename, _engineFactory);
             lock(_downloads)
                 _downloads.Add(dl);
             dl.StatusChanged += StatusChangeHandler;
@@ -121,60 +116,80 @@ namespace BeatOn
                                 try
                                 {
                                     var qae = _engineFactory();
-                                    var currentConfig = _configFactory();
-                                    var pl = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
-                                    Task<BeatSaberPlaylist> playlistTask;
-                                    if (pl == null)
+                                    var modDownloads = doneDownloads.Where(x => x.DownloadType == DownloadType.ModFile);
+                                    foreach (var modDownload in modDownloads)
                                     {
-                                        playlistTask = new Task<BeatSaberPlaylist>(() =>
+                                        try
                                         {
-                                            pl = new BeatSaberPlaylist()
-                                            {
-                                                PlaylistID = "CustomSongs",
-                                                PlaylistName = "Custom Songs"
-                                            };
-                                            var addPlOp = new AddOrUpdatePlaylistOp(pl);
-                                            qae.OpManager.QueueOp(addPlOp);
-                                            addPlOp.FinishedEvent.WaitOne();
-                                            if (addPlOp.Status != OpStatus.Complete)
-                                            {
-                                                Log.LogErr($"Unable to create CustomSongs playlist!");
-                                                return null;
-                                            }
-                                            currentConfig.Playlists.Add(pl);
-                                            return pl;
-                                        });
-                                    }
-                                    else
-                                    {
-                                        playlistTask = new Task<BeatSaberPlaylist>(() => { return pl; });
-                                    }
-                                    playlistTask.ContinueWith((pt) =>
-                                    {
-                                        var playlist = pt.Result;
-                                        foreach (var toInst in doneDownloads)
-                                        {
-                                            var bsSong = new BeatSaberSong()
-                                            {
-                                                SongID = Path.GetFileName(toInst.DownloadPath),
-                                                CustomSongPath = toInst.DownloadPath
-                                            };
-                                            var addOp = new AddNewSongToPlaylistOp(bsSong, playlist.PlaylistID);
-
-                                            addOp.OpFinished += (s, op) =>
-                                             {
-                                                 playlist.SongList.Add(bsSong);
-                                                 
-                                                 if (op.Status == OpStatus.Complete)
-                                                     toInst.SetStatus(DownloadStatus.Installed);
-                                                 else
-                                                     toInst.SetStatus(DownloadStatus.Failed);
-                                             };
-                                            toInst.SetStatus(DownloadStatus.Installing);
-                                            qae.OpManager.QueueOp(addOp);
+                                            QuestomAssets.Mods.ModDefinition.InstallFromZip(modDownload.DownloadedFilename, _qaeConfig, _engineFactory());
+                                            modDownload.SetStatus(DownloadStatus.Installed);
                                         }
-                                    });
-                                    playlistTask.Start();
+                                        catch (Exception ex)
+                                        {
+                                            Log.LogErr($"Exception installing mod {modDownload.DownloadedFilename}", ex);
+                                            modDownload.SetStatus(DownloadStatus.Failed);
+                                        }
+                                    }
+                                    
+
+                                    var songDownloads = doneDownloads.Where(x => x.DownloadType == DownloadType.SongFile);
+                                    if (songDownloads.Any())
+                                    {
+                                        var currentConfig = _configFactory();
+                                        var pl = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+                                        Task<BeatSaberPlaylist> playlistTask;
+                                        if (pl == null)
+                                        {
+                                            playlistTask = new Task<BeatSaberPlaylist>(() =>
+                                            {
+                                                pl = new BeatSaberPlaylist()
+                                                {
+                                                    PlaylistID = "CustomSongs",
+                                                    PlaylistName = "Custom Songs"
+                                                };
+                                                var addPlOp = new AddOrUpdatePlaylistOp(pl);
+                                                qae.OpManager.QueueOp(addPlOp);
+                                                addPlOp.FinishedEvent.WaitOne();
+                                                if (addPlOp.Status != OpStatus.Complete)
+                                                {
+                                                    Log.LogErr($"Unable to create CustomSongs playlist!");
+                                                    return null;
+                                                }
+                                                currentConfig.Playlists.Add(pl);
+                                                return pl;
+                                            });
+                                        }
+                                        else
+                                        {
+                                            playlistTask = new Task<BeatSaberPlaylist>(() => { return pl; });
+                                        }
+                                        playlistTask.ContinueWith((pt) =>
+                                        {
+                                            var playlist = pt.Result;
+                                            foreach (var toInst in doneDownloads)
+                                            {
+                                                var bsSong = new BeatSaberSong()
+                                                {
+                                                    SongID = Path.GetFileName(toInst.DownloadPath),
+                                                    CustomSongPath = toInst.DownloadPath
+                                                };
+                                                var addOp = new AddNewSongToPlaylistOp(bsSong, playlist.PlaylistID);
+
+                                                addOp.OpFinished += (s, op) =>
+                                                 {
+                                                     playlist.SongList.Add(bsSong);
+
+                                                     if (op.Status == OpStatus.Complete)
+                                                         toInst.SetStatus(DownloadStatus.Installed);
+                                                     else
+                                                         toInst.SetStatus(DownloadStatus.Failed);
+                                                 };
+                                                toInst.SetStatus(DownloadStatus.Installing);
+                                                qae.OpManager.QueueOp(addOp);
+                                            }
+                                        });
+                                        playlistTask.Start();
+                                    }
                                 }
                                 finally
                                 {

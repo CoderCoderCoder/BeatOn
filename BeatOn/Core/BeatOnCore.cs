@@ -29,7 +29,7 @@ namespace BeatOn.Core
             _context = context;
             _mod = new Mod(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            _SongDownloadManager = new DownloadManager(() => Engine, () => CurrentConfig.Config, _qaeConfig.SongFileProvider, _qaeConfig.SongsPath);
+            _SongDownloadManager = new DownloadManager(() => Engine, () => CurrentConfig.Config, _qaeConfig);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
         }
 
@@ -166,7 +166,7 @@ namespace BeatOn.Core
             //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
 
             var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
-            if (_qaeConfig.FileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
+            if (_qaeConfig.RootFileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
             {
                 ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
                 return;
@@ -216,13 +216,14 @@ namespace BeatOn.Core
             {
                 var q = new QaeConfig()
                 {
-                    FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
+                    RootFileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
                     PlaylistArtPath = "Art",
                     AssetsPath = "BeatSaberAssets",
                     ModsSourcePath = "Mods",
-                    SongsPath = "CustomSongs"
+                    SongsPath = "CustomSongs",
+                    ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false)
                 };
-                q.SongFileProvider = q.FileProvider;
+                q.SongFileProvider = q.RootFileProvider;
                 return q;
             }
         }
@@ -293,6 +294,12 @@ namespace BeatOn.Core
             }
 
             SendMessageToClient(opstat);
+            if (e.Status == OpStatus.Complete && e.IsWriteOp)
+            {
+                CurrentConfig.Config = Engine.GetCurrentConfig();
+                CurrentConfig.IsCommitted = false;
+                SendConfigChangeMessage();
+            }
         }
 
         private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)

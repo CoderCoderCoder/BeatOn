@@ -308,7 +308,6 @@ namespace BeatOn
             catch (Exception ex)
             {
                 Log.LogErr($"Error in HandleRequest", ex);
-                Stop();
             }
         }
 
