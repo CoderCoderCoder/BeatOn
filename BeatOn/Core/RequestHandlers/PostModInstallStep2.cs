@@ -17,10 +17,10 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class PostModInstallStep2 : IHandleRequest
     {
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private SendHostMessageDelegate _sendMessage;
 
-        public PostModInstallStep2(Mod mod, SendHostMessageDelegate sendMessage)
+        public PostModInstallStep2(BeatSaberModder mod, SendHostMessageDelegate sendMessage)
         {
             _mod = mod;
             _sendMessage = sendMessage;

@@ -24,6 +24,9 @@ using Com.Emulamer.Installerhelper;
 using Newtonsoft.Json;
 using QuestomAssets;
 using QuestomAssets.Models;
+using Android.Gestures;
+using Android.AccessibilityServices;
+
 
 namespace BeatOn
 {
@@ -36,6 +39,8 @@ namespace BeatOn
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
         }
 
+
+
         private WebView _webView;
         private JSWebViewClient _webViewClient;
         private BeatOnServiceTransceiver _broadcastReceiver;
@@ -45,9 +50,54 @@ namespace BeatOn
             _broadcastReceiver.SendDownloadUrl(new DownloadUrlInfo() { Url = e.Url, MimeType = e.Mimetype });
         }
 
+        //public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
+        //{
+        //    var displayMetrics = Resources.DisplayMetrics;
+        //    int midY = displayMetrics.HeightPixels / 2;
+        //    int midX = displayMetrics.WidthPixels / 2;
+        //    var builder = new GestureDescription.Builder();
+        //    Android.Graphics.Path p = new Android.Graphics.Path();
+        //    p.MoveTo(midX, midY);
+        //    p.LineTo(midX, displayMetrics.HeightPixels);
+        //    builder.AddStroke(new GestureDescription.StrokeDescription(p, 100, 50));
+        //    var handler = new Handler();
+            
+        //    // _webView.DispatchKeyEvent(new KeyEvent( KeyEventActions.Down, Keycode.PageDown)
+        //    switch (e.KeyCode)
+        //    {
+               
+        //        case Keycode.DpadDown:
+        //            DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), MotionEventActions.Scroll, 50, 50, 0));
+        //            return base.OnKeyDown(keyCode, e);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY, 0));
+        //            //}, 50);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY + 200, 0));
+        //            //}, 100);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY + 400, 0));
+        //            //}, 150);
+                   
 
 
-        
+        //            break;
+        //        case Keycode.DpadUp:
+                    
+        //            break;
+        //        case Keycode.ButtonX:
+        //            _webView.PerformClick();
+        //            break;
+        //        default:
+                    
+        //            break;
+        //    }
+        //    return base.OnKeyDown(keyCode, e);
+        //}
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
@@ -150,12 +200,12 @@ namespace BeatOn
                     _broadcastReceiver.UnregisterIntents();
                     _broadcastReceiver.RegisterContextForIntents(BeatOnIntent.InstallPackage, BeatOnIntent.UninstallPackage);
                     _broadcastReceiver.UninstallPackageReceived+= (s, p) => {
-                        Mod m = new Mod(this, null, null);
+                        BeatSaberModder m = new BeatSaberModder(this, null, null);
                         m.TriggerPackageUninstall(p.PackageUrl);
                     };
                     _broadcastReceiver.InstallPackageReceived += (s, p) =>
                      {
-                         Mod m = new Mod(this, null, null);
+                         BeatSaberModder m = new BeatSaberModder(this, null, null);
                          m.TriggerPackageInstall(p.PackageUrl);
                      };
                 };

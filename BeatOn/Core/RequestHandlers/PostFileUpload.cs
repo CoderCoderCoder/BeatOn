@@ -17,15 +17,15 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class PostFileUpload : IHandleRequest
     {
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private ShowToastDelegate _showToast;
-        private GetDownloadManagerDelegate _getDownloadManager;
+        private Func<ImportManager> _getImportManager;
 
-        public PostFileUpload(Mod mod, ShowToastDelegate showToast, GetDownloadManagerDelegate getDownloadManager)
+        public PostFileUpload(BeatSaberModder mod, ShowToastDelegate showToast, Func<ImportManager> getImportManager)
         {
             _mod = mod;
             _showToast = showToast;
-            _getDownloadManager = getDownloadManager;
+            _getImportManager = getImportManager;
         }
 
         public void HandleRequest(HttpListenerContext context)
@@ -83,7 +83,23 @@ namespace BeatOn.Core.RequestHandlers
                     byte[] b = s.ToArray();
                     files.Remove(file);
                     s.Dispose();
-                    _getDownloadManager().ProcessFile(b, file);
+                    try
+                    {
+                        using (MemoryStream ms = new MemoryStream(b))
+                        {
+                            using (var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true))
+                            {
+                                _getImportManager().ImportFromFileProvider(provider);
+                            }
+                        }
+                    }catch (ImportException iex)
+                    {
+                        _showToast($"Unable to import file", $"There was an error importing the file {file}: {iex.FriendlyMessage}", ClientModels.ToastType.Error, 5);
+                    }
+                    catch (Exception ex)
+                    {
+                        _showToast($"Unable to process file", $"There was an error processing the file {file}.", ClientModels.ToastType.Error, 5);
+                    }
                 }
                 resp.Ok();
             }

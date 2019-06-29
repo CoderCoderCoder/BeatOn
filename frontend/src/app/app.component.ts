@@ -11,6 +11,7 @@ import { BeatOnConfig } from './models/BeatOnConfig';
 import { ProgressSpinnerDialogComponent } from "./progress-spinner-dialog/progress-spinner-dialog.component";
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { HostOpStatus, OpStatus } from './models/HostOpStatus';
+import { ToolbarEventsService } from './services/toolbar-events.service';
 
 @Component({
   selector: 'app-root',
@@ -35,7 +36,8 @@ export class AppComponent implements OnInit {
     private msgSvc: HostMessageService,
           private toastr: ToastrService,
           private cfgSvc : ConfigService,
-          private dialog : MatDialog
+          private dialog : MatDialog,
+          private toolbarEvents : ToolbarEventsService
           
           
           ) { 
@@ -201,6 +203,16 @@ export class AppComponent implements OnInit {
       .subscribe((data: any) => { this.modStatus = data; this.resultJson = JSON.stringify(data);});
   }
 
+  clickBack() {
+    this.toolbarEvents.triggerBackClicked();
+  }
 
+  clickRefresh() {
+    this.toolbarEvents.triggerRefreshClicked();
+  }
+
+  linkSelected(ev) {
+    this.toolbarEvents.triggerNavigate(ev);
+  }
   
 }

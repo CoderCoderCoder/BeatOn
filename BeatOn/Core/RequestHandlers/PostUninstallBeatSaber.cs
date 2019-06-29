@@ -17,9 +17,9 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class PostUninstallBeatSaber : IHandleRequest
     {
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private ShowToastDelegate _showToast;
-        public PostUninstallBeatSaber(Mod mod, ShowToastDelegate showToast)
+        public PostUninstallBeatSaber(BeatSaberModder mod, ShowToastDelegate showToast)
         {
             _mod = mod;
             _showToast = showToast;

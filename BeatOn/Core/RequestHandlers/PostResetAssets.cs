@@ -17,11 +17,11 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class PostResetAssets : IHandleRequest
     {
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private ShowToastDelegate _showToast;
         private Action _triggerConfigChanged;
         private Action _triggerFullEngineReset;
-        public PostResetAssets(Mod mod, ShowToastDelegate showToast, Action triggerConfigChanged, Action triggerFullEngineReset)
+        public PostResetAssets(BeatSaberModder mod, ShowToastDelegate showToast, Action triggerConfigChanged, Action triggerFullEngineReset)
         {
             _mod = mod;
             _showToast = showToast;
@@ -37,7 +37,6 @@ namespace BeatOn.Core.RequestHandlers
                 resp.BadRequest("Another mod request is in progress.");
             try
             {
-
                 try
                 {
                     if (!_mod.IsBeatSaberInstalled && !_mod.IsInstalledBeatSaberModded)
@@ -48,6 +47,7 @@ namespace BeatOn.Core.RequestHandlers
                     }
                     _triggerFullEngineReset();
                     _mod.ResetAssets();
+                    _mod.ClearHookMods();
                     _triggerConfigChanged();
                     resp.Ok();
                 }

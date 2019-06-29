@@ -24,12 +24,15 @@ namespace BeatOn.Core
     public class BeatOnCore : IDisposable
     {
         private Context _context;
+        public ImportManager ImportManager { get; private set; }
+
         public BeatOnCore(Context context, Action<string> triggerPackageInstall, Action<string> triggerPackageUninstall)
         {
             _context = context;
-            _mod = new Mod(_context, triggerPackageInstall, triggerPackageUninstall);
+            _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            _SongDownloadManager = new DownloadManager(() => Engine, () => CurrentConfig.Config, _qaeConfig);
+            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig.Config, () => Engine, ShowToast);
+            _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
         }
 
@@ -66,7 +69,7 @@ namespace BeatOn.Core
 
         private DownloadManager _SongDownloadManager;
         private WebServer _webServer;
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private QuestomAssetsEngine _qae;
         private BeatOnConfig _currentConfig;
         private List<AssetOp> _trackedOps = new List<AssetOp>();
@@ -102,29 +105,29 @@ namespace BeatOn.Core
             }
         }
 
-        private void UpdateConfig(BeatSaberQuestomConfig config)
-        {
-            var currentCfg = Engine.GetCurrentConfig();
-            ClearCurrentConfig();
-            bool matches = config.Matches(currentCfg);
+        //private void UpdateConfig(BeatSaberQuestomConfig config)
+        //{
+        //    var currentCfg = Engine.GetCurrentConfig();
+        //    ClearCurrentConfig();
+        //    bool matches = config.Matches(currentCfg);
 
-            if (!matches)
-            {
-                Engine.UpdateConfig(config);
-                config = Engine.GetCurrentConfig();
-            }
-            else
-            {
-                config = currentCfg;
-            }
-            _currentConfig = new BeatOnConfig()
-            {
-                Config = config,
-                IsCommitted = matches
-            };
-            _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
-            SendConfigChangeMessage();
-        }
+        //    if (!matches)
+        //    {
+        //        Engine.UpdateConfig(config);
+        //        config = Engine.GetCurrentConfig();
+        //    }
+        //    else
+        //    {
+        //        config = currentCfg;
+        //    }
+        //    _currentConfig = new BeatOnConfig()
+        //    {
+        //        Config = config,
+        //        IsCommitted = matches || Engine.HasChanges
+        //    };
+        //    _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
+        //    SendConfigChangeMessage();
+        //}
 
         private BeatOnConfig CurrentConfig
         {
@@ -141,7 +144,7 @@ namespace BeatOn.Core
                         {
                             Config = config
                         };
-                        _currentConfig.IsCommitted = true;
+                        _currentConfig.IsCommitted = !Engine.HasChanges;
                         _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
                     }
                     catch (Exception ex)
@@ -150,7 +153,6 @@ namespace BeatOn.Core
                         ShowToast("Critical Error", "Something has gone wrong and Beat On can't function.  Try Reset Assets in the tools menu.", ToastType.Error, 60);
                     }
                 }
-
                 return _currentConfig;
             }
         }
@@ -258,6 +260,8 @@ namespace BeatOn.Core
         private bool _suppressConfigChangeMessage = false;
         private void SendConfigChangeMessage()
         {
+            //todo: see if this is needed or makes sense here.  Could cause noise on the messages.
+            CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
             if (!_suppressConfigChangeMessage)
                 _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
         }
@@ -296,9 +300,7 @@ namespace BeatOn.Core
             SendMessageToClient(opstat);
             if (e.Status == OpStatus.Complete && e.IsWriteOp)
             {
-                CurrentConfig.Config = Engine.GetCurrentConfig();
-                CurrentConfig.IsCommitted = false;
-                SendConfigChangeMessage();
+                CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
             }
         }
 
@@ -310,13 +312,13 @@ namespace BeatOn.Core
                 switch (e.Status)
                 {
                     case DownloadStatus.Downloading:
-                        ShowToast("Downloading song...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
+                        ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
                         break;
                     case DownloadStatus.Failed:
-                        ShowToast("Song failed to download", dl.DownloadUrl.ToString(), ToastType.Error, 5);
+                        ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
                         break;
-                    case DownloadStatus.Installed:
-                        ShowToast("Song added to Beat Saber", dl.DownloadUrl.ToString(), ToastType.Success, 3);
+                    case DownloadStatus.Processed:
+                        ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
                         break;
                 }
                 var hds = new HostDownloadStatus();
@@ -344,10 +346,9 @@ namespace BeatOn.Core
         {
             _webServer = new WebServer(_context.Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
-            _webServer.Router.AddRoute("PUT", "beatsaber/config", new PutConfig(cfg => UpdateConfig(cfg)));
             _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(() => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
-            _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => _SongDownloadManager));
+            _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
             _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
             _webServer.Router.AddRoute("GET", "mod/status", new GetModStatus(_mod));
@@ -358,8 +359,11 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
             {
                 _currentConfig = null;
-                _qae.Dispose();
-                _qae = null;
+                if (_qae != null)
+                {
+                    _qae.Dispose();
+                    _qae = null;
+                }
             }));
             _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
 

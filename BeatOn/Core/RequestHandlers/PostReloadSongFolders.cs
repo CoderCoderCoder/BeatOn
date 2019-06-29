@@ -20,14 +20,14 @@ namespace BeatOn.Core.RequestHandlers
     public class PostReloadSongFolders : IHandleRequest
     {
         private ShowToastDelegate _showToast;
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private SendHostMessageDelegate _sendMessage;
         private GetQaeDelegate _getQae;
         private GetBeatOnConfigDelegate _getConfig;
         private QaeConfig _qaeConfig;
         private Action _triggerConfigChanged;
         private SetSuppressConfigChangeMessages _setSuppressMsg;
-        public PostReloadSongFolders(Mod mod, QaeConfig qaeConfig, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged, SetSuppressConfigChangeMessages setSuppressMsg)
+        public PostReloadSongFolders(BeatSaberModder mod, QaeConfig qaeConfig, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged, SetSuppressConfigChangeMessages setSuppressMsg)
         {
             _mod = mod;
             _qaeConfig = qaeConfig;

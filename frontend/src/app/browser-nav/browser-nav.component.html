@@ -1,0 +1,12 @@
+<button mat-stroked-button [matMenuTriggerFor]="menu" mat-button  >
+
+  <mat-icon>public</mat-icon>
+  <mat-icon>expand_more</mat-icon>
+
+</button> 
+
+<mat-menu #menu="matMenu">
+<button *ngFor="let link of browserLinks" mat-menu-item (click)="clickLink(link)">
+  <div class="title">{{ link.title }}</div>    
+</button>
+</mat-menu>

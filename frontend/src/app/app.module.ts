@@ -33,6 +33,8 @@ import { AddEditPlaylistDialogComponent } from './add-edit-playlist-dialog/add-e
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material';
 import { OpIndicatorComponent } from './op-indicator/op-indicator.component';
+import { CreditsComponent } from './credits/credits.component';
+import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 
 @NgModule({
   declarations: [
@@ -53,7 +55,9 @@ import { OpIndicatorComponent } from './op-indicator/op-indicator.component';
     DownloadIndicatorComponent,
     DragDropDirective,
     AddEditPlaylistDialogComponent,
-    OpIndicatorComponent
+    OpIndicatorComponent,
+    CreditsComponent,
+    BrowserNavComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent],
   imports: [

@@ -18,12 +18,12 @@ namespace BeatOn.Core.RequestHandlers
     public class PostCommitConfig : IHandleRequest
     {
         private ShowToastDelegate _showToast;
-        private Mod _mod;
+        private BeatSaberModder _mod;
         private SendHostMessageDelegate _sendMessage;
         private GetQaeDelegate _getQae;
         private GetBeatOnConfigDelegate _getConfig;
         private Action _triggerConfigChanged;
-        public PostCommitConfig(Mod mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged)
+        public PostCommitConfig(BeatSaberModder mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged)
         {
             _mod = mod;
             _showToast = showToast;
@@ -48,13 +48,14 @@ namespace BeatOn.Core.RequestHandlers
                 }
                 _showToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 3);
                 _getQae().Save();
-                _getConfig().IsCommitted = true;
+                _getConfig().IsCommitted = (!_getQae().HasChanges);
                 _triggerConfigChanged();
                 resp.Ok();
             }
             catch (Exception ex)
             {
-                Log.LogErr("Exception handling mod install step 1!", ex);
+                Log.LogErr("Exception handling commit!", ex);
+                _sendMessage(new HostShowToast() { Message = "There was an error saving changes.", Title = "Unable to save changes to Beat Saber!", Timeout = 8, ToastType = ToastType.Error });
                 resp.StatusCode = 500;
             }
         }

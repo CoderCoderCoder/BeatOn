@@ -1,4 +1,4 @@
-<button mat-raised-button color="{{(downloads.Downloads.length > 0)?'accent':''}}" [matMenuTriggerFor]="menu" mat-button (color)="(downloads.Downloads.length>0)?'accent':''" >
+<button mat-raised-button [matMenuTriggerFor]="menu" mat-button (color)="(downloads.Downloads.length>0)?'accent':''" >
 
     <mat-icon>cloud_download</mat-icon>
     <div class="downloadCount">{{ downloads.Downloads.length }}</div>
@@ -7,8 +7,7 @@
 
 <mat-menu #menu="matMenu">
   <p class="nodownloads" color="primary" *ngIf="downloads.Downloads.length < 1">No active downloads</p>
-  <button *ngFor="let dl of downloads.Downloads" mat-menu-item [matMenuTriggerFor]="menu">
-    <div>{{dl.Url}}</div><div>{{dl.Status}}</div>
-      <mat-progress-bar mode="determinate" (value)="dl.PercentageComplete"></mat-progress-bar>
+  <button *ngFor="let dl of downloads.Downloads" mat-menu-item>
+    <div>{{dl.Url}}</div>
   </button>
 </mat-menu>

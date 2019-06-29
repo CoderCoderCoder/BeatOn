@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { ToolbarEventsService } from '../services/toolbar-events.service';
 
 @Component({
   selector: 'app-main-browser',
@@ -9,9 +10,21 @@ import { Component, OnInit } from '@angular/core';
   }
 })
 export class MainBrowserComponent implements OnInit {
-
+  @ViewChild('browser',null) browser: ElementRef;
   browserUrl : string = "https://www.bsaber.com";
-  constructor() { }
+  constructor(private toolbarEvents : ToolbarEventsService) {
+    toolbarEvents.backClicked.subscribe(()=>{
+      window.history.back(); 
+    });
+    toolbarEvents.refreshClicked.subscribe(()=>
+    {
+      this.browser.nativeElement.src = this.browserUrl;
+    });
+    toolbarEvents.navigate.subscribe((url)=>
+    {
+      this.browserUrl = url;
+    });
+   }
 
   ngOnInit() {
   }

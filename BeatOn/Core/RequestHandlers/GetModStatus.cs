@@ -17,8 +17,8 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class GetModStatus : IHandleRequest
     {
-        private Mod _mod;
-        public GetModStatus(Mod mod)
+        private BeatSaberModder _mod;
+        public GetModStatus(BeatSaberModder mod)
         {
             _mod = mod;
         }
