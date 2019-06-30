@@ -60,7 +60,6 @@ export class PlaylistSliderComponent implements OnInit {
   }
 
   onTileClick(item) {
-    console.log("playlist selecteD");
     this.selected = item;
     this.selectedPlaylist.emit(item);
   }
@@ -163,7 +162,6 @@ export class PlaylistSliderComponent implements OnInit {
   }
   playlistDrop(item : BeatSaberPlaylist, evt) 
   {
-    console.log("got a drop!");
     let oldPlaylist : BeatSaberPlaylist = <BeatSaberPlaylist>evt.previousContainer.data;
     if (oldPlaylist.PlaylistID === item.PlaylistID) {
       console.log("dropped a song on the same playlist it is in, doing nothing");

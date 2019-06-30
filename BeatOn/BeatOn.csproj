@@ -77,6 +77,24 @@
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Profiler|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Profiler\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;EMULATOR</DefineConstants>
+    <DebugType>portable</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <MandroidI18n />
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AotAssemblies>false</AotAssemblies>
+    <EnableLLVM>false</EnableLLVM>
+    <BundleAssemblies>false</BundleAssemblies>
+    <WarningLevel>3</WarningLevel>
+    <AndroidSupportedAbis>armeabi-v7a;x86;x86_64</AndroidSupportedAbis>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android.Export" />
     <Reference Include="System" />
@@ -129,6 +147,7 @@
     <Compile Include="Core\RequestHandlers\GetSongCover.cs" />
     <Compile Include="Core\RequestHandlers\PostAutoCreatePlaylists.cs" />
     <Compile Include="Core\ResponseExtensions.cs" />
+    <Compile Include="Debouncey.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="DownloadType.cs" />
     <Compile Include="IHandleRequest.cs" />
@@ -302,10 +321,10 @@
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.e490b638bc717bb41e6f.js" />
+    <AndroidAsset Include="Assets\www\main-es5.7349fed99bbb0fe5c82b.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.156f21cb776919f69b50.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.302915d7041f1503b021.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

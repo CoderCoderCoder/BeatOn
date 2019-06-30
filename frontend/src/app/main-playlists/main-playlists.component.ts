@@ -25,8 +25,8 @@ export class MainPlaylistsComponent implements OnInit {
 
 
   ngOnInit() {
-   this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => { console.log("got config " + JSON.stringify(cfg)); this.config = cfg.Config; });
-   this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> { console.log("got config update"); this.config = cfg.Config; });
+   this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {  this.config = cfg.Config; });
+   this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> {  this.config = cfg.Config; });
   }
 
 }

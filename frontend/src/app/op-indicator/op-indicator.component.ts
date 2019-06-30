@@ -15,9 +15,6 @@ export class OpIndicatorComponent implements OnInit {
   constructor(private msgSvc: HostMessageService, private appIntegration : AppIntegrationService) {
     var gotOps = false;
     this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
-      console.log("there are " + this.ops.Ops.length + " ops to display");
-      console.log(JSON.stringify(this.ops.Ops));
-        console.log("got ops update status message");
         this.ops = ev;
         gotOps = true;
     });

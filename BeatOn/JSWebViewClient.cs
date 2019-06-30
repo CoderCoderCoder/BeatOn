@@ -45,6 +45,7 @@ namespace BeatOn
             WebView.Settings.JavaScriptEnabled = true;
             WebView.Settings.AllowContentAccess = true;
             WebView.Settings.CacheMode = CacheModes.Default;
+            WebView.Settings.MediaPlaybackRequiresUserGesture = false;
             WebView.Focusable = true;
         }
 

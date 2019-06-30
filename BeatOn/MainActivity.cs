@@ -144,6 +144,7 @@ namespace BeatOn
             _browserView.Settings.AllowContentAccess = true;
             _browserView.Settings.CacheMode = CacheModes.Default;
             _browserView.Focusable = true;
+            _browserView.Settings.MediaPlaybackRequiresUserGesture = false;
 
             _browserView.Download += _webView_Download;
 
@@ -317,9 +318,6 @@ namespace BeatOn
         private void ContinueLoad()
         {
             Intent serviceToStart = new Intent(this, typeof(BeatOnService));
-
-
-
             Log.LogMsg("Starting service");
             StartService(serviceToStart);
             Log.LogMsg("Started service");

@@ -13,6 +13,7 @@ using Android.Widget;
 using QuestomAssets;
 using QuestomAssets.AssetOps;
 using QuestomAssets.AssetsChanger;
+using QuestomAssets.BeatSaber;
 using QuestomAssets.Models;
 using QuestomAssets.Mods;
 
@@ -32,7 +33,13 @@ namespace BeatOn
             _showToast = showToast;
         }
 
-        public void ImportFromFileProvider(IFileProvider provider)
+
+        /// <summary>
+        /// Imports a song/mod/etc from a file provider
+        /// </summary>
+        /// <param name="provider">The file provider containing the data at its root</param>
+        /// <param name="completionCallback">A completion callback for when the operations have all completed.  Will not be called if there's an exception during initial processing, but will be called if a background operation fails</param>
+        public void ImportFromFileProvider(IFileProvider provider, Action completionCallback)
         {
             try
             {
@@ -45,9 +52,10 @@ namespace BeatOn
                 {
                     case DownloadType.ModFile:
                         ImportModFile(provider);
+                        completionCallback?.Invoke();
                         break;
                     case DownloadType.SongFile:
-                        ImportSongFile(provider);
+                        ImportSongFile(provider, completionCallback);
                         break;
                     case DownloadType.OldSongFile:
                     default:
@@ -68,14 +76,14 @@ namespace BeatOn
             }
         }
 
-        private void ImportSongFile(IFileProvider provider)
+        private void ImportSongFile(IFileProvider provider, Action completionCallback)
         {
             try
             {
                 var songPath = ExtractSongGetPath(provider);
                 var songID = songPath.GetFilenameFwdSlash();
                 var playlist = GetOrCreateDefaultPlaylist();
-                QueueAddSongToPlaylistOp(songID, songPath, playlist);
+                QueueAddSongToPlaylistOp(songID, songPath, playlist, completionCallback);
             }
             catch (ImportException)
             {
@@ -240,7 +248,7 @@ namespace BeatOn
         /// <param name="songID">The song ID to use for the imported song</param>
         /// <param name="songPath">The path, RELATIVE TO THE BEATONDATA ROOT, of where the custom song exists</param>
         /// <param name="playlist">The playlist to add the song to</param>
-        private void QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist)
+        private void QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist, Action completionCallback = null)
         {
             var qae = _getEngine();
             var bsSong = new BeatSaberSong()
@@ -255,6 +263,8 @@ namespace BeatOn
                 //TODO: i'd like for this to come back out of the config rather than being added here
                 if (!playlist.SongList.Any(x=> x.SongID == bsSong.SongID))                
                     playlist.SongList.Add(bsSong);
+
+                completionCallback?.Invoke();
             };
             qae.OpManager.QueueOp(addOp);
         }

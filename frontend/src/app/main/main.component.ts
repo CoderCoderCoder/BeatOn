@@ -26,7 +26,6 @@ export class MainComponent implements OnInit {
   testHtml : string = "";
 tabMouseDown(link) {
   this.activeLinkIndex = link.index;
-  console.log("mousedown");
 }
 clickStuff()
 {

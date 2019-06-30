@@ -13,6 +13,7 @@ using Android.Views;
 using Android.Widget;
 using BeatOn.ClientModels;
 using QuestomAssets;
+using QuestomAssets.BeatSaber;
 using QuestomAssets.Models;
 
 namespace BeatOn.Core.RequestHandlers
@@ -104,6 +105,12 @@ namespace BeatOn.Core.RequestHandlers
                                 Log.LogMsg($"Custom song in folder {folder} appears to already be loaded, skipping it.");
                                 continue;
                             }
+                            //safety check to make sure we aren't importing one with the same ID as a beatsaber song.  It could be re-ID'ed, but this is a stopgap
+                            if (BSConst.KnownLevelIDs.Contains(songId))
+                            {
+                                Log.LogErr($"Song in path {folder} would conflict with a built in songID and will be skipped");
+                                continue;
+                            }
                             SendStatusMessage($"Adding song in {folder}");
                             Log.LogMsg($"Adding custom song in folder {folder} to playlist ID {playlist.PlaylistID}");
                             playlist.SongList.Add(new BeatSaberSong()
@@ -119,15 +126,25 @@ namespace BeatOn.Core.RequestHandlers
                             //    break;
                             //}
                         }
+                        Log.LogMsg("Reload song folders finished with main body");
                         if (addedCtr > 0)
                         {
                             SendStatusMessage($"{addedCtr} songs will be added");
                             SendStatusMessage($"Updating configuration...");
                             Log.LogMsg("Updating config with loaded song folders");
                             Log.SetLogSink(sls);
-                            _getQae().UpdateConfig(_getConfig().Config);
+                            int failedOps = 0;
+                            try
+                            {
+                                _getQae().UpdateConfig(_getConfig().Config);
+                            }
+                            catch (AssetOpsException aoe)
+                            {
+                                Log.LogErr($"Updating config completed, but {aoe.FailedOps?.Count} operations failed.");
+                                failedOps = aoe.FailedOps?.Count ?? 0;
+                            }
                             Log.RemoveLogSink(sls);
-                            _showToast("Folder Load Complete", $"{addedCtr} folders were scanned and added to {playlist.PlaylistName}", ToastType.Success, 3);
+                            _showToast("Folder Load Complete", $"{addedCtr} folders were scanned and added to {playlist.PlaylistName}, {failedOps} failed to load.", ToastType.Success, 3);
                         }
                         else
                         {
@@ -141,8 +158,10 @@ namespace BeatOn.Core.RequestHandlers
                         _setSuppressMsg(false);
                         Log.RemoveLogSink(sls);
                     }
+                    Log.LogMsg("Reload song folders sending change message");
                     _getConfig().Config = _getQae().GetCurrentConfig();
                     _triggerConfigChanged();
+                    Log.LogMsg("Reload song folders responding OK");
                     resp.Ok();
                 }
                 catch (Exception ex)

@@ -85,14 +85,31 @@ namespace BeatOn.Core.RequestHandlers
                     s.Dispose();
                     try
                     {
-                        using (MemoryStream ms = new MemoryStream(b))
+                        MemoryStream ms = new MemoryStream(b);
+                        try
                         {
-                            using (var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
+                            var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                            try
                             {
-                                _getImportManager().ImportFromFileProvider(provider);
+                                _getImportManager().ImportFromFileProvider(provider, () =>
+                                {
+                                    provider.Dispose();
+                                    ms.Dispose();
+                                });
+                            }
+                            catch
+                            {
+                                provider.Dispose();
+                                throw;
                             }
                         }
-                    }catch (ImportException iex)
+                        catch
+                        {
+                            ms.Dispose();
+                            throw;
+                        }
+                    }
+                    catch (ImportException iex)
                     {
                         _showToast($"Unable to import file", $"There was an error importing the file {file}: {iex.FriendlyMessage}", ClientModels.ToastType.Error, 5);
                     }

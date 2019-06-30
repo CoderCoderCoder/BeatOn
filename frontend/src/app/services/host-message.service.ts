@@ -66,10 +66,7 @@ export class HostMessageService {
       var reader = new FileReader();
       reader.onload = () => {
         let msgStr =<string>reader.result;
-        console.log("got parsed message " + msgStr);
         let msgEvent = JSON.parse(msgStr);
-        console.log("Message Event:");
-        console.log(ev);
         if (msgEvent.Type == 'SetupEvent') {
           this.setupMessage.emit(<HostSetupEvent>msgEvent);
         } else if (msgEvent.Type == 'Toast') {
@@ -79,7 +76,6 @@ export class HostMessageService {
         } else if (msgEvent.Type == 'ConfigChange') {
           this.configChangeMessage.emit(<HostConfigChangeEvent>msgEvent);
         } else if (msgEvent.Type = 'OpStatus') {
-          console.log("emitting op status message")
           this.opStatusMessage.emit(<HostOpStatus>msgEvent);
         } else {
           console.log(`Unknown host message: ${msgStr}`)

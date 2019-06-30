@@ -56,7 +56,6 @@ export class AppComponent implements OnInit {
     this.msgSvc.toastMessage.subscribe((ev) => this.showToast(ev));
     this.cfgSvc.configUpdated.subscribe((cfg : BeatOnConfig) =>
       {
-        console.log("main app got updated config "+JSON.stringify(cfg));
         this.config = cfg;
       });
       this.msgSvc.connectionStatusChanged.subscribe(stat => {
@@ -124,7 +123,6 @@ export class AppComponent implements OnInit {
 
 }
   private showToast(toastMsg : HostShowToast) {
-    console.log("got toast");
     if (this.appIntegration.isBrowserShown) {
       console.log("redirecting toast to host since browser is visible");
       this.appIntegration.showToast(toastMsg.Title, toastMsg.Message, toastMsg.ToastType, toastMsg.Timeout);
@@ -192,7 +190,6 @@ export class AppComponent implements OnInit {
        else if (this.modStatus.CurrentStatus == 'ModInstalled') {
         this.cfgSvc.getConfig().subscribe((cfg) =>
         {
-          console.log("main app got config manually");
           this.config = cfg;
           this.router.navigateByUrl('/main/browser');
         });

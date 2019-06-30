@@ -91,12 +91,29 @@ namespace BeatOn
                             {
                                 //this code assumes it's always a zip file.
                                 //load the downloaded data into a zip file provider and have the import manager try importing it
-                                using (MemoryStream ms = new MemoryStream(dl.DownloadedData))
+                                MemoryStream ms = new MemoryStream(dl.DownloadedData);
+                                try
                                 {
-                                    using (var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
+                                    File.WriteAllBytes("/sdcard/test.zip", dl.DownloadedData);
+                                    var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                    try
                                     {
-                                        _importManager.ImportFromFileProvider(provider);
+                                        _importManager.ImportFromFileProvider(provider, () =>
+                                        {
+                                            provider.Dispose();
+                                            ms.Dispose();
+                                        });
                                     }
+                                    catch
+                                    {
+                                        provider.Dispose();
+                                        throw;
+                                    }
+                                }
+                                catch
+                                {
+                                    ms.Dispose();
+                                    throw;
                                 }
 
                                 //if the import manager succeeds, mark the download status as processed.

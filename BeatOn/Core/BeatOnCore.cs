@@ -175,41 +175,10 @@ namespace BeatOn.Core
             }
             _SongDownloadManager.DownloadFile(url);
         }
-
-        object _debounceLock = new object();
-        CancellationTokenSource _debounceTokenSource;
+ 
         private void CurrentConfig_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            lock (_debounceLock)
-            {
-                if (_debounceTokenSource != null)
-                {
-                    _debounceTokenSource.Cancel(true);
-                    _debounceTokenSource = null;
-                }
-                _debounceTokenSource = new CancellationTokenSource();
-                var task = Task.Delay(10, _debounceTokenSource.Token);
-                task.ContinueWith((t) =>
-                {
-                    try
-                    {
-                        try
-                        {
-                          //  t.Wait();
-                        }
-                        catch (AggregateException aex)
-                        { }
-                        lock (_debounceLock)
-                        {
-                            SendConfigChangeMessage();
-                            _debounceTokenSource = null;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                });
-            }
+            SendConfigChangeMessage();
         }
 
         private QaeConfig _qaeConfig
@@ -257,15 +226,30 @@ namespace BeatOn.Core
             SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = message });
         }
 
+        private object _configChangeMsgDebounceLock = new object();
+        private Debouncey<object> _configChangeMsgDebounce;
         private bool _suppressConfigChangeMessage = false;
         private void SendConfigChangeMessage()
         {
+            lock (_configChangeMsgDebounceLock)
+            {
+                if (_configChangeMsgDebounce == null)
+                {
+                    _configChangeMsgDebounce = new Debouncey<object>(100, true);
+                    _configChangeMsgDebounce.Debounced += (e, a) =>
+                     {
+                         if (!_suppressConfigChangeMessage)
+                             _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
+                     };
+                }
+            }
             //todo: see if this is needed or makes sense here.  Could cause noise on the messages.
             CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
-            if (!_suppressConfigChangeMessage)
-                _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
+            _configChangeMsgDebounce.EventRaised(this, null);            
         }
 
+        private object _sendClientOpsChangedLock = new object();
+        private Debouncey<HostOpStatus> _sendClientOpsChanged;
         private void OpManager_OpStatusChanged(object sender, QuestomAssets.AssetOps.AssetOp e)
         {
             List<AssetOp> opCopy;
@@ -296,12 +280,22 @@ namespace BeatOn.Core
                 //}
                 opstat.Ops.Add(new HostOp() { ID = op.ID, OpDescription = op.GetType().Name, Status = op.Status, Error = op.Exception?.Message });
             }
-
-            SendMessageToClient(opstat);
+            lock(_sendClientOpsChangedLock)
+            {
+                if (_sendClientOpsChanged == null)
+                {
+                    _sendClientOpsChanged = new Debouncey<HostOpStatus>(1000, false);
+                    _sendClientOpsChanged.Debounced += (e2, a) =>
+                    {
+                        SendMessageToClient(a);
+                    };
+                }
+            }
             if (e.Status == OpStatus.Complete && e.IsWriteOp)
             {
                 CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
             }
+            _sendClientOpsChanged.EventRaised(this, opstat);
         }
 
         private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)

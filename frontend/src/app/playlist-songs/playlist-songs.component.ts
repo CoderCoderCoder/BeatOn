@@ -43,8 +43,7 @@ export class PlaylistSongsComponent implements OnInit {
   drop(e : CdkDragDrop<string>) 
   {
     if (e.container != e.previousContainer) {
-      debugger;
-      console.log("got a drop in songsd! " + JSON.stringify(e.previousContainer.element.nativeElement.attributes));
+
     }
     
   }
