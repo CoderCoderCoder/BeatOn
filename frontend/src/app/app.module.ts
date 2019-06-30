@@ -35,6 +35,8 @@ import { MatInputModule } from '@angular/material';
 import { OpIndicatorComponent } from './op-indicator/op-indicator.component';
 import { CreditsComponent } from './credits/credits.component';
 import { BrowserNavComponent } from './browser-nav/browser-nav.component';
+import { FastClickDirective } from './directives/fast-click.directive';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -57,9 +59,11 @@ import { BrowserNavComponent } from './browser-nav/browser-nav.component';
     AddEditPlaylistDialogComponent,
     OpIndicatorComponent,
     CreditsComponent,
-    BrowserNavComponent
+    BrowserNavComponent,
+    FastClickDirective,
+    ConfirmDialogComponent
   ],
-  entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent],
+  entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent, ConfirmDialogComponent],
   imports: [
     ToastrModule.forRoot({
       positionClass: 'toast-bottom-right',

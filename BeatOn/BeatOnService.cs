@@ -12,6 +12,8 @@ using Android.Widget;
 using QuestomAssets;
 using BeatOn.Core;
 using System.Threading;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace BeatOn
 {
@@ -22,6 +24,7 @@ namespace BeatOn
 
         private Timer _broadcastStatusTimer;
         private BeatOnServiceTransceiver _transciever;
+        private bool _isBrowserOpen = false;
 
         private void StartStatusTimer()
         {
@@ -33,6 +36,7 @@ namespace BeatOn
                 {
                     if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage) == Android.Content.PM.Permission.Granted)
                     {
+                        //Toast.makeText(getApplicationContext(), "Hello Javatpoint", Toast.LENGTH_SHORT).show();
                         _core = new BeatOnCore(this, _transciever.SendPackageInstall, _transciever.SendPackageUninstall);
                         _core.Start();
                     }
@@ -59,7 +63,27 @@ namespace BeatOn
 
         public BeatOnService()
         {
-
+            Log.ClearSinksOfType<AndroidLogger>( (x) => true);
+            //prevent duplicate log sinks of these types from getting registered.
+            Log.ClearSinksOfType<FileLogger>( x=> x.LogFile == Constants.SERVICE_LOGFILE);
+            Log.SetLogSink(new AndroidLogger());
+            _fileLogger = new FileLogger(Constants.SERVICE_LOGFILE);
+            Log.SetLogSink(_fileLogger);
+            QuestomAssets.Utils.FileUtils.GetTempDirectoryOverride = () =>
+            {
+                try
+                {
+                    var appCache = Path.Combine(Application.Context.GetExternalFilesDir(null).AbsolutePath, "cache");
+                    if (!Directory.Exists(appCache))
+                        Directory.CreateDirectory(appCache);
+                    return appCache;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to get/make external cache folder!", ex);
+                    throw ex;
+                }
+            };
         }
         public IBinder Binder { get; private set; }
 
@@ -73,9 +97,50 @@ namespace BeatOn
             return StartCommandResult.Sticky;
         }
 
-        
+        private FileLogger _fileLogger;
         public override void OnCreate()
         {
+            //hook up handlers for all avenues of otherwise uncaught exceptions to make sure they get logged.
+            AppDomain.CurrentDomain.UnhandledException += (sender, ex) => {
+                var castEx = ex.ExceptionObject as Exception;
+                if (castEx != null)
+                {
+                    Log.LogErr("------------------->  AppDomain.CurrentDomain.UnhandledException!", castEx);
+                }
+                else
+                {
+                    Log.LogErr("------------------->  AppDomain.CurrentDomain.UnhandledException!  Exception Object was not an exception or was null!");
+                }
+                try
+                {
+                    if (_fileLogger != null)
+                        _fileLogger.Flush();
+                }
+                catch { }
+            };
+            TaskScheduler.UnobservedTaskException += (sender, ex) =>
+            {
+                Log.LogErr("------------------->  TaskScheduler.UnobservedTaskException!", ex.Exception);
+                try
+                {
+                    if (_fileLogger != null)
+                        _fileLogger.Flush();
+                }
+                catch { }
+            };
+
+            AndroidEnvironment.UnhandledExceptionRaiser += (sender, ex) =>
+            {
+                Log.LogErr("------------------->  AndroidEnvironment.UnhandledExceptionRaiser!", ex.Exception);
+                try
+                {
+                    if (_fileLogger != null)
+                        _fileLogger.Flush();
+                }
+                catch { }
+            };
+
+
             Log.LogMsg("BeatOnService OnCreate called");
 
             // This method is optional to implement
@@ -99,6 +164,7 @@ namespace BeatOn
 
             StartStatusTimer();
         }
+
 
         public override IBinder OnBind(Intent intent)
         {

@@ -344,7 +344,7 @@ namespace BeatOn
         {
             try
             {
-                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false))
+                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
                 {
                     ApkSigner signer = new ApkSigner(QuestomAssets.BeatSaber.BSConst.DebugCertificatePEM);
                     signer.Sign(apk);
@@ -379,7 +379,7 @@ namespace BeatOn
 
         private bool CheckApkHasModTagFile(string apkFilename)
         {
-            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, true))
+            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 if (apk.FileExists(MOD_TAG_FILE))
                     return true;
@@ -434,7 +434,7 @@ namespace BeatOn
             {
                 tempFile = Java.IO.File.CreateTempFile(getFilename, "", _context.ExternalCacheDir).AbsolutePath;
             }
-            using (var apk = new ZipFileProvider(apkFileName, FileCacheMode.None, false))
+            using (var apk = new ZipFileProvider(apkFileName, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 using (var fs = File.Open(tempFile, FileMode.Create, FileAccess.ReadWrite))
                 {
@@ -447,7 +447,7 @@ namespace BeatOn
 
         private void SaveFileToApk(string apkFileName, string toFileName, string sourceFile)
         {
-            using (var apk = new ZipFileProvider(apkFileName, FileCacheMode.None, false))
+            using (var apk = new ZipFileProvider(apkFileName, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 using (var fs = File.OpenRead(sourceFile))
                 {
@@ -510,7 +510,7 @@ namespace BeatOn
         private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null, bool fromBakFiles = false)
         {
             UpdateStatus("Extracting assets files from the APK to external storage...");
-            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false))
+            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
                 {
@@ -571,7 +571,7 @@ namespace BeatOn
             UpdateStatus("Modding the manifest in the APK...");
             try
             {
-                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false))
+                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
                 {
                     using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.manifestmod))
                     {
@@ -593,7 +593,7 @@ namespace BeatOn
             UpdateStatus("Adding the libmodloader.so file to the APK...");
             try
             {
-                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false))
+                using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
                 {
                     using (var resStream = _context.Resources.OpenRawResource(Resource.Raw.libmodloader))
                     {
@@ -648,7 +648,7 @@ namespace BeatOn
 
         private void AddTagFileToApk(string apkFilename)
         {
-            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false))
+            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 if (apk.FileExists(MOD_TAG_FILE))
                 {

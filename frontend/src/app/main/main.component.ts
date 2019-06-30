@@ -24,7 +24,14 @@ export class MainComponent implements OnInit {
   navLinks = [ ];
 
   testHtml : string = "";
-
+tabMouseDown(link) {
+  this.activeLinkIndex = link.index;
+  console.log("mousedown");
+}
+clickStuff()
+{
+  //how to suppress others?
+}
   ngOnInit() {
     this.configSvc.refreshConfig();
    let onQuest : boolean = (<any> window).isQuestHosted();

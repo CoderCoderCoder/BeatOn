@@ -6,13 +6,15 @@ import { BeatSaberSong } from '../models/BeatSaberSong';
 import { sortAscendingPriority } from '@angular/flex-layout';
 import { HostMessageService } from '../services/host-message.service';
 import { ClientDeleteSong } from '../models/ClientDeleteSong.cs';
+import { MatDialog } from '@angular/material';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
   styleUrls: ['./playlist-songs.component.scss']
 })
 export class PlaylistSongsComponent implements OnInit {
-  constructor(private msgSvc : HostMessageService) { }
+  constructor(private msgSvc : HostMessageService, private dialog : MatDialog) { }
   private _playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   //@Input() playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   songlist : BeatSaberSong[];
@@ -50,8 +52,18 @@ export class PlaylistSongsComponent implements OnInit {
   }
 
   clickDeleteSong(song) {
-    var msg = new ClientDeleteSong();
-    msg.SongID = song.SongID;
-    this.msgSvc.sendClientMessage(msg);
+    var dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      height: '180px',
+      disableClose: true,
+      data: {title: "Delete "+ song.SongName+"?", subTitle: "Are you sure you want to delete this song?", button1Text: "Yes"}
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      if (res == 1) {
+        var msg = new ClientDeleteSong();
+        msg.SongID = song.SongID;
+        this.msgSvc.sendClientMessage(msg);
+      }
+    });    
   }
 }

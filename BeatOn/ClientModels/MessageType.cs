@@ -26,6 +26,8 @@ namespace BeatOn.ClientModels
         DeletePlaylist,
         AddOrUpdatePlaylist,
         OpStatus,
-        GetOps
+        GetOps,
+        SortPlaylist,
+        AutoCreatePlaylists
     }
 }

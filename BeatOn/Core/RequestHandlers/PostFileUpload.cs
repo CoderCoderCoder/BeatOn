@@ -87,7 +87,7 @@ namespace BeatOn.Core.RequestHandlers
                     {
                         using (MemoryStream ms = new MemoryStream(b))
                         {
-                            using (var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true))
+                            using (var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
                             {
                                 _getImportManager().ImportFromFileProvider(provider);
                             }

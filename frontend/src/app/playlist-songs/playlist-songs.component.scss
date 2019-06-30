@@ -4,12 +4,16 @@
     border: none;
     
   }
-
+.sort {
+    margin-left: 100px;
+    display: inline-block;
+}
   .songCount {
       font-size: 8px;
       font-style: italic;
       color: lightgray;
       margin-left: 60px;
+      display: inline-block;
   }
   .deleteSong {
       position: absolute;

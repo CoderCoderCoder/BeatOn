@@ -9,28 +9,24 @@
     <mat-card-content>
       <span color="primary" class="netInfo">Accessible via browser at <div class="url">{{netInfo.Url}}</div></span>
           <mat-card>
-            <mat-card-header>
-              <mat-card-title>Reset All Assets</mat-card-title>
-              <mat-card-subtitle>Resets all offloaded assets files to their original state, removing any songs and asset-based mods that have been loaded.  Also removes any hook mods.</mat-card-subtitle>
-            </mat-card-header>
-                <button (click)="clickResetAssets()" mat-raised-button color="accent">Reset Assets</button>
+            <ul>
+              <li>
+                <b>Reset All Assets:</b> <span class="descrip">Resets all offloaded assets files to their original state, removing any songs and asset-based mods that have been loaded.  Also removes any hook mods.</span>
+              </li>
+              <li>
+                <b>Load Songs Folder:</b> <span class="descrip">Attempt to load any new songs from folders in /sdcard/BeatOnData/CustomSongs</span>
+              </li>
+              <li>
+                <b>Uninstall Beat Saber:</b> <span class="descrip">Uninstalls whatever Beat Saber APK is currently installed.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</span>
+              </li>
+            </ul>
+            
+              <mat-card-actions>
+                <button fast-click (click)="clickResetAssets()" mat-raised-button color="accent">Reset Assets</button>
+                <button fast-click (click)="clickReloadSongsFolder()" mat-raised-button color="accent">Reload Songs Folder</button>
+                <button fast-click (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall Beat Saber</button>
+              </mat-card-actions>
           </mat-card>
-          <mat-card>
-              <mat-card-header>
-                <mat-card-title>Load Songs from CustomSongs folder</mat-card-title>
-                <mat-card-subtitle>Attempt to load any new songs from folders in /sdcard/BeatOnData/CustomSongs</mat-card-subtitle>
-              </mat-card-header>
-                  <button (click)="clickReloadSongsFolder()" mat-raised-button color="accent">Reload Songs Folder</button>
-            </mat-card>
-          <mat-card>
-              <mat-card-header>
-                <mat-card-title>Uninstall Beat Saber</mat-card-title>
-                <mat-card-subtitle>Uninstall Beat Saber.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</mat-card-subtitle>
-              </mat-card-header>
-                  <button (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall Beat Saber</button>
-            </mat-card>
-
-    
     </mat-card-content>
     
   </mat-card>

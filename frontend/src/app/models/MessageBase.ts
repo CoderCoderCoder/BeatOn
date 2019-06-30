@@ -15,5 +15,7 @@ export enum MessageType
     DeletePlaylist,
     AddOrUpdatePlaylist,
     OpStatus,
-    GetOps
+    GetOps,
+    SortPlaylist,
+    AutoCreatePlaylists
 }

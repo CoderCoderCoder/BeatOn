@@ -93,7 +93,7 @@ namespace BeatOn
                                 //load the downloaded data into a zip file provider and have the import manager try importing it
                                 using (MemoryStream ms = new MemoryStream(dl.DownloadedData))
                                 {
-                                    using (var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true))
+                                    using (var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
                                     {
                                         _importManager.ImportFromFileProvider(provider);
                                     }

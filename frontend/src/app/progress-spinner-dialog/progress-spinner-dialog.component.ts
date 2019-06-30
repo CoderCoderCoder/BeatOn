@@ -4,6 +4,8 @@ import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import { HostMessageService } from '../services/host-message.service';
 import { HostSetupEvent, SetupEventType } from '../models/HostSetupEvent';
+import { Router } from '@angular/router';
+import { AppIntegrationService } from '../services/app-integration.service';
 
 export interface SpinnerData {
   mainText : string;
@@ -22,8 +24,27 @@ export class ProgressSpinnerDialogComponent implements OnInit {
 
   mainText : string = "";
   constructor(public dialogRef: MatDialogRef<ProgressSpinnerDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: SpinnerData, private msgSvc: HostMessageService, private cdr : ChangeDetectorRef) { 
+    @Inject(MAT_DIALOG_DATA) public data: SpinnerData, private msgSvc: HostMessageService, 
+    private cdr : ChangeDetectorRef, 
+    private appIntegration : AppIntegrationService
+    )
+    { 
     this.mainText = data.mainText;
+    var switched = false;
+    dialogRef.afterOpened().subscribe(() =>
+    {
+      if (this.appIntegration.isBrowserShown) {
+          if (this.appIntegration.isAppLoaded()) {
+            this.appIntegration.hideBrowser();
+            switched = true;
+          }    
+       }
+    });
+    dialogRef.beforeClosed().subscribe(()=> {
+      if (switched && this.appIntegration.isAppLoaded()) {
+          this.appIntegration.showBrowser();
+      }
+    });
     this.msgSvc.setupMessage.subscribe((msg : HostSetupEvent) =>
     {
       console.log("Got message in spinner " + msg.SetupEvent);

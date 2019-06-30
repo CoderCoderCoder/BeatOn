@@ -12,6 +12,7 @@ import { ProgressSpinnerDialogComponent } from "./progress-spinner-dialog/progre
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { HostOpStatus, OpStatus } from './models/HostOpStatus';
 import { ToolbarEventsService } from './services/toolbar-events.service';
+import { AppIntegrationService } from './services/app-integration.service';
 
 @Component({
   selector: 'app-root',
@@ -32,14 +33,14 @@ import { ToolbarEventsService } from './services/toolbar-events.service';
 
 
 export class AppComponent implements OnInit {
-  constructor(private beatOnApi: BeatOnApiService, private router: Router, 
-    private msgSvc: HostMessageService,
+  constructor(private beatOnApi: BeatOnApiService, 
+          private router: Router, 
+          private msgSvc: HostMessageService,
           private toastr: ToastrService,
           private cfgSvc : ConfigService,
           private dialog : MatDialog,
-          private toolbarEvents : ToolbarEventsService
-          
-          
+          private toolbarEvents : ToolbarEventsService,
+          private appIntegration : AppIntegrationService       
           ) { 
             this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
                 this.opInProgress = (ev.Ops.findIndex(x => x.Status != OpStatus.Failed) > -1);
@@ -67,6 +68,7 @@ export class AppComponent implements OnInit {
         {
            this.showBackButton = (routeEvent.url == '/main/browser');
            this.showRefreshButton = (routeEvent.url == '/main/browser');
+           this.showBrowser = (routeEvent.url == '/main/browser');
            if (routeEvent.url == '/') {
              this.modStatusLoaded = false;
              this.checkModStatus();
@@ -95,6 +97,7 @@ export class AppComponent implements OnInit {
   title : string = 'Beat On';
   showRefreshButton : boolean = false;
   showBackButton : boolean = false;
+  showBrowser : boolean = false;
   resultJson = '';
   modStatus = { CurrentStatus: '' };
   config : BeatOnConfig = { IsCommitted: true,
@@ -122,6 +125,13 @@ export class AppComponent implements OnInit {
 }
   private showToast(toastMsg : HostShowToast) {
     console.log("got toast");
+    if (this.appIntegration.isBrowserShown) {
+      console.log("redirecting toast to host since browser is visible");
+      this.appIntegration.showToast(toastMsg.Title, toastMsg.Message, toastMsg.ToastType, toastMsg.Timeout);
+      return;
+    } else {
+      console.log("browser is not shown, doing toast on web");
+    }
     switch (toastMsg.ToastType)
     {
       case ToastType.Error:

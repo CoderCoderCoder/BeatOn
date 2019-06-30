@@ -1,22 +1,22 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <div class="fullheight"  fxLayout="column">
-<mat-toolbar layout="row">
+<mat-toolbar class="toolbar" layout="row">
     <div class="logo"></div>
     <span class="example-fill-remaining-space" style="flex: 5 1 auto;"></span>
-    <button [disabled]="opInProgress" *ngIf="modStatusLoaded && config?.IsCommitted === false" (click)="commitConfig()" class="warning">
+    <button [disabled]="opInProgress" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false" (click)="commitConfig()" class="warning">
       Sync to Beat Saber
     </button>
-    <button mat-button *ngIf="modStatusLoaded && config?.IsCommitted === true" >Beat Saber Synced</button>
+    <button fast-click mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
     <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
     <app-download-indicator *ngIf="modStatusLoaded"></app-download-indicator>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
     <app-op-indicator *ngIf="modStatusLoaded"></app-op-indicator>
     <span class="example-fill-remaining-space" style="flex: 3 1 auto;"></span>
-    <app-browser-nav (linkSelected)="linkSelected($event)"></app-browser-nav>
+    <app-browser-nav (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <button (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
+    <button fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <button (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button> 
+    <button fast-click (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button> 
     <span class="example-fill-remaining-space" style="flex: 3 1 auto;"></span>
     <div (click)="reconnect()" class="connectionStatus" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
   </mat-toolbar>
@@ -29,7 +29,7 @@
 <p>Depending on how many songs are loaded, Beat On may take 5-120 seconds to load...</p>
 
 </mat-card>
-<div class="fullheight"  fxLayout="column">
+<div  class="fullheight" fxLayout="column">
 <router-outlet fxLayout="column" [hidden]="!modStatusLoaded" ></router-outlet>
 </div>
 </div>

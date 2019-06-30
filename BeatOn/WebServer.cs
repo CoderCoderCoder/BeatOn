@@ -350,7 +350,7 @@ namespace BeatOn
                 {
                     using (Stream assetStream = _assetManager.Open(_baseAssetPath + "/index.html"))
                     {
-                        resp.ContentType = MimeMap.GetMimeType(uriPath);
+                        resp.ContentType = MimeMap.GetMimeType("index.html");
                         assetStream.CopyTo(resp.OutputStream);
                     }
                 } catch (Exception ex2) { 

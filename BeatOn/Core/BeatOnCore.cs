@@ -356,6 +356,7 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "mod/install/step1", new PostModInstallStep1(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "mod/install/step2", new PostModInstallStep2(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "mod/install/step3", new PostModInstallStep3(_mod, SendMessageToClient));
+            _webServer.Router.AddRoute("POST", "beatsaber/playlist/autocreate", new PostAutoCreatePlaylists(() => Engine, () => CurrentConfig));
             _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
             {
                 _currentConfig = null;
@@ -373,7 +374,8 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.MoveSongToPlaylist, new ClientMoveSongToPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.DeleteSong, new ClientDeleteSongHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.GetOps, new ClientGetOpsHandler(_trackedOps, SendMessageToClient));
-
+            _webServer.AddMessageHandler(MessageType.SortPlaylist, new ClientSortPlaylistHandler(() => Engine, () => CurrentConfig));
+            
             _webServer.Start();
 
         }

@@ -20,10 +20,10 @@ namespace BeatOn
         private const int LOG_WRITER_INTERVAL_MS = 5000;
         private const int MAX_LOGFILE_SIZE = 20000000;
         private Timer _saveTimer;
-        private string _logFile;
+        public string LogFile { get; private set; }
         public FileLogger(string logFile)
         {
-            _logFile = logFile;
+            LogFile = logFile;
             CheckLogSize();
             _saveTimer = new Timer((o) =>
             {
@@ -31,17 +31,56 @@ namespace BeatOn
             }, null, LOG_WRITER_INTERVAL_MS, LOG_WRITER_INTERVAL_MS);
         }
         StringBuilder _builder = new StringBuilder();
-        
 
+        public void Flush()
+        {
+            if (_saveTimer != null)
+                Monitor.Enter(_saveTimer);
+
+            try
+            {
+                lock (_builder)
+                {
+                    if (_builder.Length < 1)
+                        return;
+                    if (!Directory.Exists(System.IO.Path.GetDirectoryName(LogFile)))
+                    {
+                        try
+                        {
+                            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(LogFile));
+                        }
+                        catch
+                        {
+                            //may not have permission yet
+                            return;
+                        }
+                    }
+                    using (StreamWriter sw = new StreamWriter(LogFile, true))
+                    {
+                        sw.Write(_builder.ToString());
+                    }
+                    _builder.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("FileLogger: Unable to save log!", ex);
+            }
+            finally
+            {
+                if (_saveTimer != null)
+                    Monitor.Exit(_saveTimer);
+            }
+        }
         private void CheckLogSize()
         {
-            if (File.Exists(_logFile))
+            if (File.Exists(LogFile))
             {
-                if (new FileInfo(_logFile).Length > MAX_LOGFILE_SIZE)
+                if (new FileInfo(LogFile).Length > MAX_LOGFILE_SIZE)
                 {
                     try
                     {
-                        File.Delete(_logFile);
+                        File.Delete(LogFile);
                     }
                     catch (Exception ex)
                     {
@@ -64,11 +103,11 @@ namespace BeatOn
                 {
                     if (_builder.Length < 1)
                         return;
-                    if (!Directory.Exists(System.IO.Path.GetDirectoryName(_logFile)))
+                    if (!Directory.Exists(System.IO.Path.GetDirectoryName(LogFile)))
                     {
                         try
                         {
-                            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_logFile));
+                            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(LogFile));
                         }
                         catch
                         {
@@ -76,7 +115,7 @@ namespace BeatOn
                             return;
                         }
                     }
-                    using (StreamWriter sw = new StreamWriter(_logFile, true))
+                    using (StreamWriter sw = new StreamWriter(LogFile, true))
                     {
                         sw.Write(_builder.ToString());
                     }
@@ -147,7 +186,7 @@ namespace BeatOn
                     }
                     try
                     {
-                        WriteLog();
+                        Flush();
                     }
                     catch
                     { }

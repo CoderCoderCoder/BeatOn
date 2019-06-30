@@ -250,16 +250,12 @@ namespace BeatOn
             };
             var addOp = new AddNewSongToPlaylistOp(bsSong, playlist.PlaylistID);
 
-            //addOp.OpFinished += (s, op) =>
-            //{
-            //    //TODO: i'd like for this to come back out of the config rather than being added here
-            //    //playlist.SongList.Add(bsSong);
-
-            //    //if (op.Status == OpStatus.Complete)
-            //    //    toInst.SetStatus(DownloadStatus.Installed);
-            //    //else
-            //    //    toInst.SetStatus(DownloadStatus.Failed);
-            //};
+            addOp.OpFinished += (s, op) =>
+            {
+                //TODO: i'd like for this to come back out of the config rather than being added here
+                if (!playlist.SongList.Any(x=> x.SongID == bsSong.SongID))                
+                    playlist.SongList.Add(bsSong);
+            };
             qae.OpManager.QueueOp(addOp);
         }
 

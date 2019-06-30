@@ -93,6 +93,8 @@
     <Compile Include="BeatOnUtils.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
     <Compile Include="ClientModels\ClientAddOrUpdatePlaylist.cs" />
+    <Compile Include="ClientModels\ClientAutoCreatePlaylists.cs" />
+    <Compile Include="ClientModels\ClientSortPlaylist.cs" />
     <Compile Include="ClientModels\ClientGetOps.cs" />
     <Compile Include="ClientModels\ClientDeletePlaylist.cs" />
     <Compile Include="ClientModels\ClientDeleteSong.cs" />
@@ -118,11 +120,14 @@
     <Compile Include="Core\MessageHandlers\ClientDeleteSongHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientGetOpsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientMoveSongToPlaylistHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
     <Compile Include="Core\RequestHandlers\GetModStatus.cs" />
     <Compile Include="Core\RequestHandlers\GetNetInfo.cs" />
     <Compile Include="Core\RequestHandlers\GetPlaylistCover.cs" />
     <Compile Include="Core\RequestHandlers\GetSongCover.cs" />
+    <Compile Include="Core\RequestHandlers\PostAutoCreatePlaylists.cs" />
     <Compile Include="Core\ResponseExtensions.cs" />
     <Compile Include="Download.cs" />
     <Compile Include="DownloadType.cs" />
@@ -143,7 +148,9 @@
     <Compile Include="ImageUtilsDroid.cs" />
     <Compile Include="IMessageHandler.cs" />
     <Compile Include="ImportManager.cs" />
+    <Compile Include="JSInterface.cs" />
     <Compile Include="JSWebViewClient.cs" />
+    <Compile Include="LoggingChromeClient.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MimeMap.cs" />
     <Compile Include="BeatSaberModder.cs" />
@@ -153,13 +160,24 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="SimpleRouter.cs" />
     <Compile Include="StatusUpdateLogSink.cs" />
+    <Compile Include="ToastInjectorWebViewClient.cs" />
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.012cf6a10129e2275d79.woff" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.570eb83859dc23dd0eec.woff2" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.e79bfd88537def476913.eot" />
+    <AndroidAsset Include="Assets\www\main-es2015.js.map" />
+    <AndroidAsset Include="Assets\www\main-es5.js.map" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.eot" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.ttf" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff2" />
+    <AndroidAsset Include="Assets\www\polyfills-es2015.js.map" />
+    <AndroidAsset Include="Assets\www\polyfills-es5.js.map" />
+    <AndroidAsset Include="Assets\www\runtime-es2015.js.map" />
+    <AndroidAsset Include="Assets\www\runtime-es5.js.map" />
+    <AndroidAsset Include="Assets\www\styles-es2015.js.map" />
+    <AndroidAsset Include="Assets\www\styles-es5.js.map" />
+    <AndroidAsset Include="Assets\www\vendor-es2015.js.map" />
+    <AndroidAsset Include="Assets\www\vendor-es5.js.map" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
@@ -221,12 +239,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\favicon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\index.html" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\xml\provider_paths.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -249,27 +261,6 @@
     <AndroidAsset Include="Assets\www\assets\upload.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\3rdpartylicenses.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es2015.27661dfa98f6332c27dc.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.943113ac054b16d954ae.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es2015.858f8dd898b75fe86926.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es5.741402d1d47331ce975c.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.89f78f0ff0013ed89664.css" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\mipmap-hdpi\BeatOnSquare.png" />
   </ItemGroup>
   <ItemGroup>
@@ -288,16 +279,49 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\BeatOnSquare.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\logo.6c1a8c36d9fd1df75fae.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.de74635bed75da214e7f.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.57dbecf28ee35b4a6ed9.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\assets\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\upload.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\vendor-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\vendor-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\index.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\favicon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

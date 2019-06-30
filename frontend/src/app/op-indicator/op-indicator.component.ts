@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HostMessageService, ConnectionStatus } from '../services/host-message.service';
 import { HostOpStatus, OpStatus } from '../models/HostOpStatus';
 import { ClientGetOps } from '../models/ClientGetOps';
+import { Router } from '@angular/router';
+import { AppIntegrationService } from '../services/app-integration.service';
 
 @Component({
   selector: 'app-op-indicator',
@@ -10,7 +12,7 @@ import { ClientGetOps } from '../models/ClientGetOps';
 })
 export class OpIndicatorComponent implements OnInit {
   
-  constructor(private msgSvc: HostMessageService) {
+  constructor(private msgSvc: HostMessageService, private appIntegration : AppIntegrationService) {
     var gotOps = false;
     this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
       console.log("there are " + this.ops.Ops.length + " ops to display");
@@ -26,6 +28,21 @@ export class OpIndicatorComponent implements OnInit {
         this.msgSvc.sendClientMessage(msg);
       }
     });
+  }
+  wasBrowserHidden : boolean = false;
+  menuOpened() {
+    this.wasBrowserHidden = false;
+    if (this.appIntegration.isBrowserShown) {
+      this.wasBrowserHidden = true;
+      this.appIntegration.hideBrowser();
+    }
+  }
+
+  menuClosed() {
+    if (this.wasBrowserHidden) {
+      this.wasBrowserHidden = false;
+      this.appIntegration.showBrowser();
+    }
   }
 
   getColor() {

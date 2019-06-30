@@ -14,6 +14,7 @@ using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using BeatOn.ClientModels;
+using Java.Interop;
 using Newtonsoft.Json;
 using QuestomAssets;
 
@@ -22,14 +23,7 @@ namespace BeatOn
     public class JSWebViewClient : WebViewClient
     {
 
-        public class LoggingChromeClient : WebChromeClient
-        {
-            public override bool OnConsoleMessage(ConsoleMessage consoleMessage)
-            {
-                Android.Util.Log.Info("BeatOn", $"WebView Console: {consoleMessage.Message()} (line {consoleMessage.LineNumber()} of {consoleMessage.SourceId()}");
-                return base.OnConsoleMessage(consoleMessage);
-            }
-        }
+
 
         private Activity _activity;
         public WebView WebView { get; private set; }
@@ -42,14 +36,16 @@ namespace BeatOn
             SetupWebView();
         }
 
+        public JSInterface JSInterface;
         private void SetupWebView()
         {
+            JSInterface = new JSInterface();
             WebView.SetWebViewClient(this);
+            WebView.AddJavascriptInterface(JSInterface, Constants.JS_INTERFACE_NAME);
             WebView.Settings.JavaScriptEnabled = true;
             WebView.Settings.AllowContentAccess = true;
             WebView.Settings.CacheMode = CacheModes.Default;
-         //   WebView.Clickable = true;
-           // WebView.Focusable = false;
+            WebView.Focusable = false;
         }
 
         public override void OnPageFinished(WebView view, string url)
