@@ -45,7 +45,7 @@ namespace BeatOn
             WebView.Settings.JavaScriptEnabled = true;
             WebView.Settings.AllowContentAccess = true;
             WebView.Settings.CacheMode = CacheModes.Default;
-            WebView.Focusable = false;
+            WebView.Focusable = true;
         }
 
         public override void OnPageFinished(WebView view, string url)

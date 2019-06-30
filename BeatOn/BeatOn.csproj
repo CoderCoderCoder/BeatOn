@@ -284,12 +284,6 @@
     <AndroidAsset Include="Assets\www\logo.6c1a8c36d9fd1df75fae.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.3787fd0aecea8ea57ddf.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.b67adce3ac5cfef3b59f.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\polyfills-es2015.27661dfa98f6332c27dc.js" />
   </ItemGroup>
   <ItemGroup>
@@ -306,6 +300,12 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.e490b638bc717bb41e6f.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.156f21cb776919f69b50.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
