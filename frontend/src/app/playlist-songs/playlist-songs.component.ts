@@ -8,6 +8,8 @@ import { HostMessageService } from '../services/host-message.service';
 import { ClientDeleteSong } from '../models/ClientDeleteSong.cs';
 import { MatDialog } from '@angular/material';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
@@ -50,7 +52,21 @@ export class PlaylistSongsComponent implements OnInit {
   getBackground(item) {
     return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + item.SongID ;
   }
+  clickSortName(reverse : boolean) {
+    var sort = new ClientSortPlaylist();
+    sort.PlaylistID = this._playlist.PlaylistID;
+    sort.SortMode = PlaylistSortMode.Name;
+    sort.Reverse = reverse;
+    this.msgSvc.sendClientMessage(sort);
+  }
 
+  clickSortDifficulty(reverse : boolean) {
+    var sort = new ClientSortPlaylist();
+    sort.PlaylistID = this._playlist.PlaylistID;
+    sort.SortMode = PlaylistSortMode.MaxDifficulty;
+    sort.Reverse = reverse;
+    this.msgSvc.sendClientMessage(sort);
+  }
   clickDeleteSong(song) {
     var dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',

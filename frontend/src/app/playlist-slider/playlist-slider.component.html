@@ -1,5 +1,19 @@
    <div class="container" >
         <button fast-click layout="center center" (click)="clickAddPlaylist()" class="addPlaylist()" mat-raised-button color="accent"><mat-icon>add_circle</mat-icon></button>
+        <button class="sort" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
+            <mat-icon>sort</mat-icon>
+        </button>  
+        <mat-menu #menu="matMenu">
+          <button fast-click [matMenuTriggerFor]="subMenuNameCount" mat-menu-item>Auto Create Playlists By Name</button>
+          <button mat-menu-item (click)="clickAutoDifficulty()" >Auto Create Playlists By Difficulty</button>
+        </mat-menu> 
+
+        <mat-menu #subMenuNameCount="matMenu">
+            <button fast-click (click)="clickAutoName(10)"  mat-menu-item>10 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(20)"  mat-menu-item>20 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(50)"  mat-menu-item>50 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(100)"  mat-menu-item>100 Per Playlist</button>
+          </mat-menu> 
       <ngu-carousel  #myCarousel [inputs]="carouselTile" [dataSource]="playlists" >
           <button fast-click NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
         <ngu-item 

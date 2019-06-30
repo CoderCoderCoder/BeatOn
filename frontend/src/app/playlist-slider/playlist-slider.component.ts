@@ -13,6 +13,8 @@ import { HostMessageService } from '../services/host-message.service';
 import { ClientMoveSongToPlaylist } from '../models/ClientMoveSongToPlaylist';
 import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
 import { ClientDeletePlaylist } from '../models/ClientDeletePlaylist';
+import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -101,6 +103,23 @@ export class PlaylistSliderComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
   }
+
+  clickAutoName(max : number) {
+    var msg = new ClientAutoCreatePlaylists();
+    msg.MaxPerNamePlaylist = max;
+    msg.SortMode = PlaylistSortMode.Name;
+
+    this.msgSvc.sendClientMessage(msg);
+  }
+
+  clickAutoDifficulty() {
+    var msg = new ClientAutoCreatePlaylists();
+    msg.MaxPerNamePlaylist = 5;
+    msg.SortMode = PlaylistSortMode.MaxDifficulty;
+
+    this.msgSvc.sendClientMessage(msg);
+  }
+
   dialogClosed(result)
   {
     //if cancelled

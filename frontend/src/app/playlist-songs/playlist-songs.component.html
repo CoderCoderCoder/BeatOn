@@ -1,6 +1,6 @@
 
   
-  <button class="sort" fast-click mat-raised-button [matMenuTriggerFor]="matMenu" mat-button color="accent" >
+  <button class="sort" *ngIf="playlist && playlist.SongList" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
       <mat-icon>sort</mat-icon>
   </button>  <div class="songCount" *ngIf="playlist && playlist.SongList">{{ playlist?.SongList?.length }} song(s) in {{ playlist?.PlaylistName }}</div>
   
@@ -15,8 +15,8 @@
   </mat-menu>
   
   <mat-menu #subMenuDifficulty="matMenu">
-    <button (click)="clickSortName(false)" mat-menu-item>Easy to Expert+</button>
-    <button (click)="clickSortName(true)" mat-menu-item>Expert+ to Easy</button>
+    <button (click)="clickSortDifficulty(false)" mat-menu-item>Easy to Expert+</button>
+    <button (click)="clickSortDifficulty(true)" mat-menu-item>Expert+ to Easy</button>
   </mat-menu>
   
   <mat-menu #subMenu="matMenu">
