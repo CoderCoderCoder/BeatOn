@@ -5,3 +5,10 @@ html, body { height: 100%; }
 body { background-color: #424242; margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .fullheight { height: 100% }
+
+.browserNavMenu {
+    height: 40px;
+    max-width: 600px !important;
+   
+    margin-left: -200px;
+}

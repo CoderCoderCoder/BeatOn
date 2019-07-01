@@ -1,0 +1,11 @@
+<mat-card >
+    <mat-card-header>
+      <mat-card-title>{{data.title}}</mat-card-title>
+      <mat-card-subtitle>{{data.subTitle}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-actions>
+      <button fast-click (click)="clickButton1()" mat-raised-button color="accent">{{data.button1Text||"OK"}}</button>
+      <div style="display: inline-block; width: 50%"></div>
+      <button fast-click (click)="clickCancel()" mat-raised-button>Cancel</button>
+    </mat-card-actions>
+  </mat-card>

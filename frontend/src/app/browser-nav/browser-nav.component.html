@@ -1,0 +1,14 @@
+<button fast-click mat-stroked-button [matMenuTriggerFor]="menu" mat-button  >
+
+  <mat-icon>public</mat-icon>
+  <mat-icon>expand_more</mat-icon>
+
+</button> 
+
+<mat-menu [class]="'browserNavMenu'" #menu="matMenu">
+  <div mat-menu-item>
+  <button mat-raised-button class="linkbutton" fast-click *ngFor="let link of browserLinks"  (click)="clickLink(link)">
+    <div class="title">{{ link.title }}</div>    
+  </button>
+</div>
+</mat-menu>

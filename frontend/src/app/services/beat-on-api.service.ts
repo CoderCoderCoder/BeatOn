@@ -4,6 +4,7 @@ import {AppSettings} from '../appSettings';
 import { Observable } from 'rxjs';
 import { NetInfo } from '../models/NetInfo';
 import { QuestomConfig } from '../models/QuestomConfig';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
 
 @Injectable({
   providedIn: 'root'
@@ -59,5 +60,9 @@ export class BeatOnApiService {
 
   putConfig(config : QuestomConfig) {
     return this.http.put(this.hostname+"/host/beatsaber/config", config);
+  }
+
+  autoCreatePlaylists(sortMode : PlaylistSortMode, maxNumPerNamePlaylist : number) {
+    return this.http.post(this.hostname+"/host/beatsaber/playlist/autocreate?sortorder="+PlaylistSortMode[sortMode]+"maxnumpernameplaylist="+maxNumPerNamePlaylist, {});
   }
 }

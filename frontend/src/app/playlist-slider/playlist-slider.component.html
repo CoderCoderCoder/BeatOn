@@ -1,9 +1,21 @@
-<!-- <ngu-carousel #myCarousel [inputs]="carouselTile" [dataSource]="carouselTileItems">
-    <ngu-tile *nguCarouselDef="let item; let i = index"> -->
    <div class="container" >
-        <button layout="center center" (click)="clickAddPlaylist()" class="addPlaylist()" mat-raised-button color="accent"><mat-icon>add_circle</mat-icon></button>
+        <button fast-click layout="center center" (click)="clickAddPlaylist()" class="addPlaylist()" mat-raised-button color="accent"><mat-icon>add_circle</mat-icon></button>
+        <button class="sort" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
+            <mat-icon>sort</mat-icon>
+        </button>  
+        <mat-menu #menu="matMenu">
+          <button fast-click [matMenuTriggerFor]="subMenuNameCount" mat-menu-item>Auto Create Playlists By Name</button>
+          <button mat-menu-item (click)="clickAutoDifficulty()" >Auto Create Playlists By Difficulty</button>
+        </mat-menu> 
+
+        <mat-menu #subMenuNameCount="matMenu">
+            <button fast-click (click)="clickAutoName(10)"  mat-menu-item>10 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(20)"  mat-menu-item>20 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(50)"  mat-menu-item>50 Per Playlist</button>
+            <button fast-click (click)="clickAutoName(100)"  mat-menu-item>100 Per Playlist</button>
+          </mat-menu> 
       <ngu-carousel  #myCarousel [inputs]="carouselTile" [dataSource]="playlists" >
-          <button NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
+          <button fast-click NguCarouselPrev class='leftRs'><mat-icon class="arrow">details</mat-icon></button>
         <ngu-item 
         cdkDropList 
         (cdkDropListDropped)="playlistDrop(item, $event)" 
@@ -15,21 +27,7 @@
           </div>
           
         </ngu-item>
-        <!-- <button NguCarouselPrev class="leftRs" [style.opacity]="myCarousel.isFirst ? 0.5:1">&lt;</button>
-        <button NguCarouselNext class="rightRs" [style.opacity]="myCarousel.isLast ? 0.5:1">&gt;</button> -->
-        <!-- <ul class="myPoint" NguCarouselPoint>
-          <li *ngFor="let j of myCarousel.pointNumbers; let j = index" [class.active]="j==myCarousel.activePoint" (click)="myCarousel.moveTo(j)"
-           ></li>
-        </ul> -->
         
-          <button NguCarouselNext class='rightRs'><mat-icon class="arrow">details</mat-icon></button>
+          <button fast-click NguCarouselNext class='rightRs'><mat-icon class="arrow">details</mat-icon></button>
       </ngu-carousel>
     </div>
-    <!-- </ngu-tile>
-    <button NguCarouselPrev class="leftRs" [style.opacity]="myCarousel.isFirst ? 0.5:1">&lt;</button>
-    <button NguCarouselNext class="rightRs" [style.opacity]="myCarousel.isLast ? 0.5:1">&gt;</button>
-    <ul class="myPoint" NguCarouselPoint>
-      <li *ngFor="let i of myCarousel.pointNumbers; let i = index" [class.active]="i==myCarousel.activePoint" (click)="myCarousel.moveTo(i)"
-        [style.background]="'url(' + carouselTileItems[i] + ')'"></li>
-    </ul>
-  </ngu-carousel> -->

@@ -10,6 +10,11 @@ import { BeatOnConfig } from '../models/BeatOnConfig';
 import { AddEditPlaylistDialogComponent } from '../add-edit-playlist-dialog/add-edit-playlist-dialog.component';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import { HostMessageService } from '../services/host-message.service';
+import { ClientMoveSongToPlaylist } from '../models/ClientMoveSongToPlaylist';
+import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
+import { ClientDeletePlaylist } from '../models/ClientDeletePlaylist';
+import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -55,7 +60,6 @@ export class PlaylistSliderComponent implements OnInit {
   }
 
   onTileClick(item) {
-    console.log("playlist selecteD");
     this.selected = item;
     this.selectedPlaylist.emit(item);
   }
@@ -98,6 +102,23 @@ export class PlaylistSliderComponent implements OnInit {
     });
     dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
   }
+
+  clickAutoName(max : number) {
+    var msg = new ClientAutoCreatePlaylists();
+    msg.MaxPerNamePlaylist = max;
+    msg.SortMode = PlaylistSortMode.Name;
+
+    this.msgSvc.sendClientMessage(msg);
+  }
+
+  clickAutoDifficulty() {
+    var msg = new ClientAutoCreatePlaylists();
+    msg.MaxPerNamePlaylist = 5;
+    msg.SortMode = PlaylistSortMode.MaxDifficulty;
+
+    this.msgSvc.sendClientMessage(msg);
+  }
+
   dialogClosed(result)
   {
     //if cancelled
@@ -106,13 +127,17 @@ export class PlaylistSliderComponent implements OnInit {
 
     if (result['deletePlaylist'] === true) {
       //delete playlist
-      this.msgSvc.sendMessage(JSON.stringify({Type:"DeletePlaylist", PlaylistID: result.playlist.PlaylistID}));
+      var msg = new ClientDeletePlaylist();
+      msg.PlaylistID = result.playlist.PlaylistID;
+      this.msgSvc.sendClientMessage(msg);
     } else {
       //must be a save
       if (result.isNew) {
         this.configSvc.getConfig().subscribe((cfg) => {
           cfg.Config.Playlists.push(result.playlist);
-          this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: result.playlist }));
+          var msg = new ClientAddOrUpdatePlaylist();
+          msg.Playlist =  result.playlist;
+          this.msgSvc.sendClientMessage(msg);
         })
       } else {
         this.configSvc.getConfig().subscribe((cfg) => {
@@ -127,7 +152,9 @@ export class PlaylistSliderComponent implements OnInit {
             }
           });
           if (found) {
-            this.msgSvc.sendMessage(JSON.stringify({Type: "AddOrUpdatePlaylist", Playlist: found }));
+            var msg = new ClientAddOrUpdatePlaylist();
+            msg.Playlist = found;
+            this.msgSvc.sendClientMessage(msg);
           }
         })
       }
@@ -135,7 +162,6 @@ export class PlaylistSliderComponent implements OnInit {
   }
   playlistDrop(item : BeatSaberPlaylist, evt) 
   {
-    console.log("got a drop!");
     let oldPlaylist : BeatSaberPlaylist = <BeatSaberPlaylist>evt.previousContainer.data;
     if (oldPlaylist.PlaylistID === item.PlaylistID) {
       console.log("dropped a song on the same playlist it is in, doing nothing");
@@ -171,7 +197,10 @@ export class PlaylistSliderComponent implements OnInit {
               
           }
         });
-        this.msgSvc.sendMessage(JSON.stringify({Type:"MoveSongToPlaylist", SongID: moveSong.SongID, ToPlaylistID: item.PlaylistID}));
+        var msg = new ClientMoveSongToPlaylist();
+        msg.SongID = moveSong.SongID;
+        msg.ToPlaylistID = item.PlaylistID;
+        this.msgSvc.sendClientMessage(msg);
       });      
     }
     

@@ -1,5 +1,29 @@
 
-    
+  
+  <button class="sort" *ngIf="playlist && playlist.SongList" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
+      <mat-icon>sort</mat-icon>
+  </button>  <div class="songCount" *ngIf="playlist && playlist.SongList">{{ playlist?.SongList?.length }} song(s) in {{ playlist?.PlaylistName }}</div>
+  
+  <mat-menu #menu="matMenu">
+    <button fast-click [matMenuTriggerFor]="subMenuName" mat-menu-item>Sort By Name</button>
+    <button mat-menu-item [matMenuTriggerFor]="subMenuDifficulty">Sort By Difficulty</button>
+  </mat-menu>
+  
+  <mat-menu #subMenuName="matMenu">
+    <button (click)="clickSortName(true)" mat-menu-item>A-Z</button>
+    <button (click)="clickSortName(false)" mat-menu-item>Z-A</button>
+  </mat-menu>
+  
+  <mat-menu #subMenuDifficulty="matMenu">
+    <button (click)="clickSortDifficulty(false)" mat-menu-item>Easy to Expert+</button>
+    <button (click)="clickSortDifficulty(true)" mat-menu-item>Expert+ to Easy</button>
+  </mat-menu>
+  
+  <mat-menu #subMenu="matMenu">
+    <button mat-menu-item>Shut down</button>
+    <button mat-menu-item>Restart</button>
+    <button mat-menu-item>Hibernate</button>
+  </mat-menu>
     <cdk-virtual-scroll-viewport itemSize="50" class="viewport"
     cdkDropList id="songs-drop-list" cdkDropListConnectedTo="playlist-drop-list" 
     [cdkDropListData]="playlist"  (cdkDropListDropped)="drop($event)"> 
@@ -20,7 +44,7 @@
           <div (click)="clickDeleteSong(song)" class="deleteSong"><mat-icon>delete_forever</mat-icon></div>
         </mat-card>
       </cdk-virtual-scroll-viewport>
-      <div class="songCount">{{ playlist?.SongList?.length }} song(s) in {{ playlist?.PlaylistName }}</div>
+     
     
 
 

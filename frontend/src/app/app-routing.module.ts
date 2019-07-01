@@ -9,6 +9,7 @@ import { MainPlaylistsComponent } from './main-playlists/main-playlists.componen
 import { MainBrowserComponent } from './main-browser/main-browser.component';
 import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
+import { CreditsComponent } from './credits/credits.component';
 
 const routes: Routes = [
   { path: 'setup', component: SetupComponent },
@@ -22,7 +23,8 @@ const routes: Routes = [
       {path: 'playlists', component: MainPlaylistsComponent},
       {path: 'browser', component: MainBrowserComponent},
       {path: 'tools', component: ToolsComponent},
-      {path: 'upload', component: RemoteUploadComponent}
+      {path: 'upload', component: RemoteUploadComponent},
+      {path: 'credits', component: CreditsComponent}
     ]
   }
 ];

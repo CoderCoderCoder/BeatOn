@@ -1,5 +1,5 @@
 
 
-<iframe fxFlexFill  [src]="browserUrl | safe" (load)="iframeLoaded(this)"></iframe>
+<iframe *ngIf="!hideIframe" fxFlexFill #browser  [src]="browserUrl | safe" (load)="iframeLoaded(this)"></iframe>
 
 

@@ -27,7 +27,10 @@ namespace BeatOn.ClientModels
         { {MessageType.AddOrUpdatePlaylist, typeof(ClientAddOrUpdatePlaylist)},
             {MessageType.DeletePlaylist, typeof(ClientDeletePlaylist) },
             {MessageType.DeleteSong, typeof(ClientDeleteSong) },
-            {MessageType.MoveSongToPlaylist, typeof(ClientMoveSongToPlaylist) } };
+            {MessageType.MoveSongToPlaylist, typeof(ClientMoveSongToPlaylist) },
+            {MessageType.GetOps, typeof(ClientGetOps) },
+            {MessageType.SortPlaylist, typeof(ClientSortPlaylist) },
+            {MessageType.AutoCreatePlaylists, typeof(ClientAutoCreatePlaylists) } };
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {

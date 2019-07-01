@@ -14,21 +14,16 @@ using Android.Views;
 using Android.Webkit;
 using Android.Widget;
 using BeatOn.ClientModels;
+using Java.Interop;
 using Newtonsoft.Json;
+using QuestomAssets;
 
 namespace BeatOn
 {
     public class JSWebViewClient : WebViewClient
     {
 
-        public class LoggingChromeClient : WebChromeClient
-        {
-            public override bool OnConsoleMessage(ConsoleMessage consoleMessage)
-            {
-                Android.Util.Log.Info("BeatOn", $"WebView Console: {consoleMessage.Message()} (line {consoleMessage.LineNumber()} of {consoleMessage.SourceId()}");
-                return base.OnConsoleMessage(consoleMessage);
-            }
-        }
+
 
         private Activity _activity;
         public WebView WebView { get; private set; }
@@ -41,11 +36,17 @@ namespace BeatOn
             SetupWebView();
         }
 
+        public JSInterface JSInterface;
         private void SetupWebView()
         {
+            JSInterface = new JSInterface();
             WebView.SetWebViewClient(this);
+            WebView.AddJavascriptInterface(JSInterface, Constants.JS_INTERFACE_NAME);
             WebView.Settings.JavaScriptEnabled = true;
             WebView.Settings.AllowContentAccess = true;
+            WebView.Settings.CacheMode = CacheModes.Default;
+            WebView.Settings.MediaPlaybackRequiresUserGesture = false;
+            WebView.Focusable = true;
         }
 
         public override void OnPageFinished(WebView view, string url)
@@ -78,6 +79,87 @@ namespace BeatOn
         public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
         {
             return base.ShouldInterceptRequest(view, request);
+            //code to intercept all requests and remove unfriendly iframe headers.  seems to slow things down a bit.
+            //try
+            //{
+            //    string uri = request.Url.ToString();
+            //    //todo: more betterer
+            //    if (request.IsForMainFrame || request.IsRedirect || uri.ToLower().EndsWith(".zip"))
+            //        return base.ShouldInterceptRequest(view, request);
+            //    HttpWebRequest req = new HttpWebRequest(new Uri(request.Url.ToString()));
+            //    req.AllowAutoRedirect = false;
+            //    req.Method = request.Method;
+            //    foreach (var header in request.RequestHeaders)
+            //    {
+            //        try
+            //        {
+            //            req.Headers.Add(header.Key, header.Value);
+            //        }
+            //        catch
+            //        {
+            //            Log.LogMsg($"failed to add header {header.Key}");
+            //        }
+            //    }
+            //    HttpWebResponse resp;
+            //    try
+            //    {
+            //        resp = req.GetResponse() as HttpWebResponse;
+            //    }
+            //    catch (WebException wex)
+            //    {
+            //        Log.LogMsg("Request intercept got a bad response");
+            //        resp = wex.Response as HttpWebResponse;
+            //    }
+            //    var contentType = resp.ContentType.Split(';')[0];
+            //    if (contentType =="application/zip" || contentType == "application/octet-stream" || contentType == "application/x-zip-compressed" || contentType == "multipart/x-zip")
+            //    {
+            //        Log.LogMsg("Oops, intercepted a download.  Aborting and handing back to the browser.");
+            //        resp.Close();
+            //        return base.ShouldInterceptRequest(view, request);
+            //    }
+            //    Log.LogMsg($"contettype: {resp.ContentType} encoding:{resp.Headers[HttpRequestHeader.ContentEncoding]}");
+            //    var responseHeaders = new Dictionary<string, string>();
+            //    for (int i = 0; i < resp.Headers.Count; i++)
+            //    {
+            //        try
+            //        {
+            //            var key = resp.Headers.GetKey(i);
+            //            if (key.ToLower().StartsWith("x-frame"))
+            //            {
+            //                Log.LogMsg("Skipped x-frame header!  muahaha");
+            //                continue;
+            //            }
+
+
+            //            var val = resp.Headers.Get(i);
+
+            //            responseHeaders.Add(key, val);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            Log.LogErr("exception with header", ex);
+            //            try
+            //            {
+            //                Log.LogErr($"key was {resp.Headers.GetKey(i)}");
+            //            }
+            //            catch
+            //            {
+
+            //            }
+            //        }
+            //    }
+
+
+            //    var response = new WebResourceResponse(resp.ContentType.Split(';')[0], resp.ContentEncoding, (int)resp.StatusCode, resp.StatusDescription, responseHeaders, resp.GetResponseStream());
+
+            //    return response;
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.LogErr("Request intercept exception!", ex);
+            //    return base.ShouldInterceptRequest(view, request);
+            //}
         }
 
         public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)

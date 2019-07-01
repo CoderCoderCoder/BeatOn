@@ -1,4 +1,14 @@
-
-<div class="uploadfilecontainer" (click)="fileInput.click()" appDragDrop (onFileDropped)="uploadFile($event)">
-  <input hidden type="file" #fileInput (change)="uploadFile($event.target.files)">
-</div>
+<mat-card class="setup-card">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon aria-hidden="false" class="setup-icon">cloud_upload</mat-icon>
+      </div>
+      <mat-card-title>Upload Files</mat-card-title>
+      <mat-card-subtitle>Drag zip files here to upload them, or click to select a file.  Currently songs and Quest-specific mods are supported.</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="uploadfilecontainer" (click)="fileInput.click()" appDragDrop (onFileDropped)="uploadFile($event)">
+        <input hidden type="file" #fileInput (change)="uploadFile($event.target.files)">
+      </div>
+    </mat-card-content>
+</mat-card>

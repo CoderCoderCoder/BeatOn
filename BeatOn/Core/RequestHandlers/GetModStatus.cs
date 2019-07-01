@@ -17,8 +17,8 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class GetModStatus : IHandleRequest
     {
-        private Mod _mod;
-        public GetModStatus(Mod mod)
+        private BeatSaberModder _mod;
+        public GetModStatus(BeatSaberModder mod)
         {
             _mod = mod;
         }
@@ -31,16 +31,15 @@ namespace BeatOn.Core.RequestHandlers
                 var resp = context.Response;
                 try
                 {
-                    /*THIS IS TEST CODE FOR EMULATOR, REMOVE IT FOR DEVICE
-                     * 
-                     */
-                    //resp.Serialize(new ModStatus()
-                    //{
-                    //    IsBeatSaberInstalled = true,
-                    //    CurrentStatus = ModStatusType.ModInstalled
-                    //});
-                    //return;
-
+#if EMULATOR
+                    /*THIS IS TEST CODE FOR EMULATOR*/
+                    resp.Serialize(new ModStatus()
+                    {
+                        IsBeatSaberInstalled = true,
+                        CurrentStatus = ModStatusType.ModInstalled
+                    });
+                    return;
+#else
                     var model = new ModStatus()
                     {
                         IsBeatSaberInstalled = _mod.IsBeatSaberInstalled
@@ -75,6 +74,7 @@ namespace BeatOn.Core.RequestHandlers
                         }
                     }
                     resp.Serialize(model);
+#endif
                 }
                 catch (Exception ex)
                 {

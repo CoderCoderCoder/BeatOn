@@ -24,7 +24,13 @@ export class MainComponent implements OnInit {
   navLinks = [ ];
 
   testHtml : string = "";
-
+tabMouseDown(link) {
+  this.activeLinkIndex = link.index;
+}
+clickStuff()
+{
+  //how to suppress others?
+}
   ngOnInit() {
     this.configSvc.refreshConfig();
    let onQuest : boolean = (<any> window).isQuestHosted();
@@ -57,6 +63,11 @@ export class MainComponent implements OnInit {
     this.navLinks.push({
       label: 'Tools',
       path: './tools',
+      index: 2
+    });
+    this.navLinks.push({
+      label: 'Credits',
+      path: './credits',
       index: 2
     });
   }

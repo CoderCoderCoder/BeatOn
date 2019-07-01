@@ -1,15 +1,17 @@
    
 <div style="height: 100%" fxLayout="column">
-  <nav fxLayout="row" mat-tab-nav-bar>
+  <nav class="tabNav" fxLayout="row" mat-tab-nav-bar>
     <a mat-tab-link
     *ngFor="let link of navLinks"
     [routerLink]="link.path"
     routerLinkActive #rla="routerLinkActive"
+    fast-click
+    (click)="clickStuff()"
     [active]="rla.isActive">
     {{link.label}}
     </a>
   </nav>
-  <div class="fullheight" fxLayout="column" [@routerTransition]="getState(o)">
+  <div id="mainContentDiv" class="fullheight" fxLayout="column" [@routerTransition]="getState(o)">
   <router-outlet fxLayout="column" #o="outlet"></router-outlet>    
   </div>
 

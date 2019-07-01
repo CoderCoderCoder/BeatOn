@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.App;
+using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
@@ -23,226 +24,312 @@ using Com.Emulamer.Installerhelper;
 using Newtonsoft.Json;
 using QuestomAssets;
 using QuestomAssets.Models;
+using Android.Gestures;
+using Android.AccessibilityServices;
+using Android.Hardware.Display;
+using Android.Animation;
+using Android.Views.Animations;
 
 namespace BeatOn
 {
     [Activity(Name = "com.emulamer.beaton.MainActivity", Label = "@string/app_name", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : Activity
     {
         public MainActivity()
         {
+            //prevent duplicate log sinks of these types from getting registered.
+            Log.ClearSinksOfType<AndroidLogger>((x) => true);
+            Log.SetLogSink(new AndroidLogger());
+
+            QuestomAssets.Utils.FileUtils.GetTempDirectoryOverride = () =>
+            {
+                try
+                {
+                    var appCache = Path.Combine(Application.Context.GetExternalFilesDir(null).AbsolutePath, "cache");
+                    if (!Directory.Exists(appCache))
+                        Directory.CreateDirectory(appCache);
+                    return appCache;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to get/make external cache folder!", ex);
+                    throw ex;
+                }
+            };
+
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
         }
 
+
+
         private WebView _webView;
-        private DownloadManager _SongDownloadManager;
         private JSWebViewClient _webViewClient;
-        private WebServer _webServer;
-        private Mod _mod;
-        private QuestomAssetsEngine _qae;
-        private BeatOnConfig _currentConfig;
+        private BeatOnServiceTransceiver _broadcastReceiver;
 
-        private QuestomAssetsEngine Engine
+        private void _webView_Download(object sender, DownloadEventArgs e)
         {
-            get
-            {
-                if (_qae == null)
-                {
-                    _qae = new QuestomAssetsEngine(_qaeConfig);
-                    _qae.OpManager.OpStatusChanged += OpManager_OpStatusChanged;
-                }
-                    return _qae;
-            }
+            _broadcastReceiver.SendDownloadUrl(new DownloadUrlInfo() { Url = e.Url, MimeType = e.Mimetype });
         }
 
-        private void ClearCurrentConfig()
+        //public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
+        //{
+        //    var displayMetrics = Resources.DisplayMetrics;
+        //    int midY = displayMetrics.HeightPixels / 2;
+        //    int midX = displayMetrics.WidthPixels / 2;
+        //    var builder = new GestureDescription.Builder();
+        //    Android.Graphics.Path p = new Android.Graphics.Path();
+        //    p.MoveTo(midX, midY);
+        //    p.LineTo(midX, displayMetrics.HeightPixels);
+        //    builder.AddStroke(new GestureDescription.StrokeDescription(p, 100, 50));
+        //    var handler = new Handler();
+
+        //    // _webView.DispatchKeyEvent(new KeyEvent( KeyEventActions.Down, Keycode.PageDown)
+        //    switch (e.KeyCode)
+        //    {
+
+        //        case Keycode.DpadDown:
+        //            DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), MotionEventActions.Scroll, 50, 50, 0));
+        //            return base.OnKeyDown(keyCode, e);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY, 0));
+        //            //}, 50);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY + 200, 0));
+        //            //}, 100);
+        //            //handler.PostDelayed(() =>
+        //            //{
+        //            //    _webView.DispatchGenericMotionEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Move, midX, midY + 400, 0));
+        //            //}, 150);
+
+
+
+        //            break;
+        //        case Keycode.DpadUp:
+
+        //            break;
+        //        case Keycode.ButtonX:
+        //            _webView.PerformClick();
+        //            break;
+        //        default:
+
+        //            break;
+        //    }
+        //    return base.OnKeyDown(keyCode, e);
+        //}
+
+        private void ShowToast(string title, string message, ToastType type = ToastType.Info, float durationSec = 3.0F)
         {
-            if (_currentConfig != null)
-            {
-                _currentConfig.PropertyChanged -= CurrentConfig_PropertyChanged;
-                _currentConfig = null;
-            }
+            _toastInjector.ShowToast(title, message, type, durationSec);
         }
 
-        private void DisposeEngine()
-        {
-            ClearCurrentConfig();
-            if (_qae != null)
-            {
-                _qae.Dispose();
-            }            
-        }
 
-        private void UpdateConfig(BeatSaberQuestomConfig config)
-        {
-            var currentCfg = Engine.GetCurrentConfig();
-            ClearCurrentConfig();
-            bool matches = config.Matches(currentCfg);
-
-            if (!matches)
-            {
-                Engine.UpdateConfig(config);
-                config = Engine.GetCurrentConfig();
-            } else
-            {
-                config = currentCfg;
-            }
-            _currentConfig = new BeatOnConfig()
-            {
-                Config = config,
-                IsCommitted = matches
-            };
-            _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
-            SendConfigChangeMessage();
-        }
-
-        private BeatOnConfig CurrentConfig
-        {
-            get
-            {
-                if (_currentConfig == null)
-                {
-                    try
-                    {
-                        var engineNull = _qae == null;
-                        var config = Engine.GetCurrentConfig();
-
-                        _currentConfig = new BeatOnConfig()
-                        {
-                            Config = config
-                        };
-                        _currentConfig.IsCommitted = true;
-                        _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogErr("Critical exception loading current config", ex);
-                        ShowToast("Critical Error", "Something has gone wrong and Beat On can't function.  Try Reset Assets in the tools menu.", ToastType.Error, 60);
-                    }
-                }
-
-                return _currentConfig;
-            }
-        }
-
-        object _debounceLock = new object();
-        CancellationTokenSource _debounceTokenSource;
-        private void CurrentConfig_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            lock (_debounceLock)
-            {
-                if (_debounceTokenSource != null)
-                {
-                    _debounceTokenSource.Cancel(true);
-                    _debounceTokenSource = null;
-                }
-                _debounceTokenSource = new CancellationTokenSource();
-                var task = Task.Delay(10, _debounceTokenSource.Token);
-                task.ContinueWith((t) =>
-                {
-                    try
-                    {
-                        try
-                        {
-                            t.Wait();
-                        }
-                        catch (AggregateException aex)
-                        { }
-                        lock (_debounceLock)
-                        {
-                            SendConfigChangeMessage();
-                            _debounceTokenSource = null;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                });
-            }
-        }    
-
-        private QaeConfig _qaeConfig
-        {
-            get
-            {
-                var q = new QaeConfig()
-                {
-                    FileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
-                    PlaylistArtPath = "Art",
-                    AssetsPath = "BeatSaberAssets",
-                    ModsPath = "Mods",
-                    SongsPath = "CustomSongs"
-                };
-                q.SongFileProvider = q.FileProvider;
-                return q;
-            }
-        }
-
-        private object _configFileLock = new object();
-
-        private void LoadConfigFromFile()
-        {
-            //todo: reset engine, load config from json, call UpdateConfig
-        }
-
-        /// <summary>
-        /// Saves the currently loaded configuration to the config file, but not to the beat saber assets
-        /// </summary>
-        private void SaveCurrentConfigToFile()
-        {
-            //save to json in filesystem
-            lock (_configFileLock)
-            {
-                using (StreamWriter sw = new StreamWriter(Constants.CONFIG_FILE, false))
-                {
-                    sw.Write(JsonConvert.SerializeObject(CurrentConfig.Config));
-                }
-            }
-        }
-        
-        private void SendStatusMessage(string message)
-        {
-            SendMessageToClient(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = message });
-        }
-
-        private bool _suppressConfigChangeMessage = false;
-        private void SendConfigChangeMessage()
-        {
-            if (!_suppressConfigChangeMessage)
-                _webServer.SendMessage(new HostConfigChangeEvent() { UpdatedConfig = CurrentConfig });
-        }
+        WebView _browserView;
+        ToastInjectorWebViewClient _toastInjector;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
-
-            
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
-            Log.SetLogSink(new AndroidLogger());
-            Log.SetLogSink(new FileLogger(Constants.LOGFILE));
 
+            base.OnCreate(savedInstanceState);
+            _webView = FindViewById<WebView>(Resource.Id.webView1);
+            _browserView= FindViewById<WebView>(Resource.Id.webView2);
+            _toastInjector = new ToastInjectorWebViewClient(_browserView);
+            _browserView.SetWebViewClient(_toastInjector);
+            _browserView.SetWebChromeClient(new LoggingChromeClient());
+            _browserView.Settings.JavaScriptEnabled = true;
+            _browserView.Settings.AllowContentAccess = true;
+            _browserView.Settings.CacheMode = CacheModes.Default;
+            _browserView.Focusable = true;
+            _browserView.Settings.MediaPlaybackRequiresUserGesture = false;
+
+            _browserView.Download += _webView_Download;
+
+            _webViewClient = new JSWebViewClient(this, _webView);
+            _webViewClient.JSInterface.OnBrowserGoBack += JSInterface_OnBrowserGoBack;
+            _webViewClient.JSInterface.OnHideBrowser += JSInterface_OnHideBrowser;
+            _webViewClient.JSInterface.OnNavigateBrowser += JSInterface_OnNavigateBrowser;
+            _webViewClient.JSInterface.OnRefreshBrowser += JSInterface_OnRefreshBrowser;
+            _webViewClient.JSInterface.OnShowBrowser += JSInterface_OnShowBrowser;
+            _webViewClient.JSInterface.OnToast += JSInterface_OnToast;
+            
 
             if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage)
                 != Android.Content.PM.Permission.Granted)
             {
                 ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.WriteExternalStorage }, 1);
             }
-            if (CheckSelfPermission(Android.Manifest.Permission.ReadExternalStorage)
-                    != Android.Content.PM.Permission.Granted)
+            else
             {
-                ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.ReadExternalStorage }, 1);
+                ContinueLoad();
             }
-            //TODO: check that we actually got these permissions above
-            ContinueStartup();
-            
+        }
+
+        private void JSInterface_OnToast(object sender, JSInterface.ToastMsg e)
+        {
+            Log.LogMsg("got toast from JSInterface");
+            RunOnUiThread(() => { 
+                ShowToast(e.Title, e.Message, e.Type, e.Duration);
+            });
+        }
+
+        public override bool DispatchKeyEvent(KeyEvent e)
+        {
+            if (e.Action == KeyEventActions.Down && e.KeyCode == Keycode.DpadDown)
+            {
+                SmoothScrollBrowser(true);
+                return true;
+            }
+            else if (e.Action == KeyEventActions.Down && e.KeyCode == Keycode.DpadUp)
+            {
+                SmoothScrollBrowser(false);
+                return true;
+            }
+            else
+            {
+                return base.DispatchKeyEvent(e);
+            }
+        }
+        private ObjectAnimator _currentScroll = null;
+        private void SmoothScrollBrowser(bool down)
+        {
+            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 600 : -600));
+            if (_currentScroll != null)
+            {
+                _currentScroll.End();
+                anim.SetInterpolator(new DecelerateInterpolator());
+            }
+            else
+            {
+                anim.SetInterpolator(new AccelerateDecelerateInterpolator());
+            }
+            anim.SetDuration(500).Start();
+            _currentScroll = anim;
+        }
+
+        public override bool DispatchGenericMotionEvent(MotionEvent ev)
+        {
+            //if (ev.Action == MotionEventActions.PointerIndexShift)
+            //{
+            //    var vscroll = ev.GetAxisValue(Axis.Vscroll, ev.ActionIndex);
+            //    if (Math.Abs(vscroll) > 0.04F)
+            //    {
+            //        //scrolled
+            //    }
+            //}
+            return base.DispatchGenericMotionEvent(ev);
+        }
+
+
+
+        private void JSInterface_OnShowBrowser(object sender, int e)
+        {
+            RunOnUiThread(() => {
+                int dp = 0;
+                Log.LogMsg("Trying to show browser.. checking position");
+                try
+                {
+                    Android.Util.DisplayMetrics metrics = new Android.Util.DisplayMetrics();
+                    WindowManager.DefaultDisplay.GetMetrics(metrics);
+                    float density = metrics.Density;
+                    Log.LogMsg($"density is {density}");
+                    dp = (int)Math.Ceiling(e*density );
+                } catch (Exception ex)
+                {
+                    Log.LogErr("couldn't get dp");
+                    return;
+                }
+                try
+                {
+                    _webView.LayoutParameters = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MatchParent, dp);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("coudln't set _webView layout", ex);
+                    return;
+                }
+                Log.LogMsg($"Putting browser at {dp}");
+            });
+        }
+
+
+        private void JSInterface_OnRefreshBrowser(object sender, EventArgs e)
+        {
+            RunOnUiThread(() =>
+            {
+                _browserView.Reload();
+            });
+        }
+
+        private void JSInterface_OnNavigateBrowser(object sender, string e)
+        {
+            RunOnUiThread(() =>
+            {
+                _browserView.LoadUrl(e);
+            });
+        }
+
+        private void JSInterface_OnHideBrowser(object sender, EventArgs e)
+        {
+            RunOnUiThread(() =>
+            {
+                _webView.LayoutParameters = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MatchParent, RelativeLayout.LayoutParams.MatchParent);
+            });
+        }
+
+        private void JSInterface_OnBrowserGoBack(object sender, EventArgs e)
+        {
+            RunOnUiThread(() =>
+            {
+                _browserView.GoBack();
+            });
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        {
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            if (grantResults.Length > 0 && grantResults[0] != Android.Content.PM.Permission.Granted)
+            {
+                Android.App.AlertDialog.Builder dlgAlert = new Android.App.AlertDialog.Builder(this);
+                dlgAlert.SetMessage("You must give Beat On write access to your external storage or it cannot function.");
+                dlgAlert.SetTitle("Beat On Permissions");
+                dlgAlert.SetPositiveButton("Try Again", (o, e) =>
+                {
+                    ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.WriteExternalStorage }, 1);
+                });
+                dlgAlert.SetNegativeButton("Close", (o, e) =>
+                {
+                    Java.Lang.JavaSystem.Exit(0);
+                });
+                dlgAlert.SetCancelable(true);
+
+                dlgAlert.Create().Show();
+            }
+            else
+            {
+                ContinueLoad();
+            }            
+        }
+
+        private void ContinueLoad()
+        {
+            Intent serviceToStart = new Intent(this, typeof(BeatOnService));
+            Log.LogMsg("Starting service");
+            StartService(serviceToStart);
+            Log.LogMsg("Started service");
         }
 
         protected override void OnStop()
-        {
+        {            
+            //if (_broadcastReceiver != null && _broadcastReceiver.IsRegistered)
+            //{
+            //    _broadcastReceiver.UnregisterIntents();
+            //}
             base.OnStop();
-            //_webServer.Stop();
         }
         protected override void OnDestroy()
         {
@@ -252,190 +339,44 @@ namespace BeatOn
         protected override void OnStart()
         {
             base.OnStart();
-            //if (_webServer != null && !_webServer.IsRunning)
-            //    _webServer.Start();
-        }
-
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
-        {
-            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-        private void ContinueStartup()
-        {
-            //has to be the activity context to do the package manager stuff
-            _mod = new Mod(this);
-            _mod.StatusUpdated += _mod_StatusUpdated;
-            _webView = FindViewById<WebView>(Resource.Id.webView1);
-            _SongDownloadManager = new DownloadManager(() => { return Engine; }, () => { return CurrentConfig.Config; }, _qaeConfig.SongFileProvider, _qaeConfig.SongsPath);
-            _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
-            _webView.Download += _webView_Download;
-            SetupWebApp();
-            //don't force the config to load
-            //var x = CurrentConfig;
-        }
-
-        private void OpManager_OpStatusChanged(object sender, QuestomAssets.AssetOps.AssetOp e)
-        {
-            if (e.Status == QuestomAssets.AssetOps.OpStatus.Complete)
+            if (_broadcastReceiver == null)
             {
-              //  ClearCurrentConfig();
-              //  SendConfigChangeMessage();
-            }
-                
-        }
-
-        private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)
-        {
-            RunOnUiThread(() =>
-            {
-                var dl = sender as Download;
-                if (e.UpdateType == DownloadStatusChangeArgs.DownloadStatusUpdateType.StatusChange)
+                _broadcastReceiver = new BeatOnServiceTransceiver(this);
+                _broadcastReceiver.ServiceStatusInfoReceived += (o, e) =>
                 {
-                    switch (e.Status)
-                    {
-                        case DownloadStatus.Downloading:
-                            ShowToast("Downloading song...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
-                            break;
-                        case DownloadStatus.Failed:
-                            ShowToast("Song failed to download", dl.DownloadUrl.ToString(), ToastType.Error, 5);
-                            break;
-                        case DownloadStatus.Installed:
-                            ShowToast("Song added to Beat Saber", dl.DownloadUrl.ToString(), ToastType.Success, 3);
-                            break;
-                    }
-                    var hds = new HostDownloadStatus();
-                    var dls = _SongDownloadManager.Downloads;
-                    dls.ForEach(x => hds.Downloads.Add(new HostDownload() { ID = x.ID, PercentageComplete = x.PercentageComplete, Status = x.Status, Url = x.DownloadUrl.ToString() }));
-                    SendMessageToClient(hds);
-                }
-            });
-        }
-
-        private void _mod_StatusUpdated(object sender, string e)
-        {
-            SendStatusMessage(e);
-        }
-
-        private void SendMessageToClient(ClientModels.MessageBase message)
-        {
-            _webServer.SendMessage(message);
-        }
-        private void ShowToast(string title, string message, ToastType type = ToastType.Info, float durationSec = 3.0F)
-        {
-            SendMessageToClient(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
-        }
-
-        private void _webView_Download(object sender, DownloadEventArgs e)
-        {
-            if (e.Mimetype != "application/zip")
-            {
-                ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
-                return;
+                    //_webView.LoadUrl($"http://localhost:50000");
+                    _webView.LoadUrl(e.Url);
+                    _broadcastReceiver.UnregisterIntents();
+                    _broadcastReceiver.RegisterContextForIntents(BeatOnIntent.InstallPackage, BeatOnIntent.UninstallPackage);
+                    _broadcastReceiver.UninstallPackageReceived+= (s, p) => {
+                        BeatSaberModder m = new BeatSaberModder(this, null, null);
+                        m.TriggerPackageUninstall(p.PackageUrl);
+                    };
+                    _broadcastReceiver.InstallPackageReceived += (s, p) =>
+                     {
+                         BeatSaberModder m = new BeatSaberModder(this, null, null);
+                         m.TriggerPackageInstall(p.PackageUrl);
+                     };
+                };
             }
-            var uri = new Uri(e.Url);
-            //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
-
-            var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
-            if (_qaeConfig.FileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
-            {
-                ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
-                return;
+            if (!_broadcastReceiver.IsRegistered)
+            { 
+                _broadcastReceiver.RegisterContextForIntents(BeatOnIntent.ServerStatusInfo);
             }
-            _SongDownloadManager.DownloadFile(e.Url);
+
+
+            //if (_serviceConnection == null)
+            //{
+            //    this._serviceConnection = new BeatOnServiceConnection(this);
+            //}
+
+            //string s = _serviceConnection.WebUrl;
+
         }
 
 
-        private void SetupWebApp()
-        {
-            _webServer = new WebServer(Assets, "www");
-            _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
-            _webServer.Router.AddRoute("PUT", "beatsaber/config", new PutConfig(cfg => UpdateConfig(cfg)));
-            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(() => CurrentConfig));
-            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
-            _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => _SongDownloadManager));
-            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
-            _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
-            _webServer.Router.AddRoute("GET", "mod/status", new GetModStatus(_mod));
-            _webServer.Router.AddRoute("GET", "mod/netinfo", new GetNetInfo(_webServer));
-            _webServer.Router.AddRoute("POST", "mod/install/step1", new PostModInstallStep1(_mod, SendMessageToClient));
-            _webServer.Router.AddRoute("POST", "mod/install/step2", new PostModInstallStep2(_mod, SendMessageToClient));
-            _webServer.Router.AddRoute("POST", "mod/install/step3", new PostModInstallStep3(_mod, SendMessageToClient));
-            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
-            {               
-                _currentConfig = null;
-                _qae.Dispose();
-                _qae = null;
-            }));
-            _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
-
-            _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));
-            _webServer.AddMessageHandler(MessageType.AddOrUpdatePlaylist, new ClientAddOrUpdatePlaylistHandler(() => Engine, () => CurrentConfig));
-            _webServer.AddMessageHandler(MessageType.MoveSongToPlaylist, new ClientMoveSongToPlaylistHandler(() => Engine, () => CurrentConfig));
-            _webServer.AddMessageHandler(MessageType.DeleteSong, new ClientDeleteSongHandler(() => Engine, () => CurrentConfig));
-
-            _webServer.Start();
-            _webViewClient = new JSWebViewClient(this, _webView);
-            _webView.LoadUrl($"http://localhost:{_webServer.Port}");
-        }
-
-        
     }
 
-
-    public static class ResponseExtensions
-    {
-        public static void NotFound(this HttpListenerResponse resp)
-        {
-            resp.StatusCode = 400;
-        }
-
-        public static void BadRequest(this HttpListenerResponse resp, string message = null)
-        {
-            resp.StatusCode = 400;
-            if (message != null)
-            {
-                WriteBody(resp, message);
-            }
-        }
-
-        public static void Error(this HttpListenerResponse resp, string message = null)
-        {
-            resp.StatusCode = 500;
-            if (message != null)
-            {
-                WriteBody(resp, message);
-            }
-        }
-
-        private static void WriteBody(HttpListenerResponse resp, string body)
-        {
-            using (var sw = new StreamWriter(resp.OutputStream, System.Text.Encoding.UTF8, 1024, true))
-                sw.Write(body);
-        }
-
-        public static void Ok(this HttpListenerResponse resp, string message = null)
-        {
-            if (message == null)
-            {
-                resp.StatusCode = 204;
-            }
-            else
-            {
-                resp.StatusCode = 200;
-                WriteBody(resp, message);
-            }
-        }
-
-        public static void Serialize<T>(this HttpListenerResponse resp, T obj)
-        {
-            resp.StatusCode = 200;
-            resp.ContentType = "application/json";
-            WriteBody(resp, JsonConvert.SerializeObject(obj));
-        }
-
-    }
 
 }
 

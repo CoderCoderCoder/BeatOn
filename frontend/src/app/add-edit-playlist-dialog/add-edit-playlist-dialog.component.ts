@@ -41,7 +41,6 @@ export class AddEditPlaylistDialogComponent implements OnInit {
       let file: File = files[0];
       var reader = new FileReader();
     reader.onload = (ev) => {
-        console.log(reader.result);
         this.currentCover = reader.result;
         this.data.playlist.CoverImageBytes = this.currentCover.substring(this.currentCover.indexOf(";base64,")+8);
     };

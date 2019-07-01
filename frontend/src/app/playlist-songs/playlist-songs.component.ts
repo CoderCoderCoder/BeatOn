@@ -5,13 +5,18 @@ import { AppSettings } from '../appSettings';
 import { BeatSaberSong } from '../models/BeatSaberSong';
 import { sortAscendingPriority } from '@angular/flex-layout';
 import { HostMessageService } from '../services/host-message.service';
+import { ClientDeleteSong } from '../models/ClientDeleteSong.cs';
+import { MatDialog } from '@angular/material';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',
   styleUrls: ['./playlist-songs.component.scss']
 })
 export class PlaylistSongsComponent implements OnInit {
-  constructor(private msgSvc : HostMessageService) { }
+  constructor(private msgSvc : HostMessageService, private dialog : MatDialog) { }
   private _playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   //@Input() playlist : BeatSaberPlaylist = <BeatSaberPlaylist>{};
   songlist : BeatSaberSong[];
@@ -30,24 +35,50 @@ export class PlaylistSongsComponent implements OnInit {
       this.songlist = this._playlist.SongList.slice();
     }
   }
+
   ngOnInit() {
 
   }
+  
   drop(e : CdkDragDrop<string>) 
   {
     if (e.container != e.previousContainer) {
-      debugger;
-      console.log("got a drop in songsd! " + JSON.stringify(e.previousContainer.element.nativeElement.attributes));
+
     }
     
   }
+
   getBackground(item) {
     return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + item.SongID ;
   }
-
-  clickDeleteSong(song) {
-    this.msgSvc.sendMessage(JSON.stringify({Type:"DeleteSong", SongID: song.SongID}));
-
+  clickSortName(reverse : boolean) {
+    var sort = new ClientSortPlaylist();
+    sort.PlaylistID = this._playlist.PlaylistID;
+    sort.SortMode = PlaylistSortMode.Name;
+    sort.Reverse = reverse;
+    this.msgSvc.sendClientMessage(sort);
   }
 
+  clickSortDifficulty(reverse : boolean) {
+    var sort = new ClientSortPlaylist();
+    sort.PlaylistID = this._playlist.PlaylistID;
+    sort.SortMode = PlaylistSortMode.MaxDifficulty;
+    sort.Reverse = reverse;
+    this.msgSvc.sendClientMessage(sort);
+  }
+  clickDeleteSong(song) {
+    var dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      height: '180px',
+      disableClose: true,
+      data: {title: "Delete "+ song.SongName+"?", subTitle: "Are you sure you want to delete this song?", button1Text: "Yes"}
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      if (res == 1) {
+        var msg = new ClientDeleteSong();
+        msg.SongID = song.SongID;
+        this.msgSvc.sendClientMessage(msg);
+      }
+    });    
+  }
 }

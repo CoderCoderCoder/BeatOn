@@ -99,13 +99,13 @@ THE SOFTWARE.
 
 @angular/material/menu
 
-@angular/material/progress-bar
-
 @angular/material/progress-spinner
 
 @angular/material/tabs
 
 @angular/material/toolbar
+
+@angular/material/tooltip
 
 @angular/platform-browser
 MIT

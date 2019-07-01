@@ -20,8 +20,8 @@ namespace BeatOn
         NotStarted,
         Downloading,
         Downloaded,
-        Installing,
-        Installed,
+        Processing,
+        Processed,
         Failed
     }
 }

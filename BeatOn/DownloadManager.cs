@@ -25,30 +25,22 @@ namespace BeatOn
             {
                 lock (_downloads)
                 {
-                    return _downloads.Count(x => x.Status != DownloadStatus.Installed && x.Status != DownloadStatus.Failed);
+                    return _downloads.Count(x => x.Status != DownloadStatus.Processed && x.Status != DownloadStatus.Failed);
                 }
             }
         }
-        private Func<QuestomAssets.QuestomAssetsEngine> _engineFactory;
-        private Func<QuestomAssets.Models.BeatSaberQuestomConfig> _configFactory;
-        private IAssetsFileProvider _provider;
-        private string _defaultSavePath;
+        private ImportManager _importManager;
+
         private int _maxConcurrentDownloads;
-        public DownloadManager(Func<QuestomAssets.QuestomAssetsEngine> engineFactory, Func<QuestomAssets.Models.BeatSaberQuestomConfig> configFactory, IAssetsFileProvider provider, string defaultSavePath, int maxConcurrentDownloads = 5)
+        
+        public DownloadManager(ImportManager importManager, int maxConcurrentDownloads = 5)
         {
-            _engineFactory = engineFactory;
-            _configFactory = configFactory;                
-            _provider = provider;
-            _defaultSavePath = defaultSavePath;
+            _importManager = importManager;
             _maxConcurrentDownloads = maxConcurrentDownloads;
         }
-        private object _installLock = new object();
-        private Task _currentInstall;
 
-        public Download DownloadFile(string url, string savePath = null)
+        public Download DownloadFile(string url)
         {
-            savePath = savePath ?? _defaultSavePath;
-            
             //prevent the same URL from going in the queue twice.
             var exists = false;
             lock (_downloads)
@@ -58,138 +50,97 @@ namespace BeatOn
 
             if (exists)
             {
-                var deadDl = new Download(url, _provider, savePath);
+                var deadDl = new Download(url);
                 deadDl.StatusChanged += StatusChangeHandler;
                 deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
                 return deadDl;
             }            
             
-            Download dl = new Download(url, _provider, savePath);
+            Download dl = new Download(url);
             lock (_downloads)
                 _downloads.Add(dl);
+
             dl.StatusChanged += StatusChangeHandler;
             dl.SetStatus(DownloadStatus.NotStarted);
             return dl;
         }
 
-        public Download ProcessFile(byte[] fileData, string fileName, string savePath = null)
-        {
-            savePath = savePath ?? _defaultSavePath;
-
-            Download dl = new Download(_provider, savePath, fileData, fileName);
-            lock(_downloads)
-                _downloads.Add(dl);
-            dl.StatusChanged += StatusChangeHandler;
-            dl.SetStatus(DownloadStatus.NotStarted);
-            return dl;
-        }
         public event EventHandler<DownloadStatusChangeArgs> StatusChanged;
 
         private void StatusChangeHandler(object sender, DownloadStatusChangeArgs args)
         {
+            //this method is the main "loop" of the download manager.  When a download is queued, its status is set to "not started", which triggers
+            //  and event that lands it here.  This function handles all of the state changes, starting of downloads, clearing of succeeded or failed downloads
+            //  and the triggering of processing downloads that have completed
             lock (_downloads)
             {
                 var dl = sender as Download;
                 switch (args.Status)
                 {
-                    case DownloadStatus.Downloaded:
-
-                        break;
                     case DownloadStatus.Failed:
                         _downloads.Remove(dl);
                         break;
-                    case DownloadStatus.Installed:
+                    case DownloadStatus.Processed:
                         _downloads.Remove(dl);
                         break;
+                    case DownloadStatus.Downloaded:
+                        dl.SetStatus(DownloadStatus.Processing);
+                        Task.Run(() =>
+                        {
+                            try
+                            {
+                                //this code assumes it's always a zip file.
+                                //load the downloaded data into a zip file provider and have the import manager try importing it
+                                MemoryStream ms = new MemoryStream(dl.DownloadedData);
+                                try
+                                {
+                                    File.WriteAllBytes("/sdcard/test.zip", dl.DownloadedData);
+                                    var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                    try
+                                    {
+                                        _importManager.ImportFromFileProvider(provider, () =>
+                                        {
+                                            provider.Dispose();
+                                            ms.Dispose();
+                                        });
+                                    }
+                                    catch
+                                    {
+                                        provider.Dispose();
+                                        throw;
+                                    }
+                                }
+                                catch
+                                {
+                                    ms.Dispose();
+                                    throw;
+                                }
+
+                                //if the import manager succeeds, mark the download status as processed.
+                                // The status change events will land it in this parent event handler again, and it'll be cleared from the download list.
+                                dl.SetStatus(DownloadStatus.Processed);
+                            }
+                            catch (ImportException iex)
+                            {
+                                Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", iex);
+                                dl.SetStatus(DownloadStatus.Failed, $"Failed to process {dl.DownloadUrl}: {iex.FriendlyMessage}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", ex);
+                                dl.SetStatus(DownloadStatus.Failed, $"Unable to process downloaded file from {dl.DownloadUrl}");
+                            }
+                        });
+                        break;
                 }
+
                 if (_downloads.Count(x => x.Status == DownloadStatus.Downloading) < _maxConcurrentDownloads)
                 {
                     var next = _downloads.FirstOrDefault(x => x.Status == DownloadStatus.NotStarted);
                     if (next != null)
                         next.Start();
                 }
-                Task newTask = null;
-                lock (_installLock)
-                {
-                    if (_currentInstall == null)
-                    {
-                        var doneDownloads = _downloads.Where(x => x.Status == DownloadStatus.Downloaded).ToList();
-                        if (doneDownloads.Count > 0)
-                        {
-                            newTask = new Task(() =>
-                            {
-                                try
-                                {
-                                    var qae = _engineFactory();
-                                    var currentConfig = _configFactory();
-                                    var pl = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
-                                    Task<BeatSaberPlaylist> playlistTask;
-                                    if (pl == null)
-                                    {
-                                        playlistTask = new Task<BeatSaberPlaylist>(() =>
-                                        {
-                                            pl = new BeatSaberPlaylist()
-                                            {
-                                                PlaylistID = "CustomSongs",
-                                                PlaylistName = "Custom Songs"
-                                            };
-                                            var addPlOp = new AddOrUpdatePlaylistOp(pl);
-                                            qae.OpManager.QueueOp(addPlOp);
-                                            addPlOp.FinishedEvent.WaitOne();
-                                            if (addPlOp.Status != OpStatus.Complete)
-                                            {
-                                                Log.LogErr($"Unable to create CustomSongs playlist!");
-                                                return null;
-                                            }
-                                            currentConfig.Playlists.Add(pl);
-                                            return pl;
-                                        });
-                                    }
-                                    else
-                                    {
-                                        playlistTask = new Task<BeatSaberPlaylist>(() => { return pl; });
-                                    }
-                                    playlistTask.ContinueWith((pt) =>
-                                    {
-                                        var playlist = pt.Result;
-                                        foreach (var toInst in doneDownloads)
-                                        {
-                                            var bsSong = new BeatSaberSong()
-                                            {
-                                                SongID = Path.GetFileName(toInst.DownloadPath),
-                                                CustomSongPath = toInst.DownloadPath
-                                            };
-                                            var addOp = new AddNewSongToPlaylistOp(bsSong, playlist.PlaylistID);
-
-                                            addOp.OpFinished += (s, op) =>
-                                             {
-                                                 playlist.SongList.Add(bsSong);
-                                                 
-                                                 if (op.Status == OpStatus.Complete)
-                                                     toInst.SetStatus(DownloadStatus.Installed);
-                                                 else
-                                                     toInst.SetStatus(DownloadStatus.Failed);
-                                             };
-                                            toInst.SetStatus(DownloadStatus.Installing);
-                                            qae.OpManager.QueueOp(addOp);
-                                        }
-                                    });
-                                    playlistTask.Start();
-                                }
-                                finally
-                                {
-                                    lock (_installLock)
-                                        _currentInstall = null;
-                                }
-                            });
-                            _currentInstall = newTask;
-                        }
-                    }
-                }
-                if (newTask != null)
-                {
-                    newTask.Start();
-                }
+               
             }
             StatusChanged?.Invoke(sender, args);
         }

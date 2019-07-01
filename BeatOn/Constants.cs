@@ -18,6 +18,9 @@ namespace BeatOn
         public const string ROOT_BEAT_ON_DATA_PATH = "/sdcard/BeatOnData/";
         public const string ASSETS_RELOC_PATH = ROOT_BEAT_ON_DATA_PATH + "BeatSaberAssets/";
         public const string MODLOADER_MODS_PATH = "/sdcard/Android/data/com.beatgames.beatsaber/files/mods/";
-        public const string LOGFILE = ROOT_BEAT_ON_DATA_PATH + "beaton.log";
+        public const string LOGFILE = "/sdcard/beaton.log";
+        public const string SERVICE_LOGFILE = "/sdcard/beatonservice.log";
+
+        public const string JS_INTERFACE_NAME = "BeatOnAppInterface";
     }
 }

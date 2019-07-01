@@ -56,7 +56,7 @@ namespace BeatOn
                 //what's the quality setting here?
                 using (MemoryStream msPng = new MemoryStream())
                 {
-                    RGBBytesToBitmap(texture.ImageData, texture.Width, texture.Height).Compress(Bitmap.CompressFormat.Png, 9, msPng);
+                    RGBBytesToBitmap(texture.ImageData, texture.Width, texture.Height).Compress(Bitmap.CompressFormat.Png, 90, msPng);
                     return msPng.ToArray();
                 }
             }
@@ -64,7 +64,7 @@ namespace BeatOn
             {
                 using (MemoryStream msPng = new MemoryStream())
                 {
-                    ETCBytesToBitmap(texture.ImageData, texture.Width, texture.Height).Compress(Bitmap.CompressFormat.Png, 9, msPng);
+                    ETCBytesToBitmap(texture.ImageData, texture.Width, texture.Height).Compress(Bitmap.CompressFormat.Png, 90, msPng);
                     return msPng.ToArray();
                 }
             }
@@ -149,7 +149,7 @@ namespace BeatOn
         private byte[] MipmapToRGBBytes(Bitmap bitmap, int targetWidth, int targetHeight, int maxMips, out int actualMips)
         {
             //todo: eval quality, maybe set filtered to true
-            bool filterResize = false;
+            bool filterResize = true;
             Bitmap curBitmap = bitmap;
             if (bitmap.Width != targetWidth || bitmap.Height != targetHeight)
             {
@@ -170,7 +170,7 @@ namespace BeatOn
                     currentHeight /= 2;
                     mipCount++;
 
-                    if (currentWidth >= 1 && currentHeight >= 1 && mipCount < maxMips)
+                    if (currentWidth < 1 || currentHeight < 1 || mipCount > maxMips)
                         break;
                     curBitmap = Bitmap.CreateScaledBitmap(curBitmap, currentWidth, currentHeight, filterResize);
                 } while (true);
