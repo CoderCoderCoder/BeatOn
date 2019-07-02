@@ -1,0 +1,24 @@
+<div *ngIf="!config.Mods.length">No Mods!</div>
+<div>
+<cdk-virtual-scroll-viewport itemSize="50" class="viewport"> 
+  
+    <!-- *cdkVirtualFor -->
+    <mat-card class="mod" *cdkVirtualFor="let mod of config.Mods" cdkDrag >
+        <div class="modId">
+            {{mod.ID}}
+          </div>
+      <div class="modclass {{mod.Category}}">{{mod.Category}}</div>
+
+
+      <div class="modName">
+        <div class="modTitle">{{mod?.Name}}</div>
+        <div class="modAuthor">{{mod?.Author}}</div>
+        <a [href]="mod.InfoUrl" *ngIf="mod?.InfoUrl?.length" class="modUrl">Mod Homepage</a>
+      </div>
+      <div class="description">{{mod?.Description}}</div>
+      <mat-card-footer><mat-slide-toggle (change)="toggleMod(mod)" [checked]="mod?.Status == 'Installed'"> 
+        </mat-slide-toggle></mat-card-footer>
+    </mat-card>
+    
+  </cdk-virtual-scroll-viewport>
+</div>

@@ -167,12 +167,12 @@ namespace BeatOn.Core
             var uri = new Uri(url);
             //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
 
-            var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
-            if (_qaeConfig.RootFileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
-            {
-                ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
-                return;
-            }
+            //var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
+            //if (_qaeConfig.RootFileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
+            //{
+            //    ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
+            //    return;
+            //}
             _SongDownloadManager.DownloadFile(url);
         }
  
@@ -189,10 +189,12 @@ namespace BeatOn.Core
                 {
                     RootFileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
                     PlaylistArtPath = "Art",
-                    AssetsPath = "BeatSaberAssets",
-                    ModsSourcePath = "Mods",
-                    SongsPath = "CustomSongs",
-                    ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false)
+                    AssetsPath = Constants.BEATSABER_ASSETS_FOLDER_NAME,
+                    ModsSourcePath =  Constants.MODS_FOLDER_NAME,
+                    SongsPath = Constants.CUSTOM_SONGS_FOLDER_NAME,
+                    ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false),
+                    ModsStatusFile =Constants.MOD_STATUS_FILE,
+                    BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -294,6 +296,7 @@ namespace BeatOn.Core
             if (e.Status == OpStatus.Complete && e.IsWriteOp)
             {
                 CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
+                SendConfigChangeMessage();
             }
             _sendClientOpsChanged.EventRaised(this, opstat);
         }
@@ -306,13 +309,13 @@ namespace BeatOn.Core
                 switch (e.Status)
                 {
                     case DownloadStatus.Downloading:
-                        ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
+                        //ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
                         break;
                     case DownloadStatus.Failed:
                         ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
                         break;
                     case DownloadStatus.Processed:
-                        ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
+                        //ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
                         break;
                 }
                 var hds = new HostDownloadStatus();

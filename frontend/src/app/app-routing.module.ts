@@ -10,6 +10,7 @@ import { MainBrowserComponent } from './main-browser/main-browser.component';
 import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { CreditsComponent } from './credits/credits.component';
+import { MainModsComponent } from './main-mods/main-mods.component';
 
 const routes: Routes = [
   { path: 'setup', component: SetupComponent },
@@ -24,7 +25,8 @@ const routes: Routes = [
       {path: 'browser', component: MainBrowserComponent},
       {path: 'tools', component: ToolsComponent},
       {path: 'upload', component: RemoteUploadComponent},
-      {path: 'credits', component: CreditsComponent}
+      {path: 'credits', component: CreditsComponent},
+      {path: 'mods', component: MainModsComponent}
     ]
   }
 ];

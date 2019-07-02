@@ -11,6 +11,7 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using BeatOn.ClientModels;
+using Newtonsoft.Json;
 using QuestomAssets;
 
 namespace BeatOn.Core.RequestHandlers
@@ -33,28 +34,31 @@ namespace BeatOn.Core.RequestHandlers
             var req = context.Request;
             var resp = context.Response;
             if (!Monitor.TryEnter(MOD_INSTALL_LOCK))
+            {
                 resp.BadRequest("Another install request is in progress.");
+                return;
+            }
+
             try
             {
-                try
+                if (!_mod.IsBeatSaberInstalled)
                 {
-                    if (!_mod.IsBeatSaberInstalled)
-                    {
-                        resp.BadRequest("Beat Saber is not installed!");
-                        _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
-                        _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!" });
-                        return;
-                    }
-                    _mod.CopyOriginalBeatSaberApkAndTriggerUninstall();
-                    _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step1Complete });
-                    resp.Ok();
+                    resp.BadRequest("Beat Saber is not installed!");
+                    _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.StatusMessage, Message = "Beat Saber is not installed!  Install Beat Saber and come back." });
+                    _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Error, Message = "Beat Saber is not installed!" });
+                    return;
                 }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 1!", ex);
-                    resp.StatusCode = 500;
-                }
+                var skipUninstall = req.Url?.Query?.TrimStart('?')?.Split("&")?.Any(x => x.ToLower() == "skipuninstall")??false;
+                _mod.CopyOriginalBeatSaberApk(!skipUninstall);
+                _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step1Complete });
+                resp.SerializeOk(new { BeatSaberNeedsUninstall = skipUninstall });
             }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception handling mod install step 1!", ex);
+                resp.Serialize(500, new { BeatSaberNeedsUninstall = false, ErrorMessage = ex.FullMessage() });
+            }
+
             finally
             {
                 Monitor.Exit(MOD_INSTALL_LOCK);

@@ -33,7 +33,7 @@ namespace BeatOn.Core.RequestHandlers
                 {
 #if EMULATOR
                     /*THIS IS TEST CODE FOR EMULATOR*/
-                    resp.Serialize(new ModStatus()
+                    resp.SerializeOk(new ModStatus()
                     {
                         IsBeatSaberInstalled = true,
                         CurrentStatus = ModStatusType.ModInstalled

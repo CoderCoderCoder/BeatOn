@@ -70,6 +70,11 @@ clickStuff()
       path: './credits',
       index: 2
     });
+    this.navLinks.push({
+      label: 'Mods',
+      path: './mods',
+      index: 3
+    });
   }
 
   getState(outlet) {

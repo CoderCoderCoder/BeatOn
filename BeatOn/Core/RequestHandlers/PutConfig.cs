@@ -49,7 +49,7 @@ namespace BeatOn.Core.RequestHandlers
                 catch (Exception ex)
                 {
                     Log.LogErr("Exception getting config!", ex);
-                    resp.StatusCode = 500;
+                    resp.Error($"Exception occurred putting config: {ex.Message}");
                 }
             }
         }

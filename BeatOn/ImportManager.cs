@@ -10,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using BeatOn.Core;
 using QuestomAssets;
 using QuestomAssets.AssetOps;
 using QuestomAssets.AssetsChanger;
@@ -61,7 +62,7 @@ namespace BeatOn
                     default:
                         throw new ImportException($"Unhandled file type {type} with {provider.SourceName}", $"File {provider.SourceName} isn't a known type that Beat On can use!");
                 }
-                _showToast("File Processed", $"The file {provider.SourceName} has been proccessed.", ClientModels.ToastType.Info, 2);
+               // _showToast("File Processed", $"The file {provider.SourceName} has been proccessed.", ClientModels.ToastType.Info, 2);
             }
             catch (ImportException iex)
             {
@@ -100,8 +101,7 @@ namespace BeatOn
         {
             try
             {
-                var modPath = ExtractModGetPath(provider);
-                QueueOrInstallMod(modPath);
+                ExtractAndInstallMod(provider);
             }
             catch (ImportException)
             {
@@ -193,11 +193,11 @@ namespace BeatOn
         /// <summary>
         /// Extracts a mod from a provider and returns the path RELATIVE TO THE BEATONDATAROOT
         /// </summary>
-        private string ExtractModGetPath(IFileProvider provider)
+        private void ExtractAndInstallMod(IFileProvider provider)
         {
             try
             {
-                var def = ModDefinition.LoadDefinitionFromProvider(provider);
+                var def = _getEngine().ModManager.LoadDefinitionFromProvider(provider);
                 var modOutputPath = _qaeConfig.ModsSourcePath.CombineFwdSlash(def.ID);
 
                 if (_qaeConfig.RootFileProvider.DirectoryExists(modOutputPath))
@@ -233,7 +233,7 @@ namespace BeatOn
                         throw new ImportException($"Exception extracting {file} from provider {provider.SourceName}", $"Unable to extract files from mod file {provider.SourceName}!", ex);
                     }
                 }
-                return modOutputPath;
+                QueueModInstall(def);
             }
             catch (Exception ex)
             {
@@ -273,16 +273,18 @@ namespace BeatOn
         /// Installs a mod, or queues its operations.
         /// </summary>
         /// <param name="modPath">The mod path RELATIVE TO THE BEATONDATAROOT</param>
-        private void QueueOrInstallMod(string modPath)
+        private void QueueModInstall(ModDefinition modDefinition)
         {
             try
             {
-                ModDefinition.InstallModFromDirectory(modPath, _qaeConfig, _getEngine);
+                _getEngine().ModManager.ResetCache();
+                var ops = _getEngine().ModManager.GetInstallModOps(modDefinition);
+                ops.ForEach(x => _getEngine().OpManager.QueueOp(x));
             }
             catch (Exception ex)
             {
-                Log.LogErr($"Exception in import manager installing mod from {modPath}", ex);
-                throw new ImportException($"Exception in import manager installing mod from {modPath}", $"Unable to install mod from {modPath}!", ex);
+                Log.LogErr($"Exception in import manager installing mod ID {modDefinition.ID}", ex);
+                throw new ImportException($"Exception in import manager installing mod ID {modDefinition.ID}", $"Unable to install mod ID {modDefinition.ID}!", ex);
             }
         }
 

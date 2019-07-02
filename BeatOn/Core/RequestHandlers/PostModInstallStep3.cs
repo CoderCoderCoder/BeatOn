@@ -31,25 +31,30 @@ namespace BeatOn.Core.RequestHandlers
             var req = context.Request;
             var resp = context.Response;
             if (!Monitor.TryEnter(PostModInstallStep1.MOD_INSTALL_LOCK))
+            {
                 resp.BadRequest("Another install request is in progress.");
+                return;
+            }
+
             try
             {
-                try
+                if (!_mod.DoesTempApkExist)
                 {
-                    if (!_mod.DoesTempApkExist)
-                    {
-                        resp.BadRequest("Step 2 has not completed, temporary APK does not exist!");
-                        return;
-                    }
+                    resp.BadRequest("Step 2 has not completed, temporary APK does not exist!");
+                    return;
+                }
+                var skipInstall = req.Url?.Query?.TrimStart('?')?.Split("&")?.Any(x => x.ToLower() == "skipinstall") ?? false;
+
+                if (!skipInstall)
                     _mod.TriggerPackageInstall();
-                    _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step3Complete });
-                    resp.Ok();
-                }
-                catch (Exception ex)
-                {
-                    Log.LogErr("Exception handling mod install step 2!", ex);
-                    resp.StatusCode = 500;
-                }
+
+                _sendMessage(new HostSetupEvent() { SetupEvent = SetupEventType.Step3Complete });
+                resp.Ok();
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception handling mod install step 2!", ex);
+                resp.StatusCode = 500;
             }
             finally
             {
