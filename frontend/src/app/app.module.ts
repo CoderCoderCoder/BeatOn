@@ -37,6 +37,8 @@ import { CreditsComponent } from './credits/credits.component';
 import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import {DragulaModule} from "ng2-dragula";
+import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.component";
 
 @NgModule({
   declarations: [
@@ -61,7 +63,8 @@ import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.componen
     CreditsComponent,
     BrowserNavComponent,
     FastClickDirective,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    SongPackManagerComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent, ConfirmDialogComponent],
   imports: [
@@ -94,7 +97,8 @@ import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.componen
     MatFormFieldModule,
     FormsModule,
     MatInputModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DragulaModule.forRoot()
   ],
   providers:[ ],
   bootstrap: [AppComponent]

@@ -9,6 +9,17 @@ body { background-color: #424242; margin: 0; font-family: Roboto, "Helvetica Neu
 .browserNavMenu {
     height: 40px;
     max-width: 600px !important;
-   
+
     margin-left: -200px;
+}
+::-webkit-scrollbar {
+  height: 16px;
+  width: 16px;
+  background: #e0e0e0;
+}
+::-webkit-scrollbar-corner {
+  background: #cfcfcf;
+}
+::-webkit-scrollbar-thumb {
+  background: #ed4e7a;
 }

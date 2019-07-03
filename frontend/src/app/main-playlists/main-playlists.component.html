@@ -2,9 +2,22 @@
 <tr height="80%"><td width="50%">list</td><td width="50%">info</td></tr>
 <tr height="20%">bottom content<td colspan="2"></td></tr>
 </table> -->
-<div cdkDropListGroup class="container">
-<div >
-  <app-playlist-slider [playlists]="config.Playlists" (selectedPlaylist)="selectedPlaylistChanged($event)" ></app-playlist-slider>
-</div>
-   <app-playlist-songs [playlist]="selectedPlaylist"></app-playlist-songs> 
-</div>
+<!--<div cdkDropListGroup class="container">-->
+<!--<div >-->
+  <!--<app-playlist-slider [playlists]="config.Playlists" (selectedPlaylist)="selectedPlaylistChanged($event)" ></app-playlist-slider>-->
+<!--</div>-->
+   <!--<app-playlist-songs [playlist]="selectedPlaylist"></app-playlist-songs>-->
+<!--</div>-->
+<!--[ngClass]="{'text-dark-theme':appService.currentTheme === 'dark','text-light-theme':appService.currentTheme === 'light'}"-->
+<app-song-pack-manager
+  *ngIf="config&&customPlaylist"
+  [packs]="config.Playlists"
+  [songs]="customPlaylist.SongList"
+  (editPack)="addPack.name = $event.name;addPack.id = $event.id;addPack.coverImagePath = $event.coverImagePath;"
+  (addPack)="true"
+  (saveJson)="true"
+  (removeSong)="true"
+  (openSong)="true"
+  (orderSongs)="true">
+
+</app-song-pack-manager>

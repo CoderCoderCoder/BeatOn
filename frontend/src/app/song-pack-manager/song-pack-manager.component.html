@@ -1,0 +1,91 @@
+<div class="outer-container">
+  <div class="left-col">
+    <div class="packs-left side-packs">
+      <h2>
+
+        <button mat-flat-button class="right"
+                color="primary"
+                matTooltip="Add playlist" matTooltipPosition="below"
+                (click)="addPack.emit()"
+        >Add Playlist</button>
+        My Playlists
+      </h2>
+      <div class="pack-container" #pack_container dragula="SONGS" [(dragulaModel)]="packs">
+        <div class="packOuter" *ngFor="let pack of packs" >
+          <i matTooltip="Collapse this pack" matTooltipPosition="below"
+             class="material-icons right show-pack cursor"
+             (click)="pack.IsOpen = !pack.IsOpen">
+            {{pack.IsOpen?'expand_less':'expand_more'}}
+          </i>
+          <!--<i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>-->
+          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortPack(pack)">sort</i>
+          <i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>
+          <i matTooltip="Edit Playlist" matTooltipPosition="below" (click)="editPack.emit(pack)" class="material-icons right cursor">edit</i>
+          <i matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
+             class="material-icons right cursor">done_all</i>
+          <img [attr.src]="pack.CoverArtFilename||'assets/default-pack-cover.png'" class="pack-image"/>
+          <i class="material-icons cursor grey-text drag-indicator left drag-playlist"
+             matTooltip="Drag this playlist to re-order" matTooltipPosition="below"
+          >more_vert</i>
+          <h3 class="name truncate">{{pack.PlaylistName}}</h3>
+          <div class="pack-song-container-outer">
+            <ul class="collection pack-song-container" *ngIf="pack.IsOpen"  dragula="SONGS" [(dragulaModel)]="pack.SongList">
+              <li *ngFor="let song of pack.SongList" class="collection-song avatar">
+                <i class="material-icons cursor orange-text drag-indicator right"
+                   matTooltip="Remove song from playlist" matTooltipPosition="below"
+                   (click)="removeSongFromPack(song,pack)">close</i>
+                <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
+                <img [src]="song.CoverArtFilename||'assets/default-pack-cover.png'" alt="" class="circle red" />
+                <i class="material-icons cursor grey-text drag-indicator"
+                   matTooltip="Drag this song to reorder" matTooltipPosition="below"
+                >more_vert</i>
+                <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.SongName}}</span>
+                <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.LevelAuthorName?'Level Author: '+song.LevelAuthorName:''}}{{song.SongAuthorName?' - Song Author: '+song.SongAuthorName:''}}{{song.SongName?' - '+song.SongName:''}}</p>
+              </li>
+              <li class="add-to-drag">Drop song here to add!</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="right-col">
+    <div class="packs-right">
+      <h2>
+        <div class="right song-sort">
+          <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
+          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('name')">sort</i>
+          <i matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
+          <i matTooltip="Select all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
+
+        </div>
+        All My Songs
+      </h2>
+      <ul class="collection song-container" #song_container  dragula="SONGS" [(dragulaModel)]="songs">
+        <li *ngFor="let song of songs;let i = index" class="collection-song avatar">
+          <i class="material-icons cursor orange-text drag-indicator right"
+             matTooltip="Delete this song." matTooltipPosition="below"
+             (click)="removeSong.emit(song.SongID)">close</i>
+          <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
+
+          <!--<mz-checkbox-container class="right checkbox-container" *ngIf="checkboxChecked">-->
+            <!--<input mz-checkbox-->
+                   <!--[label]="'Select Song'"-->
+                   <!--id="select_song_{{i}}"-->
+                   <!--[(ngModel)]="song.selected"-->
+                   <!--type="checkbox">-->
+          <!--</mz-checkbox-container>-->
+          <img [src]="song.CoverArtFilename||'assets/default-pack-cover.png'" alt="" class="circle red" />
+          <i class="material-icons cursor grey-text drag-indicator"
+             matTooltip="Drag this song to a playlist." matTooltipPosition="below"
+          >more_vert</i>
+          <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.SongName}}</span>
+          <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.LevelAuthorName?'Level Author: '+song.LevelAuthorName:''}}{{song.SongAuthorName?' - Song Author: '+song.SongAuthorName:''}}{{song.SongName?' - '+song.SongName:''}}</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+<ul class="collection hide-this" #mirror_holder>
+
+</ul>
