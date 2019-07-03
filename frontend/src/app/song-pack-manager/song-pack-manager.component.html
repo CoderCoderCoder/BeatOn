@@ -56,7 +56,7 @@
           <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
           <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('name')">sort</i>
           <i matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
-          <i matTooltip="Select all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
+          <i matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
 
         </div>
         All My Songs
@@ -67,14 +67,7 @@
              matTooltip="Delete this song." matTooltipPosition="below"
              (click)="removeSong.emit(song.SongID)">close</i>
           <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
-
-          <!--<mz-checkbox-container class="right checkbox-container" *ngIf="checkboxChecked">-->
-            <!--<input mz-checkbox-->
-                   <!--[label]="'Select Song'"-->
-                   <!--id="select_song_{{i}}"-->
-                   <!--[(ngModel)]="song.selected"-->
-                   <!--type="checkbox">-->
-          <!--</mz-checkbox-container>-->
+          <mat-checkbox [(ngModel)]="song.Selected" color="primary" class="right select-song" *ngIf="checkboxChecked">Select Song</mat-checkbox>
           <img [src]="song.CoverArtFilename||'assets/default-pack-cover.png'" alt="" class="circle red" />
           <i class="material-icons cursor grey-text drag-indicator"
              matTooltip="Drag this song to a playlist." matTooltipPosition="below"

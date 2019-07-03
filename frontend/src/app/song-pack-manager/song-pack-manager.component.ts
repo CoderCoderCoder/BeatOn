@@ -1,22 +1,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
-// import { BsaberService } from '../bsaber.service';
 import { DragulaService } from 'ng2-dragula';
 import {Subscription} from "rxjs/internal/Subscription";
-// import { Subscription } from 'rxjs/Subscription';
-// import { AppService } from '../app.service';
 declare let autoScroll;
-export interface SongItem {
-    id: string;
-    name: string;
-    path: string;
-    cover: string;
-    created: number;
-    selected?: boolean;
-    _songAuthorName?: string;
-    _levelAuthorName?: string;
-    _beatsPerMinute?: string;
-    _difficultyBeatmapSets?: string[];
-}
 @Component({
     selector: 'app-song-pack-manager',
     templateUrl: './song-pack-manager.component.html',
@@ -35,13 +20,12 @@ export class SongPackManagerComponent implements OnInit {
     @ViewChild('pack_container', { static: false }) pack_container;
     @ViewChild('mirror_holder', { static: false }) mirror_holder;
     checkboxChecked: boolean;
+    selectAllToggle: boolean;
     BAG = 'SONGS';
     test: string;
     subs = new Subscription();
     public constructor(
         private dragulaService: DragulaService,
-       // public bsaberService: BsaberService,
-        //private appService: AppService
     ) {
         this.dragulaService.createGroup(this.BAG, {
             copy: (el, source) => {
@@ -60,11 +44,6 @@ export class SongPackManagerComponent implements OnInit {
             copyItem: (item: any) => ({ ...item }),
             //mirrorContainer: this.mirror_holder.nativeElement,
         });
-        // this.subs.add(dragulaService.drag(this.BAG)
-        //   .subscribe(({ el }) => {
-        //     //this.removeClass(el, 'ex-moved');
-        //   })
-        // );
         this.subs.add(
             dragulaService.drop(this.BAG).subscribe(({ el }) => {
                 //this.addClass(el, 'ex-moved');
@@ -72,18 +51,6 @@ export class SongPackManagerComponent implements OnInit {
                 this.saveJson.emit();
             })
         );
-        // this.subs.add(dragulaService.over(this.BAG)
-        //   .subscribe(({ el, container }) => {
-        //     //console.log('over', container);
-        //     //this.addClass(container, 'ex-over');
-        //   })
-        // );
-        // this.subs.add(dragulaService.out(this.BAG)
-        //   .subscribe(({ el, container }) => {
-        //    // console.log('out', container);
-        //     //this.removeClass(container, 'ex-over');
-        //   })
-        // );
     }
     ngOnDestroy() {
         this.dragulaService.destroy('SONGS');
@@ -100,17 +67,17 @@ export class SongPackManagerComponent implements OnInit {
         });
     }
     hasSelected() {
-        return this.songs.filter(s => s.selected).length;
+        return this.songs.filter(s => s.Selected).length;
     }
     addSelected(pack) {
-        pack.levelIDs = pack.levelIDs.concat(this.songs.filter(s => s.selected));
+        pack.SongList = pack.SongList.concat(this.songs.filter(s => s.Selected));
         this.songs.forEach(s => (s.selected = false));
         this.checkboxChecked = false;
     }
     uniquePack(pack) {
         let keys = {};
         pack.isOpen = false;
-        pack.levelIDs = pack.levelIDs.filter(a => {
+        pack.SongList = pack.SongList.filter(a => {
             let key = '_' + a.id + '|' + a.name;
             if (!keys[key]) {
                 keys[key] = true;
@@ -143,9 +110,10 @@ export class SongPackManagerComponent implements OnInit {
         this.saveJson.emit();
     }
     selectAll() {
+      this.selectAllToggle = !this.selectAllToggle;
         this.checkboxChecked = true;
         this.songs.forEach(s => {
-            s.selected = true;
+            s.Selected = this.selectAllToggle;
         });
     }
 }

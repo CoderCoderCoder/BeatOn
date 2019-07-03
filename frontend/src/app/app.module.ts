@@ -4,7 +4,21 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatTooltipModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule} from '@angular/material';
+import {
+  MatTooltipModule,
+  MatButtonToggleModule,
+  MatChipsModule,
+  MatProgressBarModule,
+  MatMenuModule,
+  MatGridListModule,
+  MatButtonModule,
+  MatCardModule,
+  MatIconModule,
+  MatToolbarModule,
+  MatDialogModule,
+  MatProgressSpinnerModule,
+  MatCheckboxModule
+} from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -90,6 +104,7 @@ import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.co
     ReactiveFormsModule,
     MatMenuModule,
     MatProgressBarModule,
+    MatCheckboxModule,
     MatChipsModule,
     ScrollDispatchModule,
     MatButtonToggleModule,
