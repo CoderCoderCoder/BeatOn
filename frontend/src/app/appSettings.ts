@@ -10,8 +10,7 @@ export class AppSettings {
 
    public static API_ENDPOINT= environment.production?'':AppSettings.DEV_API_ENDPOINT;
 
-    public static WS_ENDPOINT_OVERRIDE = environment.production?null:AppSettings.DEV_WS_ENDPOINT;
-
+   public static WS_ENDPOINT_OVERRIDE = environment.production?null:AppSettings.DEV_WS_ENDPOINT;
 
    // public static API_ENDPOINT= 'http://localhost:50000';
 
