@@ -41,7 +41,8 @@ export class MainPlaylistsComponent implements OnInit {
          CoverImageBytes : null
        }
      }
-     this.config.Playlists[0].IsOpen = true;
+     if(this.config.Playlists.length)
+      this.config.Playlists[0].IsOpen = true;
    });
    this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> {  this.config = cfg.Config; });
   }
