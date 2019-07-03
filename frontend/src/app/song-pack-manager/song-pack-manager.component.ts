@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { DragulaService } from 'ng2-dragula';
 import {Subscription} from "rxjs/internal/Subscription";
+import {ClientSortPlaylist} from "../models/ClientSortPlaylist";
+import {PlaylistSortMode} from "../models/PlaylistSortMode";
+import {HostMessageService} from "../services/host-message.service";
+import {AppSettings} from "../appSettings";
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -21,11 +25,13 @@ export class SongPackManagerComponent implements OnInit {
     @ViewChild('mirror_holder', { static: false }) mirror_holder;
     checkboxChecked: boolean;
     selectAllToggle: boolean;
+    reverseSortToggle: boolean;
     BAG = 'SONGS';
     test: string;
     subs = new Subscription();
     public constructor(
         private dragulaService: DragulaService,
+        private msgSvc : HostMessageService
     ) {
         this.dragulaService.createGroup(this.BAG, {
             copy: (el, source) => {
@@ -89,20 +95,28 @@ export class SongPackManagerComponent implements OnInit {
             this.saveJson.emit();
         });
     }
-    sortPack(pack, isRecent?) {
-        if (isRecent) {
-            // pack.SongList = pack.SongList
-            //     .sort((a, b) => {
-            //         return a.created < b.created ? -1 : a.created > b.created ? 1 : 0;
-            //     })
-            //     .reverse();
-        } else {
-            pack.SongList = pack.SongList.sort((a, b) => {
-                let textA = a.SongName.toUpperCase();
-                let textB = b.SongName.toUpperCase();
-                return textA < textB ? -1 : textA > textB ? 1 : 0;
-            });
-        }
+    getBackground(SongID) {
+      return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + SongID ;
+    }
+    sortAuthor(PlaylistID: string){
+      this.sortPack(PlaylistID, PlaylistSortMode.LevelAuthor);
+    }
+    sortDifficulty(PlaylistID: string){
+      this.sortPack(PlaylistID, PlaylistSortMode.MaxDifficulty);
+      // setTimeout(()=>{
+      //   console.log(this.packs);
+      // },3000)
+    }
+    sortName(PlaylistID: string){
+      this.sortPack(PlaylistID, PlaylistSortMode.Name);
+    }
+    sortPack(PlaylistID: string, mode: PlaylistSortMode) {
+      this.reverseSortToggle = !this.reverseSortToggle;
+      const sort = new ClientSortPlaylist();
+      sort.PlaylistID = PlaylistID;
+      sort.SortMode = mode;
+      sort.Reverse = this.reverseSortToggle;
+      this.msgSvc.sendClientMessage(sort);
         this.saveJson.emit();
     }
     removeSongFromPack(song, pack) {

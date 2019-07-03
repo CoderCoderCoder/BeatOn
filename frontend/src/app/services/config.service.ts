@@ -13,7 +13,7 @@ import { ToastrService } from 'ngx-toastr';
 export class ConfigService implements OnInit {
   @Output() configUpdated = new EventEmitter<BeatOnConfig>();
 
-  constructor(private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, private toastr: ToastrService) { 
+  constructor(private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, private toastr: ToastrService) {
     console.log("config service subscribing to host config change event");
     this.msgSvc.configChangeMessage.subscribe((cfg : HostConfigChangeEvent) =>
     {
@@ -34,6 +34,7 @@ export class ConfigService implements OnInit {
         this.beatOnApi.getConfig()
             .subscribe((data: any) => {
               this.currentConfig = data;
+              console.log('here');
               observable.next(data);
             }, (err) =>
             {
@@ -46,16 +47,16 @@ export class ConfigService implements OnInit {
   }
 
   ngOnInit() {
-   
+
   }
 
   currentConfig : BeatOnConfig;
-  
+
   refreshConfig()  {
-    
+
     this.beatOnApi.getConfig()
       .subscribe(
-        (data: any) => { 
+        (data: any) => {
           this.currentConfig = data;
           this.configUpdated.emit(data);
         },

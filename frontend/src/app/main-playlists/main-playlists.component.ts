@@ -20,31 +20,36 @@ export class MainPlaylistsComponent implements OnInit {
   customPlaylist: BeatSaberPlaylist;
   constructor(private beatOnApi : BeatOnApiService, private configSvc : ConfigService) { }
 
+  ngOnInit() {
+   this.configSvc.getConfig().subscribe(this.handleConfig.bind(this));
+   this.configSvc.configUpdated.subscribe(this.handleConfig.bind(this));
+  }
+
   selectedPlaylistChanged(ev) {
     this.selectedPlaylist = ev;
   }
 
+  handleConfig(cfg : BeatOnConfig){
+    this.config = cfg.Config;
+    this.setupPlaylists();
+  }
 
-  ngOnInit() {
-   this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {
-     this.config = cfg.Config;
-     const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
-     if(customIndex > -1){
-       this.customPlaylist = this.config.Playlists[customIndex];
-       this.config.Playlists.splice(customIndex,1);
-     }else{
-       this.customPlaylist = {
-         CoverArtFilename : null,
-         PlaylistID: "",
-         PlaylistName: "",
-         SongList: [],
-         CoverImageBytes : null
-       }
-     }
-     if(this.config.Playlists.length)
+  setupPlaylists(){
+    const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
+    if(customIndex > -1){
+      this.customPlaylist = this.config.Playlists[customIndex];
+      this.config.Playlists.splice(customIndex,1);
+    }else{
+      this.customPlaylist = {
+        CoverArtFilename : null,
+        PlaylistID: "",
+        PlaylistName: "",
+        SongList: [],
+        CoverImageBytes : null
+      }
+    }
+    if(this.config.Playlists.length)
       this.config.Playlists[0].IsOpen = true;
-   });
-   this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> {  this.config = cfg.Config; });
   }
 
 }

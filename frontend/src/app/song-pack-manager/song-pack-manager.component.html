@@ -18,7 +18,9 @@
             {{pack.IsOpen?'expand_less':'expand_more'}}
           </i>
           <!--<i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>-->
-          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortPack(pack)">sort</i>
+          <i matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>
+          <i matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>
+          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>
           <i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>
           <i matTooltip="Edit Playlist" matTooltipPosition="below" (click)="editPack.emit(pack)" class="material-icons right cursor">edit</i>
           <i matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
@@ -35,7 +37,7 @@
                    matTooltip="Remove song from playlist" matTooltipPosition="below"
                    (click)="removeSongFromPack(song,pack)">close</i>
                 <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
-                <img [src]="song.CoverArtFilename||'assets/default-pack-cover.png'" alt="" class="circle red" />
+                <img [src]="getBackground(song.SongID)" alt="" class="circle red" />
                 <i class="material-icons cursor grey-text drag-indicator"
                    matTooltip="Drag this song to reorder" matTooltipPosition="below"
                 >more_vert</i>
