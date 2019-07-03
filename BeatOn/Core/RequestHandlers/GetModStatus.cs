@@ -33,14 +33,14 @@ namespace BeatOn.Core.RequestHandlers
                 {
 #if EMULATOR
                     /*THIS IS TEST CODE FOR EMULATOR*/
-                    resp.SerializeOk(new ModStatus()
+                    resp.SerializeOk(new ModSetupStatus()
                     {
                         IsBeatSaberInstalled = true,
-                        CurrentStatus = ModStatusType.ModInstalled
+                        CurrentStatus = ModSetupStatusType.ModInstalled
                     });
                     return;
 #else
-                    var model = new ModStatus()
+                    var model = new ModSetupStatus()
                     {
                         IsBeatSaberInstalled = _mod.IsBeatSaberInstalled
                     };
@@ -49,17 +49,17 @@ namespace BeatOn.Core.RequestHandlers
                     {
                         if (_mod.IsInstalledBeatSaberModded)
                         {
-                            model.CurrentStatus = ModStatusType.ModInstalled;
+                            model.CurrentStatus = ModSetupStatusType.ModInstalled;
                         }
                         else if (!_mod.IsBeatSaberInstalled && _mod.DoesTempApkExist)
                         {
                             if (_mod.IsTempApkModded)
                             {
-                                model.CurrentStatus = ModStatusType.ReadyForInstall;
+                                model.CurrentStatus = ModSetupStatusType.ReadyForInstall;
                             }
                             else
                             {
-                                model.CurrentStatus = ModStatusType.ReadyForModApply;
+                                model.CurrentStatus = ModSetupStatusType.ReadyForModApply;
                             }
                         }
                     }
@@ -68,12 +68,12 @@ namespace BeatOn.Core.RequestHandlers
                         if (_mod.DoesTempApkExist)
                         {
                             if (_mod.IsTempApkModded)
-                                model.CurrentStatus = ModStatusType.ReadyForInstall;
+                                model.CurrentStatus = ModSetupStatusType.ReadyForInstall;
                             else
-                                model.CurrentStatus = ModStatusType.ReadyForModApply;
+                                model.CurrentStatus = ModSetupStatusType.ReadyForModApply;
                         }
                     }
-                    resp.Serialize(model);
+                    resp.SerializeOk(model);
 #endif
                 }
                 catch (Exception ex)

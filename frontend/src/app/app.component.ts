@@ -191,7 +191,12 @@ export class AppComponent implements OnInit {
         this.cfgSvc.getConfig().subscribe((cfg) =>
         {
           this.config = cfg;
-          this.router.navigateByUrl('/main/browser');
+          if (this.router.url == '/' || this.router.url.indexOf('setup') > -1 || this.router.url == '/main')
+          {
+            if (this.appIntegration.isAppLoaded())
+              this.router.navigateByUrl('/main/browser');
+          }
+          
         });
         
        }

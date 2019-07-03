@@ -13,6 +13,9 @@ import { Observable } from 'rxjs';
 import { HostOpStatus } from '../models/HostOpStatus';
 import { MessageBase } from '../models/MessageBase';
 import { debugOutputAstAsTypeScript } from '@angular/compiler';
+import { HostActionResponse } from '../models/HostActionResponse';
+
+
 
 @Injectable({
   providedIn: 'root'
@@ -66,6 +69,7 @@ export class HostMessageService {
       var reader = new FileReader();
       reader.onload = () => {
         let msgStr =<string>reader.result;
+        //console.log("got message: " + msgStr);
         let msgEvent = JSON.parse(msgStr);
         if (msgEvent.Type == 'SetupEvent') {
           this.setupMessage.emit(<HostSetupEvent>msgEvent);
@@ -75,8 +79,10 @@ export class HostMessageService {
           this.downloadStatusMessage.emit(<HostDownloadStatus>msgEvent);
         } else if (msgEvent.Type == 'ConfigChange') {
           this.configChangeMessage.emit(<HostConfigChangeEvent>msgEvent);
-        } else if (msgEvent.Type = 'OpStatus') {
+        } else if (msgEvent.Type == 'OpStatus') {
           this.opStatusMessage.emit(<HostOpStatus>msgEvent);
+        } else if (msgEvent.Type == 'ActionResponse') {
+          this.actionResponseMessage.emit(<HostActionResponse>msgEvent);
         } else {
           console.log(`Unknown host message: ${msgStr}`)
         }
@@ -115,9 +121,11 @@ export class HostMessageService {
     this.openSocket();
   }
 
+  
   sendClientMessage(message : MessageBase)
   {
-      this.websocket.send(JSON.stringify(message));
+      var msg = JSON.stringify(message);
+      this.websocket.send(msg);
   }
 
   @Output() setupMessage = new EventEmitter<HostSetupEvent>();
@@ -126,6 +134,7 @@ export class HostMessageService {
   @Output() configChangeMessage = new EventEmitter<HostConfigChangeEvent>();
   @Output() opStatusMessage = new EventEmitter<HostOpStatus>();
   @Output() connectionStatusChanged = new EventEmitter<ConnectionStatus>();
+  @Output() actionResponseMessage = new EventEmitter<HostActionResponse>();
 
 }
 

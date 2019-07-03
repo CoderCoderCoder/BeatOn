@@ -10,6 +10,7 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using BeatOn.ClientModels;
 using BeatOn.Core;
 using QuestomAssets;
 using QuestomAssets.AssetOps;
@@ -23,10 +24,10 @@ namespace BeatOn
     public class ImportManager
     {
         private Func<QuestomAssetsEngine> _getEngine;
-        private Func<BeatSaberQuestomConfig> _getConfig;
+        private Func<BeatOnConfig> _getConfig;
         private QaeConfig _qaeConfig;
         private ShowToastDelegate _showToast;
-        public ImportManager(QaeConfig qaeConfig, Func<BeatSaberQuestomConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast)
+        public ImportManager(QaeConfig qaeConfig, Func<BeatOnConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast)
         {
             _qaeConfig = qaeConfig;
             _getConfig = getConfig;
@@ -233,6 +234,7 @@ namespace BeatOn
                         throw new ImportException($"Exception extracting {file} from provider {provider.SourceName}", $"Unable to extract files from mod file {provider.SourceName}!", ex);
                     }
                 }
+                _getEngine().ModManager.ResetCache();
                 QueueModInstall(def);
             }
             catch (Exception ex)
@@ -277,8 +279,18 @@ namespace BeatOn
         {
             try
             {
-                _getEngine().ModManager.ResetCache();
                 var ops = _getEngine().ModManager.GetInstallModOps(modDefinition);
+                if (ops.Count > 0)
+                {
+                    ops.Last().OpFinished += (s,e)=>
+                    {
+                        _getConfig().Config = _getEngine().GetCurrentConfig();
+                        if (e.Status == OpStatus.Complete)
+                        {
+                            _showToast($"Mod Installed", $"{modDefinition.Name} was installed and activated", ClientModels.ToastType.Success);
+                        }
+                    };
+                }
                 ops.ForEach(x => _getEngine().OpManager.QueueOp(x));
             }
             catch (Exception ex)
@@ -292,7 +304,7 @@ namespace BeatOn
         {
             var currentConfig = _getConfig();
             var qae = _getEngine();
-            var pl = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+            var pl = currentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
             if (pl == null)
             {
                 pl = new BeatSaberPlaylist()
@@ -308,7 +320,7 @@ namespace BeatOn
                     Log.LogErr($"Unable to create CustomSongs playlist!", addPlOp.Exception);
                     throw new ImportException("Could not create CustomSongs playlist, the Op failed.", "Unable to create a Custom Songs playlist, cannot import song!", addPlOp.Exception);
                 }
-                currentConfig.Playlists.Add(pl);
+                currentConfig.Config.Playlists.Add(pl);
                 return pl;
             }
             return pl;

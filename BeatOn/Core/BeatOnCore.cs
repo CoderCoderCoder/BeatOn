@@ -31,7 +31,7 @@ namespace BeatOn.Core
             _context = context;
             _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig.Config, () => Engine, ShowToast);
+            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
         }
@@ -74,12 +74,19 @@ namespace BeatOn.Core
         private BeatOnConfig _currentConfig;
         private List<AssetOp> _trackedOps = new List<AssetOp>();
 
+        private bool _checkedBackup = false;
+
         private QuestomAssetsEngine Engine
         {
             get
             {
                 if (_qae == null)
                 {
+                    if (!_checkedBackup)
+                    {
+                        _mod.CheckCreateModdedBackup();
+                        _checkedBackup = true;
+                    }
                     _qae = new QuestomAssetsEngine(_qaeConfig);
                     _qae.OpManager.OpStatusChanged += OpManager_OpStatusChanged;
                 }
@@ -181,6 +188,7 @@ namespace BeatOn.Core
             SendConfigChangeMessage();
         }
 
+
         private QaeConfig _qaeConfig
         {
             get
@@ -194,7 +202,8 @@ namespace BeatOn.Core
                     SongsPath = Constants.CUSTOM_SONGS_FOLDER_NAME,
                     ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false),
                     ModsStatusFile =Constants.MOD_STATUS_FILE,
-                    BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE
+                    BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
+                    ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -373,6 +382,7 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.GetOps, new ClientGetOpsHandler(_trackedOps, SendMessageToClient));
             _webServer.AddMessageHandler(MessageType.SortPlaylist, new ClientSortPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.AutoCreatePlaylists, new ClientAutoCreatePlaylistsHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.SetModStatus, new ClientSetModStatusHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.Start();
 
         }

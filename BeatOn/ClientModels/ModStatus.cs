@@ -15,7 +15,7 @@ using Newtonsoft.Json.Converters;
 namespace BeatOn.ClientModels
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum ModStatusType
+    public enum ModSetupStatusType
     {
         /// <summary>
         /// The mod is not installed and there is no progress towards installing it
@@ -38,9 +38,9 @@ namespace BeatOn.ClientModels
         ModInstalled
     }
 
-    public class ModStatus
+    public class ModSetupStatus
     {
-        public ModStatusType CurrentStatus { get; set; }
+        public ModSetupStatusType CurrentStatus { get; set; }
 
         public bool IsBeatSaberInstalled { get; set; }
     }

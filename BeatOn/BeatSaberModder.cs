@@ -194,6 +194,67 @@ namespace BeatOn
             }
         }
 
+        /// <summary>
+        /// Checks if the backup exists, or creates a very unideal backup of the modded APK for the sake of uninstalling mods
+        /// </summary>
+        public void CheckCreateModdedBackup()
+        {
+            try
+            {
+                if (File.Exists(Constants.BEATSABER_APK_BACKUP_FILE))
+                    return;
+                Log.LogErr("WARNING: backup of original Beat Saber APK does not exist.  Will attempt to fall back to a post-mod backup.");
+                if (File.Exists(Constants.BEATSABER_APK_MODDED_BACKUP_FILE))
+                    return;
+                Log.LogErr("Post-modded backup of Beat Saber APK does not exist, will attempt to create one.");
+
+                if (!IsBeatSaberInstalled)
+                {
+                    Log.LogErr("Beat saber isn't even installed.  Can't make any sort of backup.");
+                    return;
+                }
+                var apkPath = FindBeatSaberApk();
+                if (apkPath == null)
+                {
+                    Log.LogErr("Unable to find the installed Beat Saber APK path.  Cannot make a post-mod backup.");
+                    return;
+                }
+                Log.LogErr("Copying APK for unideal backup...");
+                try
+                {
+                    File.Copy(apkPath, Constants.BEATSABER_APK_MODDED_BACKUP_FILE, true);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to copy APK for half assed backup.", ex);
+                    return;
+                }
+                try
+                {
+                    Log.LogErr("Restoring names of modded APK asset files so they can serve as a backup...");
+                    using (var apk = new ZipFileProvider(Constants.BEATSABER_APK_MODDED_BACKUP_FILE, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
+                    {
+                        foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
+                        {
+                            if (assetFilename.EndsWith(".bobak"))
+                            {
+                                apk.Rename(assetFilename, assetFilename.Substring(0, assetFilename.Length - 6));
+                            }
+                        }
+                        apk.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to make a half assed, post-mod backup while renaming files within the APK", ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr($"Exception trying to check/create backups", ex);
+            }
+        }
+
         private void MakeFullPath(string path)
         {
             string[] splitPath = path.Split(Path.DirectorySeparatorChar);

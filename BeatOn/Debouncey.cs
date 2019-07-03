@@ -50,7 +50,11 @@ namespace BeatOn
                             }
                             finally
                             {
-                                _timer.Dispose();
+                                try
+                                {
+                                    _timer.Dispose();
+                                }
+                                catch { }
                                 _timer = null;
                             }
                         }

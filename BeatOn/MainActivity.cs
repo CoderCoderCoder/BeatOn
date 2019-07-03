@@ -196,7 +196,7 @@ namespace BeatOn
         private ObjectAnimator _currentScroll = null;
         private void SmoothScrollBrowser(bool down)
         {
-            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 600 : -600));
+            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 300 : -300));
             if (_currentScroll != null)
             {
                 _currentScroll.End();
