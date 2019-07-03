@@ -56,7 +56,11 @@
       <h2>
         <div class="right song-sort">
           <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
-          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('name')">sort</i>
+
+          <i matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty('CustomSongs')">fitness_center</i>
+          <i matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor('CustomSongs')">face</i>
+          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName('CustomSongs')">sort</i>
+
           <i matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
           <i matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
 

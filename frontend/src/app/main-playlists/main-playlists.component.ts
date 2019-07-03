@@ -4,7 +4,7 @@ import { QuestomConfig } from '../models/QuestomConfig';
 import { BeatOnConfig } from '../models/BeatOnConfig';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { ConfigService } from '../services/config.service';
-import {BeatSaberSong} from "../models/BeatSaberSong";
+import {PlaylistTempConfig} from "../models/PlaylistTempConfig";
 
 @Component({
   selector: 'app-main-playlists',
@@ -29,8 +29,30 @@ export class MainPlaylistsComponent implements OnInit {
     this.selectedPlaylist = ev;
   }
 
+  saveTempConfig(){
+    let playlistTempConfig: PlaylistTempConfig[] = [];
+    if(this.config && this.config.Playlists){
+      playlistTempConfig = this.config.Playlists.map(p => ({ PlaylistID : p.PlaylistID, IsOpen: p.IsOpen}))
+    }
+    return playlistTempConfig;
+  }
+
+  restoreTempConfig(playlistTempConfig: PlaylistTempConfig[]){
+    if(this.config && this.config.Playlists){
+      this.config.Playlists.forEach(p => {
+        const isOpen = playlistTempConfig.filter(_p => _p.PlaylistID == p.PlaylistID);
+        if(isOpen.length){
+          p.IsOpen = isOpen[0].IsOpen;
+        }
+      });
+      playlistTempConfig = this.config.Playlists.map(p => ({ PlaylistID : p.PlaylistID, IsOpen: p.IsOpen}))
+    }
+  }
+
   handleConfig(cfg : BeatOnConfig){
+    const tempConfig = this.saveTempConfig();
     this.config = cfg.Config;
+    this.restoreTempConfig(tempConfig);
     this.setupPlaylists();
   }
 
