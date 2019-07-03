@@ -21,7 +21,7 @@
           <i matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>
           <i matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>
           <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>
-          <i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>
+          <!--<i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>-->
           <i matTooltip="Edit Playlist" matTooltipPosition="below" (click)="editPack.emit(pack)" class="material-icons right cursor">edit</i>
           <i matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
              class="material-icons right cursor">done_all</i>

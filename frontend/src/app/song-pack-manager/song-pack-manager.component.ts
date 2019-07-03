@@ -35,11 +35,11 @@ export class SongPackManagerComponent implements OnInit {
     ) {
         this.dragulaService.createGroup(this.BAG, {
             copy: (el, source) => {
-                return source === this.song_container.nativeElement;
+                return false;
             },
             accepts: (el, target) => {
                 return (
-                    target !== this.song_container.nativeElement &&
+                    //target !== this.song_container.nativeElement &&
                     ((el.parentElement === this.pack_container.nativeElement && target === this.pack_container.nativeElement) ||
                         (el.parentElement !== this.pack_container.nativeElement && target !== this.pack_container.nativeElement))
                 );
@@ -120,6 +120,7 @@ export class SongPackManagerComponent implements OnInit {
         this.saveJson.emit();
     }
     removeSongFromPack(song, pack) {
+        this.songs.push(song);
         pack.SongList = pack.SongList.filter(s => s !== song);
         this.saveJson.emit();
     }
