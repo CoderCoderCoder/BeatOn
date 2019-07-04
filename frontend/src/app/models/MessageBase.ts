@@ -28,5 +28,8 @@ export enum MessageType
     GetOps = <any>"GetOps",
     SortPlaylist = <any>"SortPlaylist",
     AutoCreatePlaylists = <any>"AutoCreatePlaylists",
-    SetModStatus = <any>"SetModStatus"
+    SetModStatus = <any>"SetModStatus",
+    ActionResponse = <any>"ActionResponse",
+    MoveSongInPlaylist = <any>"MoveSongInPlaylist",
+    MovePlaylist = <any>"MovePlaylist"
 }

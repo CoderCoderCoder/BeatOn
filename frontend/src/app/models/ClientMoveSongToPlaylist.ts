@@ -8,4 +8,5 @@ export class ClientMoveSongToPlaylist extends MessageBase
     readonly Type : MessageType = MessageType.MoveSongToPlaylist;
     SongID : string;
     ToPlaylistID : string;
+    Index : number;
 }

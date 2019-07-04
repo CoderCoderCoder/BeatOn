@@ -24,6 +24,9 @@ namespace BeatOn.Core.MessageHandlers
             _opList = opList;
             _messageSender = messageSender;
         }
+
+        public MessageType HandlesType => MessageType.GetOps;
+
         public void HandleMessage(MessageBase message)
         {
             List<AssetOp> opCopy;

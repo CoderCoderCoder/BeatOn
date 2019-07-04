@@ -26,6 +26,8 @@ namespace BeatOn.Core.MessageHandlers
             _getConfig = getConfig;
         }
 
+        public MessageType HandlesType => MessageType.MovePlaylist;
+
         public void HandleMessage(MessageBase message)
         {
             var msg = message as ClientMovePlaylist;

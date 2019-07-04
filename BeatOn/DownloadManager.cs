@@ -91,32 +91,38 @@ namespace BeatOn
                             {
                                 try
                                 {
-                                //this code assumes it's always a zip file.
-                                //load the downloaded data into a zip file provider and have the import manager try importing it
-                                MemoryStream ms = new MemoryStream(dl.DownloadedData);
-                                    try
+                                    //TODO: duplicate code on determining file type with what's in file upload... need another method in importmanager to determine file
+                                    if (dl.DownloadedFilename.ToLower().EndsWith("json") || dl.DownloadedFilename.ToLower().EndsWith("bplist"))
                                     {
-                                        var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                        _importManager.ImportFile(dl.DownloadedFilename, "application/json", dl.DownloadedData);
+                                    }
+                                    else
+                                    {
+                                        //load the downloaded data into a zip file provider and have the import manager try importing it
+                                        MemoryStream ms = new MemoryStream(dl.DownloadedData);
                                         try
                                         {
-                                            _importManager.ImportFromFileProvider(provider, () =>
+                                            var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                            try
+                                            {
+                                                _importManager.ImportFromFileProvider(provider, () =>
+                                                {
+                                                    provider.Dispose();
+                                                    ms.Dispose();
+                                                });
+                                            }
+                                            catch
                                             {
                                                 provider.Dispose();
-                                                ms.Dispose();
-                                            });
+                                                throw;
+                                            }
                                         }
                                         catch
                                         {
-                                            provider.Dispose();
+                                            ms.Dispose();
                                             throw;
                                         }
                                     }
-                                    catch
-                                    {
-                                        ms.Dispose();
-                                        throw;
-                                    }
-
                                     //if the import manager succeeds, mark the download status as processed.
                                     // The status change events will land it in this parent event handler again, and it'll be cleared from the download list.
                                     dl.SetStatus(DownloadStatus.Processed);

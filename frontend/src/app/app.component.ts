@@ -14,6 +14,7 @@ import { HostOpStatus, OpStatus } from './models/HostOpStatus';
 import { ToolbarEventsService } from './services/toolbar-events.service';
 import { AppIntegrationService } from './services/app-integration.service';
 import {QuestomConfig} from "./models/QuestomConfig";
+import { HostDownloadStatus, HostDownloadStatusType } from './models/HostDownloadStatus';
 
 @Component({
   selector: 'app-root',
@@ -41,13 +42,14 @@ export class AppComponent implements OnInit {
           private cfgSvc : ConfigService,
           private dialog : MatDialog,
           private toolbarEvents : ToolbarEventsService,
-          private appIntegration : AppIntegrationService
-          ) {
-            this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
-                this.opInProgress = (ev.Ops.findIndex(x => x.Status != OpStatus.Failed) > -1);
-
-
-            });
+          private appIntegration : AppIntegrationService       
+          ) { 
+    this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
+        this.opInProgress = (ev.Ops.findIndex(x => x.Status != OpStatus.Failed) > -1);
+    });
+    this.msgSvc.downloadStatusMessage.subscribe((ev : HostDownloadStatus) => {
+        this.dlInProgress = (ev.Downloads.findIndex(x=> x.Status != HostDownloadStatusType.Failed && x.Status != HostDownloadStatusType.Processed) > -1);
+    });
     this.router.events.subscribe((ev) => {
       if (ev instanceof NavigationStart) {
         //TODO: prevent routing based on mod status?
@@ -91,9 +93,10 @@ export class AppComponent implements OnInit {
          }
        })
   }
-
-  opInProgress: boolean;
-  modStatusLoaded: boolean = false;
+  
+  opInProgress : boolean = false;
+  dlInProgress : boolean = false;
+  modStatusLoaded : boolean = false;
   title : string = 'Beat On';
   showRefreshButton : boolean = false;
   showBackButton : boolean = false;
@@ -103,7 +106,6 @@ export class AppComponent implements OnInit {
   config : BeatOnConfig = { IsCommitted: true,
                             Config: null};
   ngOnInit() {
-
    this.checkModStatus();
   }
 
@@ -200,14 +202,16 @@ export class AppComponent implements OnInit {
               this.router.navigateByUrl('/main/upload');
           }
           
-        });
-
+        });  
        }
     });
   }
 
-  public onClickModStatus() {
+  disableSync() {
+      return this.opInProgress || this.dlInProgress;
+  }
 
+  public onClickModStatus() {
   }
   public onClickInstallModStep1() {
     this.beatOnApi.installModStep1()
@@ -229,5 +233,4 @@ export class AppComponent implements OnInit {
   linkSelected(ev) {
     this.toolbarEvents.triggerNavigate(ev);
   }
-
 }

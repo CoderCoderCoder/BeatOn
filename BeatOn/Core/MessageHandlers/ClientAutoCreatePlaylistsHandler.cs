@@ -24,6 +24,8 @@ namespace BeatOn.Core.MessageHandlers
             _getConfig = getConfig;
         }
 
+        public MessageType HandlesType => MessageType.AutoCreatePlaylists;
+
         public void HandleMessage(MessageBase message)
         {
             var msg = message as ClientAutoCreatePlaylists;

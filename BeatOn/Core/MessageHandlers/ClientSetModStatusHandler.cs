@@ -27,6 +27,8 @@ namespace BeatOn.Core.MessageHandlers
             _sendHostMessage = sendHostMessage;
         }
 
+        public MessageType HandlesType => MessageType.SetModStatus;
+
         public void HandleMessage(MessageBase message)
         {
             var msg = message as ClientSetModStatus;

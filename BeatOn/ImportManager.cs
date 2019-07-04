@@ -472,7 +472,26 @@ namespace BeatOn
                 }
                 else if (op.Status == OpStatus.Failed)
                 {
-                    _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                    if (op.Exception as AddSongException != null)
+                    {
+                        var ex = op.Exception as AddSongException;
+                        if (ex.FailType == AddSongFailType.SongExists)
+                        {
+                            //don't show toast for a song already existing
+                        }
+                        else if (ex.FailType == AddSongFailType.InvalidFormat)
+                        {
+                            _showToast($"Song Invalid", $"{songID} failed to import, it wasn't in a valid format.", ClientModels.ToastType.Error);
+                        }
+                        else
+                        {
+                            _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                        }
+                    }
+                    else
+                    {
+                        _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                    }
                 }
                 completionCallback?.Invoke();
             };

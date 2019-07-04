@@ -16,7 +16,9 @@ import { timingSafeEqual } from 'crypto';
 export class AddEditPlaylistDialogComponent implements OnInit {
 
   constructor( public dialogRef: MatDialogRef<AddEditPlaylistDialogComponent>, @Inject(MAT_DIALOG_DATA) public data) { 
-    this.currentCover = AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + data.playlist.PlaylistID;
+    var fixedUri = encodeURIComponent(data.playlist.PlaylistID);
+    fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
+    this.currentCover = AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + fixedUri;
   }
   getCover() {
     return 'url('+this.currentCover+')';

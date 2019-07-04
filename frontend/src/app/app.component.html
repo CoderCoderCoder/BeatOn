@@ -3,10 +3,11 @@
 <mat-toolbar class="toolbar" layout="row">
     <div class="logo"></div>
     <span class="example-fill-remaining-space" style="flex: 5 1 auto;"></span>
-    <button [disabled]="opInProgress" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false" (click)="commitConfig()" class="warning">
+    <button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning">
       Sync to Beat Saber
     </button>
-    <button fast-click mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
+    <button class="nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
+    <button mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
     <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
     <app-download-indicator *ngIf="modStatusLoaded"></app-download-indicator>
     <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>

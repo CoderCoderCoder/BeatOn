@@ -49,6 +49,24 @@
   left: 2px;
   font-size:32;
 }
+
+.nosync {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Arial;
+  font-size: 14px;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  background-color: darkgoldenrod;
+  height: 26px;
+  width: 140.63px;
+}
+
  .warning {
     background-color: #004A7F;
     -webkit-border-radius: 10px;
@@ -66,7 +84,7 @@
     -moz-animation: glowing 1500ms infinite;
     -o-animation: glowing 1500ms infinite;
     animation: glowing 1500ms infinite;
-  }
+  };
   @-webkit-keyframes glowing {
     0% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; -webkit-box-shadow: 0 0 40px #FF0000; }

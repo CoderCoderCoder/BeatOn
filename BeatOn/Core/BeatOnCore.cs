@@ -296,7 +296,7 @@ namespace BeatOn.Core
             {
                 if (_sendClientOpsChanged == null)
                 {
-                    _sendClientOpsChanged = new Debouncey<HostOpStatus>(1000, false);
+                    _sendClientOpsChanged = new Debouncey<HostOpStatus>(400, false);
                     _sendClientOpsChanged.Debounced += (e2, a) =>
                     {
                         SendMessageToClient(a);
@@ -386,6 +386,8 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.SortPlaylist, new ClientSortPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.AutoCreatePlaylists, new ClientAutoCreatePlaylistsHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.SetModStatus, new ClientSetModStatusHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
+            _webServer.AddMessageHandler(MessageType.MoveSongInPlaylist, new ClientMoveSongInPlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.Start();
 
         }

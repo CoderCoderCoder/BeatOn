@@ -57,8 +57,6 @@ namespace BeatOn.Core.RequestHandlers
                         Log.LogMsg($"Got extra form value named {name}, ignoring it");
                         return;
                     }
-                    if (type != "application/x-zip-compressed")
-                        throw new NotSupportedException($"Data for file {fileName} isn't a zip");
                     MemoryStream s = null;
                     if (files.ContainsKey(fileName))
                     {
@@ -85,28 +83,36 @@ namespace BeatOn.Core.RequestHandlers
                     s.Dispose();
                     try
                     {
-                        MemoryStream ms = new MemoryStream(b);
-                        try
+                        //TODO: duplicate code on determining file type with what's in file download... need another method in importmanager to determine file
+                        if (file.ToLower().EndsWith("json") || file.ToLower().EndsWith("bplist"))
                         {
-                            var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                            _getImportManager().ImportFile(file, "application/json", b);
+                        }
+                        else
+                        {
+                            MemoryStream ms = new MemoryStream(b);
                             try
                             {
-                                _getImportManager().ImportFromFileProvider(provider, () =>
+                                var provider = new ZipFileProvider(ms, file, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                try
+                                {
+                                    _getImportManager().ImportFromFileProvider(provider, () =>
+                                    {
+                                        provider.Dispose();
+                                        ms.Dispose();
+                                    });
+                                }
+                                catch
                                 {
                                     provider.Dispose();
-                                    ms.Dispose();
-                                });
+                                    throw;
+                                }
                             }
                             catch
                             {
-                                provider.Dispose();
+                                ms.Dispose();
                                 throw;
                             }
-                        }
-                        catch
-                        {
-                            ms.Dispose();
-                            throw;
                         }
                     }
                     catch (ImportException iex)

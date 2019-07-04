@@ -17,6 +17,8 @@ namespace BeatOn.ClientModels
     {
         public override MessageType Type => MessageType.MoveSongInPlaylist;
 
+        //currently not used
+        public string PlaylistID { get; set; }
         public string SongID { get; set; }
         public int Index { get; set; }
     }

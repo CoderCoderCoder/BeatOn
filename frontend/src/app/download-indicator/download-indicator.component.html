@@ -1,5 +1,5 @@
 <!-- [matMenuTriggerFor]="menu" -->
-<button fast-click mat-raised-button  mat-button (color)="(downloads.Downloads.length>0)?'accent':''" >
+<button fast-click mat-raised-button  mat-button color="{{getColor()}}" >
 
     <mat-icon>cloud_download</mat-icon>
     <div class="downloadCount">{{ downloads.Downloads.length }}</div>

@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
 import { PlaylistSortMode } from '../models/PlaylistSortMode';
+import { ClientMoveSongInPlaylist } from '../models/ClientMoveSongInPlaylist';
 @Component({
   selector: 'app-playlist-songs',
   templateUrl: './playlist-songs.component.html',

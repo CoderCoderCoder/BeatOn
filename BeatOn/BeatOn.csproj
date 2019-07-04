@@ -331,10 +331,10 @@
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.77de68c7c319ff4c0c64.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.ec2a5f0343bd037d33d9.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.15fe2fd20754a425e2ba.js" />
+    <AndroidAsset Include="Assets\www\main-es5.0f1bc009a5685d08e5b6.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

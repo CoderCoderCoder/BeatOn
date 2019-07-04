@@ -15,6 +15,7 @@ import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
 import { ClientDeletePlaylist } from '../models/ClientDeletePlaylist';
 import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
 import { PlaylistSortMode } from '../models/PlaylistSortMode';
+import { ClientMovePlaylist } from '../models/ClientMovePlaylist';
 
 @Component({
   selector: 'app-playlist-slider',
@@ -56,13 +57,15 @@ export class PlaylistSliderComponent implements OnInit {
 
 
   getBackground(item) {
+    var fixedUri =  encodeURIComponent(item.PlaylistID);
+    fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
     if (item.PlaylistID == this.lastUpdatedPlaylist)
     {
-      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + '&update='+this.updateCounterHack+')';
+      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' +fixedUri + '&update='+this.updateCounterHack+')';
     }
     else
     {
-      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + ')';
+      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + fixedUri+ ')';
     }
   }
 
@@ -216,6 +219,7 @@ export class PlaylistSliderComponent implements OnInit {
         var msg = new ClientMoveSongToPlaylist();
         msg.SongID = moveSong.SongID;
         msg.ToPlaylistID = item.PlaylistID;
+        msg.Index = 0;
         this.msgSvc.sendClientMessage(msg);
       });      
     }
