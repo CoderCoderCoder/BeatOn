@@ -29,7 +29,9 @@ namespace BeatOn
         public const string BACKUP_FULL_PATH = ROOT_BEAT_ON_DATA_PATH + BACKUP_FOLDER_NAME + "/";
         public const string BEATSABER_APK_BACKUP_FILE = BACKUP_FULL_PATH + "beatsaber-unmodded.apk";
         public const string BEATSABER_APK_MODDED_BACKUP_FILE = BACKUP_FULL_PATH + "beatsaber-modded-donotuse.apk";
-        
+
+
+        public const string PLAYLISTS_FOLDER_NAME = "Playlists";
         public const string MOD_STATUS_FILE = "modstatus.json";
 
         public const string JS_INTERFACE_NAME = "BeatOnAppInterface";

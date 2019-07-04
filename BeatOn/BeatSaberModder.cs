@@ -165,6 +165,8 @@ namespace BeatOn
                     MakeFullPath(Constants.BACKUP_FULL_PATH);
                     File.Copy(BS_PLAYER_DATA_FILE, Constants.BACKUP_FULL_PATH.CombineFwdSlash("PlayerData.dat"), true);
                 }
+                BackupOriginalApk();
+
                 if (triggerUninstall)
                 {
                     UpdateStatus("Prompting user to uninstall Beat Saber...");
@@ -257,7 +259,7 @@ namespace BeatOn
 
         private void MakeFullPath(string path)
         {
-            string[] splitPath = path.Split(Path.DirectorySeparatorChar);
+            string[] splitPath = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
             string curPath = "";
             for (int i = 0; i < splitPath.Length; i++)
             {

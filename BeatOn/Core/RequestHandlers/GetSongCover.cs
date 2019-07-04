@@ -11,16 +11,62 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Newtonsoft.Json;
 using QuestomAssets;
+using QuestomAssets.BeatSaber;
 
 namespace BeatOn.Core.RequestHandlers
 {
     public class GetSongCover : IHandleRequest
     {
         private GetBeatOnConfigDelegate _getConfig;
-        public GetSongCover(GetBeatOnConfigDelegate getConfig)
+        private QaeConfig _config;
+        public GetSongCover(QaeConfig config, GetBeatOnConfigDelegate getConfig)
         {
             _getConfig = getConfig;
+            _config = config;
+        }
+
+        /// <summary>
+        /// Attempt to locate the cover art file based on the song ID and info.dat
+        /// </summary>
+        public string GetCoverImageFilename(string songID)
+        {
+            var infodatfile = _config.SongsPath.CombineFwdSlash(songID.CombineFwdSlash("info.dat"));
+            using (new LogTiming("getting song cover filename"))
+            {
+                if (!_config.SongFileProvider.FileExists(infodatfile))
+                {
+                    Log.LogErr($"Trying to find original song cover, could not find {infodatfile} for level ID {songID}");
+                    return null;
+                }
+
+                //I hope this is a faster way than deserializing the entire object and worth the double code paths for parsing the same serialized type
+                string imageFilename = null;
+                try
+                {
+                    using (var jr = new JsonTextReader(new StreamReader(_config.SongFileProvider.GetReadStream(infodatfile))))
+                    {
+                        while (jr.Read())
+                        {
+                            if (jr.TokenType == JsonToken.PropertyName && jr.Value?.ToString() == "_coverImageFilename")
+                            {
+                                if (jr.Read() && jr.TokenType == JsonToken.String)
+                                {
+                                    imageFilename = jr.Value?.ToString();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr($"Exception trying to read info.dat to get _coverImageFilename for level ID {songID} from '{infodatfile}'.", ex);
+                    return null;
+                }
+                return songID.CombineFwdSlash(imageFilename);
+            }
         }
 
         private const int MAX_SONG_COVER_REQS = 15;
@@ -75,6 +121,25 @@ namespace BeatOn.Core.RequestHandlers
                             resp.NotFound();
                             return;
                         }
+                        string originalFile = _config.SongsPath.CombineFwdSlash(GetCoverImageFilename(song.SongID));
+                        if (originalFile != null)
+                        {
+                            try
+                            {
+                                byte[] fileBytes = _config.SongFileProvider.Read(originalFile);
+                                string mimeType = MimeMap.GetMimeType(originalFile.GetFilenameFwdSlash());
+                                resp.StatusCode = 200;
+                                resp.ContentType = mimeType;
+                                resp.AppendHeader("Cache-Control", "max-age=86400, public");
+                                resp.OutputStream.Write(fileBytes, 0, fileBytes.Length);                                
+                                return;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.LogErr($"Exception trying to load original song cover for song ID {song.SongID} from disk, will fall back to assets", ex);
+                            }
+                        }
+
                         var imgBytes = song.TryGetCoverPngBytes();
                         if (imgBytes == null)
                         {

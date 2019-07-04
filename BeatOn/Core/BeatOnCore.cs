@@ -31,7 +31,7 @@ namespace BeatOn.Core
             _context = context;
             _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast);
+            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
         }
@@ -198,12 +198,13 @@ namespace BeatOn.Core
                     RootFileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
                     PlaylistArtPath = "Art",
                     AssetsPath = Constants.BEATSABER_ASSETS_FOLDER_NAME,
-                    ModsSourcePath =  Constants.MODS_FOLDER_NAME,
+                    ModsSourcePath = Constants.MODS_FOLDER_NAME,
                     SongsPath = Constants.CUSTOM_SONGS_FOLDER_NAME,
                     ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false),
-                    ModsStatusFile =Constants.MOD_STATUS_FILE,
+                    ModsStatusFile = Constants.MOD_STATUS_FILE,
                     BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
-                    ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE
+                    ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE,
+                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -348,11 +349,13 @@ namespace BeatOn.Core
             SendMessageToClient(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
         }
 
+        //this is private instead of inline so that the ops completion event can invalidate cache on any playlists that were updated
+        private GetPlaylistCover _playlistCover;
         private void SetupWebApp()
         {
             _webServer = new WebServer(_context.Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
-            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(() => CurrentConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(_qaeConfig, () => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
             _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));

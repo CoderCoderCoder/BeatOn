@@ -16,11 +16,11 @@ using QuestomAssets.AssetOps;
 
 namespace BeatOn.Core.MessageHandlers
 {
-    public class ClientMoveSongToPlaylistHandler : IMessageHandler
+    public class ClientMoveSongInPlaylistHandler : IMessageHandler
     {
         private GetQaeDelegate _getQae;
         private GetBeatOnConfigDelegate _getConfig;
-        public ClientMoveSongToPlaylistHandler(GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig)
+        public ClientMoveSongInPlaylistHandler(GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig)
         {
             _getQae = getQae;
             _getConfig = getConfig;
@@ -28,10 +28,10 @@ namespace BeatOn.Core.MessageHandlers
 
         public void HandleMessage(MessageBase message)
         {
-            var msg = message as ClientMoveSongToPlaylist;
+            var msg = message as ClientMoveSongInPlaylist;
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
-            var op = new MoveSongToPlaylistOp(msg.SongID, msg.ToPlaylistID, msg.Index);
+            var op = new MoveSongInPlaylistOp(msg.SongID, msg.Index);
             Stopwatch sw = new Stopwatch();
             
             var qae = _getQae();

@@ -39,7 +39,7 @@ namespace BeatOn
             _maxConcurrentDownloads = maxConcurrentDownloads;
         }
 
-        public Download DownloadFile(string url)
+        public Download DownloadFile(string url, bool processAfterDownload = true)
         {
             //prevent the same URL from going in the queue twice.
             var exists = false;
@@ -56,7 +56,7 @@ namespace BeatOn
                 return deadDl;
             }            
             
-            Download dl = new Download(url);
+            Download dl = new Download(url, processAfterDownload);
             lock (_downloads)
                 _downloads.Add(dl);
 
@@ -84,53 +84,59 @@ namespace BeatOn
                         _downloads.Remove(dl);
                         break;
                     case DownloadStatus.Downloaded:
-                        dl.SetStatus(DownloadStatus.Processing);
-                        Task.Run(() =>
+                        if (dl.ProcessAfterDownload)
                         {
-                            try
+                            dl.SetStatus(DownloadStatus.Processing);
+                            Task.Run(() =>
                             {
+                                try
+                                {
                                 //this code assumes it's always a zip file.
                                 //load the downloaded data into a zip file provider and have the import manager try importing it
                                 MemoryStream ms = new MemoryStream(dl.DownloadedData);
-                                try
-                                {
-                                    File.WriteAllBytes("/sdcard/test.zip", dl.DownloadedData);
-                                    var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
                                     try
                                     {
-                                        _importManager.ImportFromFileProvider(provider, () =>
+                                        var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, QuestomAssets.Utils.FileUtils.GetTempDirectory());
+                                        try
+                                        {
+                                            _importManager.ImportFromFileProvider(provider, () =>
+                                            {
+                                                provider.Dispose();
+                                                ms.Dispose();
+                                            });
+                                        }
+                                        catch
                                         {
                                             provider.Dispose();
-                                            ms.Dispose();
-                                        });
+                                            throw;
+                                        }
                                     }
                                     catch
                                     {
-                                        provider.Dispose();
+                                        ms.Dispose();
                                         throw;
                                     }
-                                }
-                                catch
-                                {
-                                    ms.Dispose();
-                                    throw;
-                                }
 
-                                //if the import manager succeeds, mark the download status as processed.
-                                // The status change events will land it in this parent event handler again, and it'll be cleared from the download list.
-                                dl.SetStatus(DownloadStatus.Processed);
-                            }
-                            catch (ImportException iex)
-                            {
-                                Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", iex);
-                                dl.SetStatus(DownloadStatus.Failed, $"Failed to process {dl.DownloadUrl}: {iex.FriendlyMessage}");
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", ex);
-                                dl.SetStatus(DownloadStatus.Failed, $"Unable to process downloaded file from {dl.DownloadUrl}");
-                            }
-                        });
+                                    //if the import manager succeeds, mark the download status as processed.
+                                    // The status change events will land it in this parent event handler again, and it'll be cleared from the download list.
+                                    dl.SetStatus(DownloadStatus.Processed);
+                                }
+                                catch (ImportException iex)
+                                {
+                                    Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", iex);
+                                    dl.SetStatus(DownloadStatus.Failed, $"Failed to process {dl.DownloadUrl}: {iex.FriendlyMessage}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.LogErr($"Exception processing downloaded file from {dl.DownloadUrl}", ex);
+                                    dl.SetStatus(DownloadStatus.Failed, $"Unable to process downloaded file from {dl.DownloadUrl}");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            dl.SetStatus(DownloadStatus.Processed);
+                        }
                         break;
                 }
 

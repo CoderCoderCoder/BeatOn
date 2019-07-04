@@ -56,7 +56,14 @@ export class PlaylistSliderComponent implements OnInit {
 
 
   getBackground(item) {
-    return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + ')';
+    if (item.PlaylistID == this.lastUpdatedPlaylist)
+    {
+      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + '&update='+this.updateCounterHack+')';
+    }
+    else
+    {
+      return 'url('+ AppSettings.API_ENDPOINT +'/host/beatsaber/playlist/cover?playlistid=' + item.PlaylistID + ')';
+    }
   }
 
   onTileClick(item) {
@@ -119,6 +126,9 @@ export class PlaylistSliderComponent implements OnInit {
     this.msgSvc.sendClientMessage(msg);
   }
 
+  updateCounterHack : number = 1;
+  lastUpdatedPlaylist : string = null;
+
   dialogClosed(result)
   {
     //if cancelled
@@ -155,6 +165,12 @@ export class PlaylistSliderComponent implements OnInit {
             var msg = new ClientAddOrUpdatePlaylist();
             msg.Playlist = found;
             this.msgSvc.sendClientMessage(msg);
+            var sub;
+            sub = this.msgSvc.configChangeMessage.subscribe(cfg => {
+                sub.unsubscribe();
+                this.lastUpdatedPlaylist = found.PlaylistID;
+                this.updateCounterHack = this.updateCounterHack+1;
+            });
           }
         })
       }

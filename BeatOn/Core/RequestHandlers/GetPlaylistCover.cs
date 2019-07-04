@@ -68,6 +68,7 @@ namespace BeatOn.Core.RequestHandlers
                     }
                     resp.StatusCode = 200;
                     resp.ContentType = MimeMap.GetMimeType("test.png");
+                    resp.AppendHeader("Cache-Control", "no-cache");
                     using (MemoryStream ms = new MemoryStream(imgBytes))
                     {
                         ms.CopyTo(resp.OutputStream);
