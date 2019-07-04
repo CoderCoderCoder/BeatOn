@@ -1,37 +1,39 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <div class="fullheight"  fxLayout="column">
-<mat-toolbar class="toolbar" layout="row">
-    <div class="logo"></div>
-    <span class="example-fill-remaining-space" style="flex: 5 1 auto;"></span>
-    <button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning">
+  <mat-toolbar class="toolbar">
+    <div (click)="reconnect()" class="connectionStatus right" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
+
+    <button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning right sync-button">
       Sync to Beat Saber
     </button>
-    <button class="nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
-    <button mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
-    <span class="example-fill-remaining-space" style="flex: 2 1 auto;"></span>
-    <app-download-indicator *ngIf="modStatusLoaded"></app-download-indicator>
-    <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <app-op-indicator *ngIf="modStatusLoaded"></app-op-indicator>
-    <span class="example-fill-remaining-space" style="flex: 3 1 auto;"></span>
-    <app-browser-nav (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
-    <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <button fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
-    <span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>
-    <button fast-click (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button> 
-    <span class="example-fill-remaining-space" style="flex: 3 1 auto;"></span>
-    <div (click)="reconnect()" class="connectionStatus" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
+
+    <app-browser-nav class="right top-button" (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <button class="right top-button" fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <button class="right top-button" fast-click (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button>
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <app-download-indicator class="right top-button" *ngIf="modStatusLoaded"></app-download-indicator>
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <app-op-indicator class="right top-button" *ngIf="modStatusLoaded"></app-op-indicator>
+    <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
+    <button class="right nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
+    <button class="right" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
+
+    <div class="logo"></div>
   </mat-toolbar>
 
-<mat-card fxLayout="column" *ngIf="!modStatusLoaded" class="setup-card">
-    
-<div fxLayout="column" *ngIf="!modStatusLoaded" >
-  <h2>Checking mod installation status...</h2>
-</div>
-<p>Depending on how many songs are loaded, Beat On may take 5-120 seconds to load...</p>
+  <mat-card fxLayout="column" *ngIf="!modStatusLoaded" class="setup-card">
 
-</mat-card>
-<div  class="fullheight" fxLayout="column">
-<router-outlet fxLayout="column" [hidden]="!modStatusLoaded" ></router-outlet>
-</div>
+    <div fxLayout="column" *ngIf="!modStatusLoaded" >
+      <h2>Checking mod installation status...</h2>
+    </div>
+    <p>Depending on how many songs are loaded, Beat On may take 5-120 seconds to load...</p>
+
+  </mat-card>
+  <div  class="fullheight" fxLayout="column">
+    <router-outlet fxLayout="column" [hidden]="!modStatusLoaded" ></router-outlet>
+  </div>
 </div>
 
