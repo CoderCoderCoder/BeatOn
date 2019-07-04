@@ -192,15 +192,14 @@ export class AppComponent implements OnInit {
         this.cfgSvc.getConfig().subscribe((cfg) =>
         {
           this.config = cfg;
-          if(this.appIntegration.isAppLoaded()){
-            this.router.navigateByUrl('/main/browser');
-          }else{
-            if(cfg.Config.Playlists.length){
-              this.router.navigateByUrl('/main/playlists');
-            } else {
+          if (this.router.url == '/' || this.router.url.indexOf('setup') > -1 || this.router.url == '/main' || this.router.url == '')
+          {
+            if (this.appIntegration.isAppLoaded())
+              this.router.navigateByUrl('/main/browser');
+              else
               this.router.navigateByUrl('/main/upload');
-            }
           }
+          
         });
 
        }

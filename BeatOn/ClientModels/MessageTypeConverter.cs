@@ -30,7 +30,9 @@ namespace BeatOn.ClientModels
             {MessageType.MoveSongToPlaylist, typeof(ClientMoveSongToPlaylist) },
             {MessageType.GetOps, typeof(ClientGetOps) },
             {MessageType.SortPlaylist, typeof(ClientSortPlaylist) },
-            {MessageType.AutoCreatePlaylists, typeof(ClientAutoCreatePlaylists) } };
+            {MessageType.AutoCreatePlaylists, typeof(ClientAutoCreatePlaylists) },
+            {MessageType.SetModStatus, typeof(ClientSetModStatus) }
+        };
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {

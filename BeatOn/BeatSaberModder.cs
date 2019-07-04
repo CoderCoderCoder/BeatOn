@@ -21,6 +21,7 @@ namespace BeatOn
         public const string APK_ASSETS_PATH = "assets/bin/Data/";
         public const string LIBMODLOADER_TARGET_FILE = "lib/armeabi-v7a/libmodloader.so";
         public const string MOD_TAG_FILE = "beaton.modded";
+        public const string BS_PLAYER_DATA_FILE = "/sdcard/Android/data/com.beatgames.beatsaber/files/PlayerData.dat";
 
         public event EventHandler<string> StatusUpdated;
         private Context _context;
@@ -34,7 +35,7 @@ namespace BeatOn
             _triggerUninstall = triggerUninstall;
         }
 
-        private string TempApk
+        internal string TempApk
         {
             get
             {
@@ -45,7 +46,7 @@ namespace BeatOn
                 }
                 return _tempApk;
             }
-            set
+            private set
             {
                 _tempApk = value;
             }
@@ -142,7 +143,7 @@ namespace BeatOn
             }
         }
 
-        public void CopyOriginalBeatSaberApkAndTriggerUninstall()
+        public void CopyOriginalBeatSaberApk(bool triggerUninstall)
         {
             UpdateStatus("Locating installed Beat Saber app...");
             string bsApkPath = FindBeatSaberApk();
@@ -157,8 +158,20 @@ namespace BeatOn
             {
                 File.Copy(bsApkPath, TempApk, true);
                 UpdateStatus("APK copied successfully!");
-                UpdateStatus("Prompting user to uninstall Beat Saber...");
-                TriggerPackageUninstall(bsApkPath);
+
+                if (File.Exists(BS_PLAYER_DATA_FILE))
+                {
+                    UpdateStatus("Backing up PlayerData");
+                    MakeFullPath(Constants.BACKUP_FULL_PATH);
+                    File.Copy(BS_PLAYER_DATA_FILE, Constants.BACKUP_FULL_PATH.CombineFwdSlash("PlayerData.dat"), true);
+                }
+                BackupOriginalApk();
+
+                if (triggerUninstall)
+                {
+                    UpdateStatus("Prompting user to uninstall Beat Saber...");
+                    TriggerPackageUninstall(bsApkPath);
+                }
             }
             catch (Exception ex)
             {
@@ -170,6 +183,127 @@ namespace BeatOn
                 catch
                 { }
                 throw new ModException("Problem copying original APK to temporary location.", ex);
+            }
+        }
+
+        private void ReplacePlayerData()
+        {
+            if (File.Exists(Constants.BACKUP_FULL_PATH.CombineFwdSlash("PlayerData.dat")))
+            {
+                UpdateStatus("Replacing Player Data file");
+                MakeFullPath(Path.GetDirectoryName(BS_PLAYER_DATA_FILE));
+                File.Copy(Constants.BACKUP_FULL_PATH.CombineFwdSlash("PlayerData.dat"), BS_PLAYER_DATA_FILE, true);
+            }
+        }
+
+        /// <summary>
+        /// Checks if the backup exists, or creates a very unideal backup of the modded APK for the sake of uninstalling mods
+        /// </summary>
+        public void CheckCreateModdedBackup()
+        {
+            try
+            {
+                if (File.Exists(Constants.BEATSABER_APK_BACKUP_FILE))
+                    return;
+                Log.LogErr("WARNING: backup of original Beat Saber APK does not exist.  Will attempt to fall back to a post-mod backup.");
+                if (File.Exists(Constants.BEATSABER_APK_MODDED_BACKUP_FILE))
+                    return;
+                Log.LogErr("Post-modded backup of Beat Saber APK does not exist, will attempt to create one.");
+
+                if (!IsBeatSaberInstalled)
+                {
+                    Log.LogErr("Beat saber isn't even installed.  Can't make any sort of backup.");
+                    return;
+                }
+                var apkPath = FindBeatSaberApk();
+                if (apkPath == null)
+                {
+                    Log.LogErr("Unable to find the installed Beat Saber APK path.  Cannot make a post-mod backup.");
+                    return;
+                }
+                Log.LogErr("Copying APK for unideal backup...");
+                try
+                {
+                    File.Copy(apkPath, Constants.BEATSABER_APK_MODDED_BACKUP_FILE, true);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to copy APK for half assed backup.", ex);
+                    return;
+                }
+                try
+                {
+                    Log.LogErr("Restoring names of modded APK asset files so they can serve as a backup...");
+                    using (var apk = new ZipFileProvider(Constants.BEATSABER_APK_MODDED_BACKUP_FILE, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
+                    {
+                        foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
+                        {
+                            if (assetFilename.EndsWith(".bobak"))
+                            {
+                                apk.Rename(assetFilename, assetFilename.Substring(0, assetFilename.Length - 6));
+                            }
+                        }
+                        apk.Save();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception trying to make a half assed, post-mod backup while renaming files within the APK", ex);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr($"Exception trying to check/create backups", ex);
+            }
+        }
+
+        private void MakeFullPath(string path)
+        {
+            string[] splitPath = path.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            string curPath = "";
+            for (int i = 0; i < splitPath.Length; i++)
+            {
+                curPath = Path.Combine(curPath, splitPath[i]);
+                if (!Directory.Exists(curPath))
+                    Directory.CreateDirectory(curPath);
+            }
+        }        
+
+        public void BackupOriginalApk()
+        {
+            UpdateStatus("Locating installed Beat Saber app...");
+            string bsApkPath = FindBeatSaberApk();
+            if (bsApkPath == null)
+            {
+                UpdateStatus("Unable to find installed Beat Saber app!");
+                throw new ModException("Beat Saber does not seem to be installed, could not find its APK.");
+            }
+            UpdateStatus("Verifying the installed APK isn't modded...");
+            if (IsInstalledBeatSaberModded)
+            {
+                UpdateStatus("Installed beatsaber IS modded!");
+                if (File.Exists(Constants.BEATSABER_APK_BACKUP_FILE))
+                {
+                    UpdateStatus("The APK backup already exists, not overwriting it with a modded one.");
+                }
+                else
+                {
+                    UpdateStatus("WARNING: There is not an APK backup and the installed beatsaber is already modded!");
+                }
+                return;
+            }
+            UpdateStatus("Copying original Beat Saber APK to a backup location...");
+            MakeFullPath(Constants.BACKUP_FULL_PATH);
+            try
+            {
+                File.Copy(bsApkPath, Constants.BEATSABER_APK_BACKUP_FILE, true);
+                UpdateStatus("Backup created.");
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr($"Failed to copy beatsaber APK from {bsApkPath} to {Constants.BEATSABER_APK_BACKUP_FILE}", ex);
+                UpdateStatus("Failed to make a backup of the original APK!");
+                throw;
             }
         }
 
@@ -225,7 +359,9 @@ namespace BeatOn
                 //// re-sign the APK
                 UpdateStatus("Re-signing the modded APK (this takes a minute)...");
                 SignApk(TempApk);
-                
+
+                UpdateStatus("Restoring PlayerData.dat, hopefully this is a good time to do it.");
+                ReplacePlayerData();                
             }
             catch (Exception ex)
             {
@@ -286,6 +422,24 @@ namespace BeatOn
             //intent.SetDataAndType(Android.Net.Uri.FromFile(new Java.IO.File(packageApkPath)), "application/vnd.android.package-archive");
             _context.StartActivity(intent);
             _tempApk = null;
+        }
+
+        public void DeleteModsFromFolder()
+        {
+            if (Directory.Exists(Constants.MODS_FOLDER_NAME))
+            {
+                foreach (var dir in Directory.GetDirectories(Constants.MODS_FOLDER_NAME))
+                {
+                    try
+                    {
+                        Directory.Delete(dir, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr($"Failed to delete {dir} while deleting all mod folders");
+                    }
+                }
+            }
         }
 
         public void ClearHookMods()

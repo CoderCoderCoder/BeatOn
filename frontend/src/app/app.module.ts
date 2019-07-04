@@ -4,21 +4,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import {
-  MatTooltipModule,
-  MatButtonToggleModule,
-  MatChipsModule,
-  MatProgressBarModule,
-  MatMenuModule,
-  MatGridListModule,
-  MatButtonModule,
-  MatCardModule,
-  MatIconModule,
-  MatToolbarModule,
-  MatDialogModule,
-  MatProgressSpinnerModule,
-  MatCheckboxModule
-} from '@angular/material';
+import { MatCheckboxModule, MatTooltipModule, MatSlideToggleModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule, MatListModule} from '@angular/material';
+
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -53,6 +40,7 @@ import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import {DragulaModule} from "ng2-dragula";
 import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.component";
+import { MainModsComponent } from './main-mods/main-mods.component';
 
 @NgModule({
   declarations: [
@@ -78,7 +66,8 @@ import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.co
     BrowserNavComponent,
     FastClickDirective,
     ConfirmDialogComponent,
-    SongPackManagerComponent
+    SongPackManagerComponent,
+    MainModsComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent, ConfirmDialogComponent],
   imports: [
@@ -114,6 +103,8 @@ import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.co
     MatInputModule,
     MatTooltipModule,
     DragulaModule.forRoot()
+    MatSlideToggleModule,
+    MatListModule
   ],
   providers:[ ],
   bootstrap: [AppComponent]

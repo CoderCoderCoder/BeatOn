@@ -66,6 +66,11 @@ clickStuff()
       index: 2
     });
     this.navLinks.push({
+      label: 'Mods',
+      path: './mods',
+      index: 3
+    });
+    this.navLinks.push({
       label: 'Credits',
       path: './credits',
       index: 2

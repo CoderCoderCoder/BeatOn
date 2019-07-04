@@ -17,6 +17,7 @@ namespace BeatOn
         Unknown,
         ModFile,
         SongFile,
-        OldSongFile
+        OldSongFile,
+        Playlist
     }
 }

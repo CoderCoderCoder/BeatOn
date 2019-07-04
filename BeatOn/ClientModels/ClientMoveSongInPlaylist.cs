@@ -9,16 +9,15 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using QuestomAssets.Models;
 
 namespace BeatOn.ClientModels
 {
-    public class ClientMoveSongToPlaylist : MessageBase
+    public class ClientMoveSongInPlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.MoveSongToPlaylist;
+        public override MessageType Type => MessageType.MoveSongInPlaylist;
 
         public string SongID { get; set; }
-        public string ToPlaylistID { get; set; }
-        public int? Index { get; set; }
-
+        public int Index { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 using Android.App;
@@ -10,29 +12,205 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using BeatOn.ClientModels;
+using BeatOn.Core;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using QuestomAssets;
 using QuestomAssets.AssetOps;
 using QuestomAssets.AssetsChanger;
 using QuestomAssets.BeatSaber;
 using QuestomAssets.Models;
 using QuestomAssets.Mods;
+using QuestomAssets.Utils;
 
 namespace BeatOn
 {
     public class ImportManager
     {
         private Func<QuestomAssetsEngine> _getEngine;
-        private Func<BeatSaberQuestomConfig> _getConfig;
+        private Func<BeatOnConfig> _getConfig;
         private QaeConfig _qaeConfig;
         private ShowToastDelegate _showToast;
-        public ImportManager(QaeConfig qaeConfig, Func<BeatSaberQuestomConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast)
+        private Func<DownloadManager> _getDownloadManager;
+        public ImportManager(QaeConfig qaeConfig, Func<BeatOnConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast, Func<DownloadManager> getDownloadManager)
         {
             _qaeConfig = qaeConfig;
             _getConfig = getConfig;
             _getEngine = getEngine;
             _showToast = showToast;
+            _getDownloadManager = getDownloadManager;
         }
 
+        /// <summary>
+        /// try to get a playlist ID from something... this may need to change in the future, which will be awkward
+        /// </summary>
+        private string GetPlaylistID(string filename, BPList bplist)
+        {
+            return Path.GetFileNameWithoutExtension(filename.GetFilenameFwdSlash());
+        }
+        private const string BEAT_SAVER_ROOT = "https://beatsaver.com/";
+        private const string KEY_API = "api/maps/detail/{0}";
+        private const string HASH_API = "api/maps/by-hash/{0}";
+
+        public void ImportFile(string filename, string mimeType, byte[] fileData)
+        {
+            var ext = Path.GetExtension(filename).ToLower().ToLower().TrimStart('.');
+            if (ext == "bplist" || ext == "json")
+            {
+                try
+                {
+                    //oh boy a playlist!
+                    BPList bplist;
+                    using (MemoryStream ms = new MemoryStream(fileData))
+                    using (StreamReader sr = new StreamReader(ms))
+                    using (JsonTextReader tr = new JsonTextReader(sr))
+                        bplist = new JsonSerializer().Deserialize<BPList>(tr);
+
+                    if (bplist.PlaylistTitle == null || bplist.Songs == null)
+                    {
+                        Log.LogErr($"Playlist title is null and it's songlist is null from file {filename}.");
+                        _showToast("Playlist Failed", $"{filename} did not seem to have a playlist in it.", ToastType.Error);
+                        return;
+                    }
+
+                    Log.LogMsg($"Creating playlist '{bplist.PlaylistTitle}'");
+                    var bspl = new BeatSaberPlaylist()
+                    {
+                        PlaylistID = GetPlaylistID(filename, bplist),
+                        CoverImageBytes = bplist.Image,
+                        PlaylistName = bplist.PlaylistTitle
+                    };
+                    var plOp = new AddOrUpdatePlaylistOp(bspl);
+                    _getEngine().OpManager.QueueOp(plOp);
+
+                    plOp.FinishedEvent.WaitOne();
+                    if (plOp.Status == OpStatus.Failed)
+                    {
+                        Log.LogErr("Exception in ImportFile handling a bplist playlist!", plOp.Exception);
+                        _showToast("Playlist Failed", $"Unable to create playlist '{bplist.PlaylistTitle}'!", ToastType.Error);
+                        return;
+                    }
+                    else if (plOp.Status == OpStatus.Complete)
+                    {
+                        //SUCCESS!  except what a fail on this poorly structured if/else block
+                    }
+                    else
+                    {
+                        throw new Exception("Playlist op finished with a completely unexpected status.");
+                    }
+
+                    WebClient client = new WebClient();
+                    var downloads = new List<Download>();
+                    var ops = new ConcurrentBag<AssetOp>();
+                    foreach (var song in bplist.Songs)
+                    {
+                        string url = BEAT_SAVER_ROOT;
+                        if (!string.IsNullOrWhiteSpace(song.Key))
+                        {
+                            url += string.Format(KEY_API, song.Key);
+                        }
+                        else if (!string.IsNullOrWhiteSpace(song.Hash))
+                        {
+                            url += string.Format(HASH_API, song.Hash);
+                        }
+                        else
+                        {
+                            Log.LogErr($"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' has no hash or key.");
+                            continue;
+                        }
+                        try
+                        {
+                            var bsaver = client.DownloadString(url);
+                            JToken jt = JToken.Parse(bsaver);
+                            var downloadUrl = jt.Value<string>("downloadURL");
+                            if (string.IsNullOrWhiteSpace(downloadUrl))
+                            {
+                                Log.LogErr($"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' did not have a downloadURL in the response from beat saver.");
+                                continue;
+                            }
+                            try
+                            {
+                                var dl = _getDownloadManager().DownloadFile(BEAT_SAVER_ROOT.CombineFwdSlash(downloadUrl),false);
+                                dl.StatusChanged += (s, e) =>
+                                {
+                                    if (e.Status == DownloadStatus.Failed)
+                                    {
+                                        Log.LogErr($"Song '{song.SongName}' in playlist '{bplist.PlaylistTitle}' failed to download.");
+                                    }
+                                    else if (e.Status == DownloadStatus.Processed)
+                                    {
+                                        try
+                                        {
+                                            MemoryStream ms = new MemoryStream(dl.DownloadedData);
+                                            try
+                                            {
+                                                var provider = new ZipFileProvider(ms, dl.DownloadedFilename, FileCacheMode.None, true, FileUtils.GetTempDirectory());
+                                                try
+                                                {
+                                                    var op = ImportSongFile(provider, () =>
+                                                    {
+                                                        provider.Dispose();
+                                                        ms.Dispose();
+                                                    }, bspl);
+                                                    ops.Add(op);
+                                                }
+                                                catch
+                                                {
+                                                    provider.Dispose();
+                                                    throw;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                ms.Dispose();
+                                                throw;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Log.LogErr($"Song '{song.SongName}' in playlist '{bplist.PlaylistTitle}' threw an exception on adding to playlist", ex);
+                                        }
+                                    }
+                                };
+                                downloads.Add(dl);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.LogErr($"Exception making secondary call to get download readirect URL for '{downloadUrl}' on beat saver!", ex);
+                                continue;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.LogErr($"Exception on song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' getting info from beatsaver!", ex);
+                        }
+                    }
+
+                    if (downloads.Count < 1)
+                    {
+                        Log.LogErr($"Every single song in playlist '{bplist.PlaylistTitle} failed to start downloading!");
+                        _showToast("Playlist Failed", $"Every song in the playlist '{bplist.PlaylistTitle} failed to start downloading.", ToastType.Error);
+                        return;
+                    }
+                    downloads.WaitForFinish();
+                    ops.WaitForFinish();
+                   
+                    _getConfig().Config = _getEngine().GetCurrentConfig();
+                      
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr("Exception in ImportFile handling a bplist playlist!", ex);
+                    _showToast("Playlist Failed", $"Failed to read playlist from {filename}!", ToastType.Error);
+                }
+            }
+            else
+            {
+                Log.LogErr($"Unsupported file type uploaded as {filename}");
+                _showToast("Unsupported File", $"The file {filename} is not a supported type.", ToastType.Error);
+            }
+        }
 
         /// <summary>
         /// Imports a song/mod/etc from a file provider
@@ -57,11 +235,14 @@ namespace BeatOn
                     case DownloadType.SongFile:
                         ImportSongFile(provider, completionCallback);
                         break;
+                    case DownloadType.Playlist:
+                        ImportPlaylistFilesFromProvider(provider);
+                        break;
                     case DownloadType.OldSongFile:
                     default:
                         throw new ImportException($"Unhandled file type {type} with {provider.SourceName}", $"File {provider.SourceName} isn't a known type that Beat On can use!");
                 }
-                _showToast("File Processed", $"The file {provider.SourceName} has been proccessed.", ClientModels.ToastType.Info, 2);
+               // _showToast("File Processed", $"The file {provider.SourceName} has been proccessed.", ClientModels.ToastType.Info, 2);
             }
             catch (ImportException iex)
             {
@@ -76,14 +257,36 @@ namespace BeatOn
             }
         }
 
-        private void ImportSongFile(IFileProvider provider, Action completionCallback)
+        private void ImportPlaylistFilesFromProvider(IFileProvider provider)
+        {
+            int success = 0;
+            int fail = 0;
+            foreach (var file in provider.FindFiles("*.json"))
+            {
+                try
+                {
+                    Log.LogMsg($"Importing playlist file '{file}' from zip '{provider.SourceName}'");
+                    ImportFile(file.GetFilenameFwdSlash(), "application/json", provider.Read(file));
+                    success++;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr($"Exception trying to add playlist file '{file}' from zip '{provider.SourceName}'", ex);
+                    fail++;
+                    continue;
+                }
+            }
+            //todo: show a toast here?
+        }
+
+        private AssetOp ImportSongFile(IFileProvider provider, Action completionCallback, BeatSaberPlaylist addToPlaylist = null)
         {
             try
             {
                 var songPath = ExtractSongGetPath(provider);
                 var songID = songPath.GetFilenameFwdSlash();
-                var playlist = GetOrCreateDefaultPlaylist();
-                QueueAddSongToPlaylistOp(songID, songPath, playlist, completionCallback);
+                var playlist = addToPlaylist??GetOrCreateDefaultPlaylist();
+                return QueueAddSongToPlaylistOp(songID, songPath, playlist, completionCallback);
             }
             catch (ImportException)
             {
@@ -100,8 +303,7 @@ namespace BeatOn
         {
             try
             {
-                var modPath = ExtractModGetPath(provider);
-                QueueOrInstallMod(modPath);
+                ExtractAndInstallMod(provider);
             }
             catch (ImportException)
             {
@@ -193,11 +395,11 @@ namespace BeatOn
         /// <summary>
         /// Extracts a mod from a provider and returns the path RELATIVE TO THE BEATONDATAROOT
         /// </summary>
-        private string ExtractModGetPath(IFileProvider provider)
+        private void ExtractAndInstallMod(IFileProvider provider)
         {
             try
             {
-                var def = ModDefinition.LoadDefinitionFromProvider(provider);
+                var def = _getEngine().ModManager.LoadDefinitionFromProvider(provider);
                 var modOutputPath = _qaeConfig.ModsSourcePath.CombineFwdSlash(def.ID);
 
                 if (_qaeConfig.RootFileProvider.DirectoryExists(modOutputPath))
@@ -233,7 +435,8 @@ namespace BeatOn
                         throw new ImportException($"Exception extracting {file} from provider {provider.SourceName}", $"Unable to extract files from mod file {provider.SourceName}!", ex);
                     }
                 }
-                return modOutputPath;
+                _getEngine().ModManager.ResetCache();
+                QueueModInstall(def);
             }
             catch (Exception ex)
             {
@@ -248,7 +451,7 @@ namespace BeatOn
         /// <param name="songID">The song ID to use for the imported song</param>
         /// <param name="songPath">The path, RELATIVE TO THE BEATONDATA ROOT, of where the custom song exists</param>
         /// <param name="playlist">The playlist to add the song to</param>
-        private void QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist, Action completionCallback = null)
+        private AssetOp QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist, Action completionCallback = null)
         {
             var qae = _getEngine();
             var bsSong = new BeatSaberSong()
@@ -263,26 +466,46 @@ namespace BeatOn
                 //TODO: i'd like for this to come back out of the config rather than being added here
                 if (!playlist.SongList.Any(x=> x.SongID == bsSong.SongID))                
                     playlist.SongList.Add(bsSong);
-
+                if (op.Status == OpStatus.Complete)
+                {
+                    _showToast($"Song Added", $"{songID} was downloaded and added successfully", ClientModels.ToastType.Success);
+                }
+                else if (op.Status == OpStatus.Failed)
+                {
+                    _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                }
                 completionCallback?.Invoke();
             };
             qae.OpManager.QueueOp(addOp);
+            return addOp;
         }
 
         /// <summary>
         /// Installs a mod, or queues its operations.
         /// </summary>
         /// <param name="modPath">The mod path RELATIVE TO THE BEATONDATAROOT</param>
-        private void QueueOrInstallMod(string modPath)
+        private void QueueModInstall(ModDefinition modDefinition)
         {
             try
             {
-                ModDefinition.InstallModFromDirectory(modPath, _qaeConfig, _getEngine);
+                var ops = _getEngine().ModManager.GetInstallModOps(modDefinition);
+                if (ops.Count > 0)
+                {
+                    ops.Last().OpFinished += (s,e)=>
+                    {
+                        _getConfig().Config = _getEngine().GetCurrentConfig();
+                        if (e.Status == OpStatus.Complete)
+                        {
+                            _showToast($"Mod Installed", $"{modDefinition.Name} was installed and activated", ClientModels.ToastType.Success);
+                        }
+                    };
+                }
+                ops.ForEach(x => _getEngine().OpManager.QueueOp(x));
             }
             catch (Exception ex)
             {
-                Log.LogErr($"Exception in import manager installing mod from {modPath}", ex);
-                throw new ImportException($"Exception in import manager installing mod from {modPath}", $"Unable to install mod from {modPath}!", ex);
+                Log.LogErr($"Exception in import manager installing mod ID {modDefinition.ID}", ex);
+                throw new ImportException($"Exception in import manager installing mod ID {modDefinition.ID}", $"Unable to install mod ID {modDefinition.ID}!", ex);
             }
         }
 
@@ -290,7 +513,7 @@ namespace BeatOn
         {
             var currentConfig = _getConfig();
             var qae = _getEngine();
-            var pl = currentConfig.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
+            var pl = currentConfig.Config.Playlists.FirstOrDefault(x => x.PlaylistID == "CustomSongs");
             if (pl == null)
             {
                 pl = new BeatSaberPlaylist()
@@ -306,7 +529,7 @@ namespace BeatOn
                     Log.LogErr($"Unable to create CustomSongs playlist!", addPlOp.Exception);
                     throw new ImportException("Could not create CustomSongs playlist, the Op failed.", "Unable to create a Custom Songs playlist, cannot import song!", addPlOp.Exception);
                 }
-                currentConfig.Playlists.Add(pl);
+                currentConfig.Config.Playlists.Add(pl);
                 return pl;
             }
             return pl;
@@ -321,7 +544,17 @@ namespace BeatOn
             else if (provider.FileExists("info.json"))
                 return DownloadType.OldSongFile;
             else
-                return DownloadType.Unknown;
+            {
+                var files = provider.FindFiles("*");
+                //check if all of the files are .json files, and guess that maybe it's a playlist or two
+                if (!files.Any(x=>!x.ToLower().EndsWith(".json")))
+                {
+                    //going to guess maybe this is a playlist, becuase there aren't any other options right now
+                    return DownloadType.Playlist;
+                }
+            }
+
+            return DownloadType.Unknown;
         }
     }
 }

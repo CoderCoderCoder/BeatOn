@@ -34,7 +34,7 @@ namespace BeatOn.Core.RequestHandlers
             {
                 try
                 {
-                    resp.Serialize(_getConfig());
+                    resp.SerializeOk(_getConfig());
                 }
                 catch (Exception ex)
                 {

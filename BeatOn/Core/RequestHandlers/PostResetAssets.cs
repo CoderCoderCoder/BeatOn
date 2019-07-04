@@ -48,6 +48,7 @@ namespace BeatOn.Core.RequestHandlers
                     _triggerFullEngineReset();
                     _mod.ResetAssets();
                     _mod.ClearHookMods();
+                    _mod.DeleteModsFromFolder();
                     _triggerConfigChanged();
                     resp.Ok();
                 }
