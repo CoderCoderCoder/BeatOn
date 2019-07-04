@@ -25,7 +25,8 @@
           <i matTooltip="Edit Playlist" matTooltipPosition="below" (click)="editPack.emit(pack)" class="material-icons right cursor">edit</i>
           <i matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
              class="material-icons right cursor">done_all</i>
-          <img [attr.src]="pack.CoverArtFilename||'assets/default-pack-cover.png'" class="pack-image"/>
+          <img [defaultImage]="defaultImage" [lazyLoad]="pack.CoverArtFilename" [errorImage]="defaultImage"
+               class="pack-image"/>
           <i class="material-icons cursor grey-text drag-indicator left drag-playlist"
              matTooltip="Drag this playlist to re-order" matTooltipPosition="below"
           >more_vert</i>
@@ -37,7 +38,7 @@
                    matTooltip="Remove song from playlist" matTooltipPosition="below"
                    (click)="removeSongFromPack(song,pack)">close</i>
                 <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
-                <img [src]="getBackground(song.SongID)" alt="" class="circle red" />
+                <img [defaultImage]="defaultImage" [lazyLoad]="getBackground(song.SongID)" [errorImage]="defaultImage" alt="" class="circle red" />
                 <i class="material-icons cursor grey-text drag-indicator"
                    matTooltip="Drag this song to reorder" matTooltipPosition="below"
                 >more_vert</i>
@@ -74,7 +75,7 @@
              (click)="removeSong.emit(song.SongID)">close</i>
           <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
           <mat-checkbox [(ngModel)]="song.Selected" color="primary" class="right select-song" *ngIf="checkboxChecked">Select Song</mat-checkbox>
-          <img [src]="song.CoverArtFilename||'assets/default-pack-cover.png'" alt="" class="circle red" />
+          <img [defaultImage]="defaultImage" [lazyLoad]="getBackground(song.SongID)" [errorImage]="defaultImage" alt="" class="circle red" />
           <i class="material-icons cursor grey-text drag-indicator"
              matTooltip="Drag this song to a playlist." matTooltipPosition="below"
           >more_vert</i>

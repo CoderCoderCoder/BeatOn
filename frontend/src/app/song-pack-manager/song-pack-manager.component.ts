@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { DragulaService } from 'ng2-dragula';
-import {Subscription} from "rxjs/internal/Subscription";
-import {ClientSortPlaylist} from "../models/ClientSortPlaylist";
-import {PlaylistSortMode} from "../models/PlaylistSortMode";
-import {HostMessageService} from "../services/host-message.service";
-import {AppSettings} from "../appSettings";
+import { Subscription } from 'rxjs/internal/Subscription';
+import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
+import { PlaylistSortMode } from '../models/PlaylistSortMode';
+import { HostMessageService } from '../services/host-message.service';
+import { AppSettings } from '../appSettings';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -26,13 +26,11 @@ export class SongPackManagerComponent implements OnInit {
     checkboxChecked: boolean;
     selectAllToggle: boolean;
     reverseSortToggle: boolean;
+    defaultImage: string = 'assets/default-pack-cover.png';
     BAG = 'SONGS';
     test: string;
     subs = new Subscription();
-    public constructor(
-        private dragulaService: DragulaService,
-        private msgSvc : HostMessageService
-    ) {
+    public constructor(private dragulaService: DragulaService, private msgSvc: HostMessageService) {
         this.dragulaService.createGroup(this.BAG, {
             copy: (el, source) => {
                 return false;
@@ -40,8 +38,8 @@ export class SongPackManagerComponent implements OnInit {
             accepts: (el, target) => {
                 return (
                     //target !== this.song_container.nativeElement &&
-                    ((el.parentElement === this.pack_container.nativeElement && target === this.pack_container.nativeElement) ||
-                        (el.parentElement !== this.pack_container.nativeElement && target !== this.pack_container.nativeElement))
+                    (el.parentElement === this.pack_container.nativeElement && target === this.pack_container.nativeElement) ||
+                    (el.parentElement !== this.pack_container.nativeElement && target !== this.pack_container.nativeElement)
                 );
             },
             moves: (el, source, handle, sibling) => {
@@ -96,27 +94,27 @@ export class SongPackManagerComponent implements OnInit {
         });
     }
     getBackground(SongID) {
-      return AppSettings.API_ENDPOINT +'/host/beatsaber/song/cover?songid=' + SongID ;
+        return AppSettings.API_ENDPOINT + '/host/beatsaber/song/cover?songid=' + SongID;
     }
-    sortAuthor(PlaylistID: string){
-      this.sortPack(PlaylistID, PlaylistSortMode.LevelAuthor);
+    sortAuthor(PlaylistID: string) {
+        this.sortPack(PlaylistID, PlaylistSortMode.LevelAuthor);
     }
-    sortDifficulty(PlaylistID: string){
-      this.sortPack(PlaylistID, PlaylistSortMode.MaxDifficulty);
-      // setTimeout(()=>{
-      //   console.log(this.packs);
-      // },3000)
+    sortDifficulty(PlaylistID: string) {
+        this.sortPack(PlaylistID, PlaylistSortMode.MaxDifficulty);
+        // setTimeout(()=>{
+        //   console.log(this.packs);
+        // },3000)
     }
-    sortName(PlaylistID: string){
-      this.sortPack(PlaylistID, PlaylistSortMode.Name);
+    sortName(PlaylistID: string) {
+        this.sortPack(PlaylistID, PlaylistSortMode.Name);
     }
     sortPack(PlaylistID: string, mode: PlaylistSortMode) {
-      this.reverseSortToggle = !this.reverseSortToggle;
-      const sort = new ClientSortPlaylist();
-      sort.PlaylistID = PlaylistID;
-      sort.SortMode = mode;
-      sort.Reverse = this.reverseSortToggle;
-      this.msgSvc.sendClientMessage(sort);
+        this.reverseSortToggle = !this.reverseSortToggle;
+        const sort = new ClientSortPlaylist();
+        sort.PlaylistID = PlaylistID;
+        sort.SortMode = mode;
+        sort.Reverse = this.reverseSortToggle;
+        this.msgSvc.sendClientMessage(sort);
         this.saveJson.emit();
     }
     removeSongFromPack(song, pack) {
@@ -125,7 +123,7 @@ export class SongPackManagerComponent implements OnInit {
         this.saveJson.emit();
     }
     selectAll() {
-      this.selectAllToggle = !this.selectAllToggle;
+        this.selectAllToggle = !this.selectAllToggle;
         this.checkboxChecked = true;
         this.songs.forEach(s => {
             s.Selected = this.selectAllToggle;
