@@ -102,7 +102,7 @@ import { MainModsComponent } from './main-mods/main-mods.component';
     FormsModule,
     MatInputModule,
     MatTooltipModule,
-    DragulaModule.forRoot()
+    DragulaModule.forRoot(),
     MatSlideToggleModule,
     MatListModule
   ],
