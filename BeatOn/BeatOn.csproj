@@ -47,6 +47,7 @@
     <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <MonoSymbolArchive>false</MonoSymbolArchive>
     <DebugSymbols>True</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>True</Optimize>

@@ -4,7 +4,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatTooltipModule, MatSlideToggleModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule, MatListModule} from '@angular/material';
+import { MatCheckboxModule, MatTooltipModule, MatSlideToggleModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule, MatListModule} from '@angular/material';
+
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -37,6 +38,8 @@ import { CreditsComponent } from './credits/credits.component';
 import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import {DragulaModule} from "ng2-dragula";
+import {SongPackManagerComponent} from "./song-pack-manager/song-pack-manager.component";
 import { MainModsComponent } from './main-mods/main-mods.component';
 
 @NgModule({
@@ -63,6 +66,7 @@ import { MainModsComponent } from './main-mods/main-mods.component';
     BrowserNavComponent,
     FastClickDirective,
     ConfirmDialogComponent,
+    SongPackManagerComponent,
     MainModsComponent
   ],
   entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent, ConfirmDialogComponent],
@@ -89,6 +93,7 @@ import { MainModsComponent } from './main-mods/main-mods.component';
     ReactiveFormsModule,
     MatMenuModule,
     MatProgressBarModule,
+    MatCheckboxModule,
     MatChipsModule,
     ScrollDispatchModule,
     MatButtonToggleModule,
@@ -97,6 +102,7 @@ import { MainModsComponent } from './main-mods/main-mods.component';
     FormsModule,
     MatInputModule,
     MatTooltipModule,
+    DragulaModule.forRoot()
     MatSlideToggleModule,
     MatListModule
   ],

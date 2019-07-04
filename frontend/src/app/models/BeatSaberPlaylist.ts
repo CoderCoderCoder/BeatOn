@@ -7,8 +7,10 @@ export interface BeatSaberPlaylist
     PlaylistID : string;
 
     PlaylistName : string;
-    
+
     SongList : BeatSaberSong[];
 
     CoverImageBytes : string;
+
+    IsOpen? : boolean;
 }

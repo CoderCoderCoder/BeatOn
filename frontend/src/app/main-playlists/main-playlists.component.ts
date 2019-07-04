@@ -4,6 +4,7 @@ import { QuestomConfig } from '../models/QuestomConfig';
 import { BeatOnConfig } from '../models/BeatOnConfig';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { ConfigService } from '../services/config.service';
+import {PlaylistTempConfig} from "../models/PlaylistTempConfig";
 
 @Component({
   selector: 'app-main-playlists',
@@ -16,17 +17,61 @@ import { ConfigService } from '../services/config.service';
 export class MainPlaylistsComponent implements OnInit {
   config : QuestomConfig;
   selectedPlaylist: BeatSaberPlaylist =<BeatSaberPlaylist>{};
-
+  customPlaylist: BeatSaberPlaylist;
   constructor(private beatOnApi : BeatOnApiService, private configSvc : ConfigService) { }
-    
+
+  ngOnInit() {
+   this.configSvc.getConfig().subscribe(this.handleConfig.bind(this));
+   this.configSvc.configUpdated.subscribe(this.handleConfig.bind(this));
+  }
+
   selectedPlaylistChanged(ev) {
     this.selectedPlaylist = ev;
   }
 
+  saveTempConfig(){
+    let playlistTempConfig: PlaylistTempConfig[] = [];
+    if(this.config && this.config.Playlists){
+      playlistTempConfig = this.config.Playlists.map(p => ({ PlaylistID : p.PlaylistID, IsOpen: p.IsOpen}))
+    }
+    return playlistTempConfig;
+  }
 
-  ngOnInit() {
-   this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {  this.config = cfg.Config; });
-   this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> {  this.config = cfg.Config; });
+  restoreTempConfig(playlistTempConfig: PlaylistTempConfig[]){
+    if(this.config && this.config.Playlists){
+      this.config.Playlists.forEach(p => {
+        const isOpen = playlistTempConfig.filter(_p => _p.PlaylistID == p.PlaylistID);
+        if(isOpen.length){
+          p.IsOpen = isOpen[0].IsOpen;
+        }
+      });
+      playlistTempConfig = this.config.Playlists.map(p => ({ PlaylistID : p.PlaylistID, IsOpen: p.IsOpen}))
+    }
+  }
+
+  handleConfig(cfg : BeatOnConfig){
+    const tempConfig = this.saveTempConfig();
+    this.config = cfg.Config;
+    this.restoreTempConfig(tempConfig);
+    this.setupPlaylists();
+  }
+
+  setupPlaylists(){
+    const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
+    if(customIndex > -1){
+      this.customPlaylist = this.config.Playlists[customIndex];
+      this.config.Playlists.splice(customIndex,1);
+    }else{
+      this.customPlaylist = {
+        CoverArtFilename : null,
+        PlaylistID: "",
+        PlaylistName: "",
+        SongList: [],
+        CoverImageBytes : null
+      }
+    }
+    if(this.config.Playlists.length)
+      this.config.Playlists[0].IsOpen = true;
   }
 
 }

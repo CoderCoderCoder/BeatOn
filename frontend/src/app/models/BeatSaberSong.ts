@@ -1,5 +1,5 @@
 export interface BeatSaberSong
-{    
+{
     SongID : string;
 
     SongName : string;
@@ -7,10 +7,12 @@ export interface BeatSaberSong
     CoverArtFilename : string;
 
     SongSubName : string;
-            
+
     SongAuthorName : string;
-            
+
     LevelAuthorName : string;
 
     CustomSongPath : string;
+
+    Selected? : boolean;
 }

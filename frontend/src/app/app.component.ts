@@ -13,12 +13,13 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import { HostOpStatus, OpStatus } from './models/HostOpStatus';
 import { ToolbarEventsService } from './services/toolbar-events.service';
 import { AppIntegrationService } from './services/app-integration.service';
+import {QuestomConfig} from "./models/QuestomConfig";
 
 @Component({
   selector: 'app-root',
   animations: [
     trigger('fade', [
-      
+
       transition(':enter', [style({ opacity: 0 }), animate('0.2s', style({ opacity: 1}))]),
       transition(':leave', [style({ opacity: 1 }), animate('0.2s', style({ opacity: 0 }))]),
       state('*', style({ opacity: 1 }))
@@ -33,25 +34,25 @@ import { AppIntegrationService } from './services/app-integration.service';
 
 
 export class AppComponent implements OnInit {
-  constructor(private beatOnApi: BeatOnApiService, 
-          private router: Router, 
+  constructor(private beatOnApi: BeatOnApiService,
+          private router: Router,
           private msgSvc: HostMessageService,
           private toastr: ToastrService,
           private cfgSvc : ConfigService,
           private dialog : MatDialog,
           private toolbarEvents : ToolbarEventsService,
-          private appIntegration : AppIntegrationService       
-          ) { 
+          private appIntegration : AppIntegrationService
+          ) {
             this.msgSvc.opStatusMessage.subscribe((ev : HostOpStatus) => {
                 this.opInProgress = (ev.Ops.findIndex(x => x.Status != OpStatus.Failed) > -1);
 
-                
+
             });
     this.router.events.subscribe((ev) => {
-      if (ev instanceof NavigationStart) { 
+      if (ev instanceof NavigationStart) {
         //TODO: prevent routing based on mod status?
       }
-      
+
     });
     this.msgSvc.toastMessage.subscribe((ev) => this.showToast(ev));
     this.cfgSvc.configUpdated.subscribe((cfg : BeatOnConfig) =>
@@ -88,9 +89,9 @@ export class AppComponent implements OnInit {
              this.router.navigateByUrl('/');
              break;
          }
-       })      
+       })
   }
-  
+
   opInProgress: boolean;
   modStatusLoaded: boolean = false;
   title : string = 'Beat On';
@@ -102,7 +103,7 @@ export class AppComponent implements OnInit {
   config : BeatOnConfig = { IsCommitted: true,
                             Config: null};
   ngOnInit() {
-   
+
    this.checkModStatus();
   }
 
@@ -114,7 +115,7 @@ export class AppComponent implements OnInit {
     data: {mainText:"Updating config...  Do not exit Beat On yet!"}
   });
   this.beatOnApi.commitConfig()
-    .subscribe((data: any) => { 
+    .subscribe((data: any) => {
       dialogRef.close();
   }, (err) =>
   {
@@ -157,10 +158,10 @@ export class AppComponent implements OnInit {
       else
         return "gray";
   }
-  
+
   getConnStatusIcon() {
     return (this.connectionStatus == ConnectionStatus.Connected || this.connectionStatus == ConnectionStatus.Connecting);
-      
+
   }
 
   reconnect() {
@@ -177,7 +178,7 @@ export class AppComponent implements OnInit {
     this.beatOnApi.getModStatus()
     .subscribe((data: any) => {
        this.modStatusLoaded = true;
-       this.modStatus = data; 
+       this.modStatus = data;
        if (this.modStatus.CurrentStatus == 'ModInstallNotStarted') {
         this.router.navigateByUrl('/setup');
        }
@@ -200,13 +201,13 @@ export class AppComponent implements OnInit {
           }
           
         });
-        
+
        }
     });
   }
 
   public onClickModStatus() {
-    
+
   }
   public onClickInstallModStep1() {
     this.beatOnApi.installModStep1()
@@ -228,5 +229,5 @@ export class AppComponent implements OnInit {
   linkSelected(ev) {
     this.toolbarEvents.triggerNavigate(ev);
   }
-  
+
 }
