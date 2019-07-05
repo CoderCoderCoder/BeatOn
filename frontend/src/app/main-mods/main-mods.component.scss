@@ -1,6 +1,6 @@
 .viewport {
  //   width: 600px;
-    height: 430px;
+    height: 600px;
     overflow-y: auto;
     margin-left: 300px;
 }
@@ -35,7 +35,7 @@
     float: left;
     position: absolute;
     top: 5px;
-    left: 0px;
+    right: 0px;
 }
 .modclass.Saber {
     background-color: darkred;
@@ -51,7 +51,7 @@
 
 .content {
     font-style: italic;
-    margin-left: 15px;    
+    margin-left: 15px;
     margin-right: 15px;
     text-align: justify;
 }
@@ -74,11 +74,30 @@
     bottom: 10px;
     color: darkgray;
 }
-.mod {
-   // display: flex;
-    width: 380px;
-    margin-bottom: 20px;
-    margin-left: 6px;
+
+.selected {
+  background-color: #828282 !important;
+  color: white;
+}
+
+mat-list-item {
+  cursor: pointer;
+  position: relative;
+  left: 0;
+  background-color: #404040;
+  margin: .5em;
+  padding: .3em 0 .9em;
+  height: 1.6em;
+  border-radius: 4px;
+}
+
+mat-list-item.selected:hover {
+  background-color: #636363 !important;
+  color: white;
+}
+mat-list-item:hover {
+  background-color: #474747;
+  left: .1em;
 }
 
 .toggleContainer {
@@ -102,15 +121,152 @@
     font-size: 12px;
 }
 
-.deleteMod {
-    position: absolute;
-    top:0;
-    right:0;
-    color: red;
-    border-radius: 50%;
-    width: 25px;
-    height: 25px;
-    background-color: rgba(0,0,0,200);
-    font-size: 24px;
-    cursor: pointer;
+.modal.left .modal-dialog,
+.modal.right .modal-dialog {
+  position: fixed;
+  margin: auto;
+  width: 600px;
+  height: 100%;
+  -webkit-transform: translate3d(0%, 0, 0);
+  -ms-transform: translate3d(0%, 0, 0);
+  -o-transform: translate3d(0%, 0, 0);
+  transform: translate3d(0%, 0, 0);
+}
+
+.modal.left .modal-content,
+.modal.right .modal-content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.modal.left .modal-body,
+.modal.right .modal-body {
+  padding: 15px 15px 80px;
+}
+
+.modal.right.fade .modal-dialog {
+  right: -320px;
+  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+  transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+.modal.right.fade.in .modal-dialog {
+  right: 0;
+}
+
+/* ----- MODAL STYLE ----- */
+.modal-content {
+  border-radius: 0;
+  border: none;
+}
+
+.modal-header {
+  border-bottom-color: #eeeeee;
+  background-color: #fafafa;
+}
+
+.viewport {
+  //   width: 600px;
+  height: 600px;
+  overflow-y: auto;
+  margin-left: 300px;
+}
+.modUrl {
+  position: absolute;
+  bottom: 0px;
+  left: 10px;
+  font-size: 12px;
+  max-width: 80%;
+  font-style: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.modUrl a {
+  color: white;
+}
+.header {
+  margin-top: 20px;
+}
+.modclass {
+  height: 20px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  box-shadow: 0px 1px 2px 0px #000000;
+  font-size: 16px;
+  font-weight: bold;
+  font-style: italic;
+  float: left;
+  position: absolute;
+  top: 5px;
+  right: 0px;
+}
+.modclass.Saber {
+  background-color: darkred;
+}
+
+.modclass.Gameplay {
+  background-color: darkblue;
+}
+
+.modclass.Other {
+  background-color: darkgoldenrod;
+}
+
+.content {
+  font-style: italic;
+  margin-left: 15px;
+  margin-right: 15px;
+  text-align: justify;
+}
+
+.modId {
+  color: darkgray;
+  font-size: 8px;
+  height: 10px;
+  position: absolute;
+  left: 5px;
+  top: 5px;
+}
+.enabledtext.active {
+  font-weight: bold;
+}
+.enabledtext {
+  font-size: 14px;
+  position: absolute;
+  right: 70px;
+  bottom: 10px;
+  color: darkgray;
+}
+.mod {
+  // display: flex;
+  width: 380px;
+  margin-bottom: 20px;
+  margin-left: 6px;
+}
+
+.toggleContainer {
+  display: block;
+  width: 65px;
+  align-content: right;
+  margin-right: 6px;
+  margin-left: auto;
+  margin-bottom: 6px;
+}
+.toggle, .toggleSpinner {
+  display: inline-block;
+}
+.toggleSpinner {
+  margin-bottom: -3px;
+  margin-left: 5px;
+  width: 20px;
+  height: 20px;
+}
+.description {
+  font-size: 13px;
 }

@@ -60,7 +60,6 @@ export class MainPlaylistsComponent implements OnInit {
     }
 
     setupPlaylists() {
-        console.log(this.config.Playlists);
         const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
         if (customIndex > -1) {
             this.customPlaylist = this.config.Playlists[customIndex];

@@ -221,7 +221,6 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
         this.msgSvc.sendClientMessage(sort);
     }
     addEditPlaylist(playlist?: BeatSaberPlaylist) {
-        console.log('here');
         const dialogRef = this.dialog.open(AddEditPlaylistDialogComponent, {
             width: '450px',
             height: '320px',

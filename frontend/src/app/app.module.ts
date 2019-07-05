@@ -58,6 +58,7 @@ import { DragulaModule } from 'ng2-dragula';
 import { SongPackManagerComponent } from './song-pack-manager/song-pack-manager.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
+import { NgxSmartModalModule, NgxSmartModalService } from 'ngx-smart-modal';
 
 @NgModule({
     declarations: [
@@ -123,8 +124,11 @@ import { LazyLoadImageModule } from 'ng-lazyload-image';
         MatSlideToggleModule,
         MatListModule,
         LazyLoadImageModule,
+        MatListModule,
+        FlexLayoutModule,
+        NgxSmartModalModule,
     ],
-    providers: [],
+    providers: [NgxSmartModalService],
     bootstrap: [AppComponent],
 })
 export class AppModule {}
