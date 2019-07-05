@@ -14,12 +14,13 @@ body { background-color: #424242; margin: 0; font-family: Roboto, "Helvetica Neu
 }
 ::-webkit-scrollbar {
   height: 16px;
-  width: 16px;
-  background: #e0e0e0;
+  width: 12px;
+  background: #424242;
 }
 ::-webkit-scrollbar-corner {
-  background: #cfcfcf;
+  background:#424242;
 }
 ::-webkit-scrollbar-thumb {
-  background: #ed4e7a;
+  background:  #cfcfcf;
+  border-radius: 4px;
 }

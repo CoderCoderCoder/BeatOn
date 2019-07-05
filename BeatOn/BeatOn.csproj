@@ -327,22 +327,22 @@
     <AndroidAsset Include="Assets\www\scripts.43853d6e069605d1aaca.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.e00c9c8a07d08f7a8d3e.css" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.9efccb7fd442cf9f5d63.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.3385b6dfcc2f2f7f6e04.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\assets\default-pack-cover.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.27f584a59c545201cda5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.045a94c38b5a9d0e9b37.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles.bc9054d4fcfbbf8e6108.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

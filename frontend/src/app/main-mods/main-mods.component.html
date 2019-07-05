@@ -16,13 +16,13 @@
         
       </mat-card-content>
       <p class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
-      <div (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
+      <div matTooltip="Delete the mod from Beat On." (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
       <mat-card-footer class="bottom">
         <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
         <div class="toggleContainer">
           <div *ngIf="modIDBeingSwitched != mod.ID" class="toggleSpinner"></div>
-          <mat-progress-spinner *ngIf="modIDBeingSwitched == mod.ID" class="toggleSpinner" mode="indeterminate"  diameter="20"></mat-progress-spinner>
-          <mat-slide-toggle class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
+          <mat-progress-spinner *ngIf="modIDBeingSwitched != null && modIDBeingSwitched == mod.ID" class="toggleSpinner" mode="indeterminate"  diameter="20"></mat-progress-spinner>
+          <mat-slide-toggle matTooltip="Toggle the mod on or off." class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
         </div>
       </mat-card-footer>
     </mat-card>

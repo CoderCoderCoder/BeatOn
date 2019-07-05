@@ -55,36 +55,42 @@ namespace BeatOn.Core.RequestHandlers
                     resp.BadRequest("Expected playlistid");
                     return;
                 }
-                var pngName = _config.PlaylistsPath.CombineFwdSlash(playlistid + ".png");
-                try
-                {                    
-                    if (_config.RootFileProvider.FileExists(pngName))
-                    {
-                        var pngData = _config.RootFileProvider.Read(pngName);
-                        resp.StatusCode = 200;
-                        resp.ContentType = MimeMap.GetMimeType("test.png");
-                        resp.AppendHeader("Cache-Control", "no-cache");
-                        resp.OutputStream.Write(pngData, 0, pngData.Length);
-                        Log.LogMsg($"Returned playlist cover art from file {pngName} for id {playlistid}");
-                        return;
-                    }
-                    else
-                    {
-                        Log.LogMsg($"Playlist image {pngName} didn't exist, falling back to assets files.");
-                    }
-                }
-                catch (Exception ex)
+                var playlist = _getConfig().Config.Playlists.FirstOrDefault(x => x.PlaylistID == playlistid);
+                if (playlist == null)
                 {
-                    Log.LogErr($"Exception loading png for playlist {playlistid}, falling back to assets files.", ex);
+                    resp.NotFound();
+                    return;
+                }
+                var pngName = _config.PlaylistsPath.CombineFwdSlash(playlistid + ".png");
+                bool coverWasLoaded = playlist.IsCoverLoaded;
+                //if the playlist cover is already loaded, there's a good chance it's from an updated asset which hasn't written the PNG to disk yet, so
+                //  that should skip the filesystem.
+                if (!coverWasLoaded)
+                {                    
+                    try
+                    {
+                        if (_config.RootFileProvider.FileExists(pngName))
+                        {
+                            var pngData = _config.RootFileProvider.Read(pngName);
+                            resp.StatusCode = 200;
+                            resp.ContentType = MimeMap.GetMimeType("test.png");
+                            resp.AppendHeader("Cache-Control", "no-cache");
+                            resp.OutputStream.Write(pngData, 0, pngData.Length);
+                            Log.LogMsg($"Returned playlist cover art from file {pngName} for id {playlistid}");
+                            return;
+                        }
+                        else
+                        {
+                            Log.LogMsg($"Playlist image {pngName} didn't exist, falling back to assets files.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr($"Exception loading png for playlist {playlistid}, falling back to assets files.", ex);
+                    }
                 }
                 lock (_playlistCoverLock)
                 {
-                    var playlist = _getConfig().Config.Playlists.FirstOrDefault(x => x.PlaylistID == playlistid);
-                    if (playlist == null)
-                    {
-                        resp.NotFound();
-                        return;
-                    }
                     var imgBytes = playlist.TryGetCoverPngBytes();
                     if (imgBytes == null)
                     {
@@ -93,9 +99,12 @@ namespace BeatOn.Core.RequestHandlers
                     }
                     try
                     {
-                        Log.LogMsg($"Trying to create cover art file at {pngName} for playlist ID {playlistid} so it's available next time");
-                        _config.RootFileProvider.MkDir(_config.PlaylistsPath, true);
-                        _config.RootFileProvider.Write(pngName, imgBytes, true);
+                        if (!coverWasLoaded && !_config.RootFileProvider.FileExists(pngName))
+                        {
+                            Log.LogMsg($"Trying to create cover art file at {pngName} for playlist ID {playlistid} so it's available next time");
+                            _config.RootFileProvider.MkDir(_config.PlaylistsPath, true);
+                            _config.RootFileProvider.Write(pngName, imgBytes, true);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -103,7 +112,7 @@ namespace BeatOn.Core.RequestHandlers
                     }
                     resp.StatusCode = 200;
                     resp.ContentType = MimeMap.GetMimeType("test.png");
-                    resp.AppendHeader("Cache-Control", "no-cache");
+                    resp.AppendHeader("Cache-Control", "max-age=86400, public");
                     using (MemoryStream ms = new MemoryStream(imgBytes))
                     {
                         ms.CopyTo(resp.OutputStream);

@@ -62,7 +62,6 @@ export class MainModsComponent implements OnInit {
         this.msgSvc.sendClientMessage(msg);
     }
     getModSwitch(mod) {
-        console.log('getting mod status for mod id ' + mod.ID);
         if (mod == null) return false;
         if (
             (mod.Status != 'Installed' && mod.ID != this.modIDBeingSwitched) ||

@@ -1,25 +1,25 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <div class="fullheight"  fxLayout="column">
   <mat-toolbar class="toolbar">
-    <div (click)="reconnect()" class="connectionStatus right" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
+    <div matTooltip="Current connection status.  Click to reconnect." (click)="reconnect()" class="connectionStatus right" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
 
-    <button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning right sync-button">
+    <button matTooltip="Sync the current configuration to Beat Saber." *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning right sync-button">
       Sync to Beat Saber
     </button>
 
-    <app-browser-nav class="right top-button" (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
+    <app-browser-nav matTooltip="Browse to web site." class="right top-button" (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
-    <button class="right top-button" fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
+    <button matTooltip="Refresh" class="right top-button" fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
-    <button class="right top-button" fast-click (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button>
+    <button matTooltip="Back" class="right top-button" fast-click (click)="clickBack()" @fade *ngIf="modStatusLoaded && showBackButton" mat-stroked-button><mat-icon>arrow_back</mat-icon></button>
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
-    <app-download-indicator class="right top-button" *ngIf="modStatusLoaded"></app-download-indicator>
+    <app-download-indicator matTooltip="Downloads in progress" class="right top-button" *ngIf="modStatusLoaded"></app-download-indicator>
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
-    <app-op-indicator class="right top-button" *ngIf="modStatusLoaded"></app-op-indicator>
+    <app-op-indicator matTooltip="Current Beat On operations that are in progress or have failed." class="right top-button" *ngIf="modStatusLoaded"></app-op-indicator>
     <!--<span class="example-fill-remaining-space" style="flex: 1 1 auto;"></span>-->
-    <button class="right nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
-    <button class="right" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
+    <button matTooltip="Beat On is processing, wait for it to finish to sync." class="right nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
+    <button matTooltip="Beat Saber is in sync." class="right" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
 
     <div class="logo"></div>
   </mat-toolbar>

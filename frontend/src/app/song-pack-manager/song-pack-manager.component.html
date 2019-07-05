@@ -3,28 +3,42 @@
     <div class="packs-left side-packs">
       <h2>
 
-        <button mat-flat-button class="right"
+        <button fast-click mat-flat-button class="right"
                 color="primary"
-                matTooltip="Add playlist" matTooltipPosition="below"
-                (click)="addEditPlaylist()"
-        >Add Playlist</button>
+                matTooltip="Add playlist" matTooltipPosition="below" 
+                (click)="addEditPlaylist()">
+          <mat-icon>playlist_add</mat-icon>
+        </button>
+        <button matTooltip="Auto Sort into Playlists" class="right" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
+          <mat-icon>sort</mat-icon>
+        </button>  
+        <mat-menu #menu="matMenu">
+          <button fast-click [matMenuTriggerFor]="subMenuNameCount" mat-menu-item>Sort into New Playlists by Name</button>
+          <button fast-click mat-menu-item (click)="autoSortDifficulty()">Sort into New Playlists by Difficulty</button>
+        </mat-menu>
+        <mat-menu #subMenuNameCount="matMenu">
+            <button fast-click (click)="autoSortName(10)"  mat-menu-item>10 Per Playlist</button>
+            <button fast-click (click)="autoSortName(20)"  mat-menu-item>20 Per Playlist</button>
+            <button fast-click (click)="autoSortName(50)"  mat-menu-item>50 Per Playlist</button>
+            <button fast-click (click)="autoSortName(100)"  mat-menu-item>100 Per Playlist</button>
+        </mat-menu> 
         My Playlists
       </h2>
       <div class="pack-container" #pack_container dragula="SONGS" [(dragulaModel)]="packs">
         <div class="packOuter" *ngFor="let pack of packs" [attr.data-playlist_id]="pack.PlaylistID">
-          <i matTooltip="Collapse this pack" matTooltipPosition="below"
+          <i fast-click matTooltip="Collapse this pack" matTooltipPosition="below"
              class="material-icons right show-pack cursor"
              (click)="updateImages(50); pack.IsOpen = !pack.IsOpen;">
             {{pack.IsOpen?'expand_less':'expand_more'}}
           </i>
           <!--<i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>-->
-          <i matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>
-          <i matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>
-          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>
+          <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>
+          <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>
+          <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>
           <!--<i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>-->
-          <i matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(pack)" class="material-icons right cursor" >edit</i>
-          <i matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
-             class="material-icons right cursor">done_all</i>
+          <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(pack)" class="material-icons right cursor" >edit</i>
+          <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
+             class="material-icons right cursor playlist-check">done_all</i>
           <img  [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(pack.PlaylistID)" [errorImage]="defaultImage"
                class="pack-image"/>
           <i class="material-icons cursor grey-text drag-indicator left drag-playlist"
@@ -35,7 +49,7 @@
             <ul class="collection pack-song-container" *ngIf="pack.IsOpen"  dragula="SONGS" [(dragulaModel)]="pack.SongList"
                 [attr.data-playlist_id]="pack.PlaylistID">
               <li *ngFor="let song of pack.SongList" class="collection-song avatar" [attr.data-song_id]="song.SongID">
-                <i class="material-icons cursor orange-text drag-indicator right"
+                <i fast-click class="material-icons cursor orange-text drag-indicator right"
                    matTooltip="Remove song from playlist" matTooltipPosition="below"
                    (click)="removeSongFromPack(song,pack)">close</i>
                 <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
@@ -59,19 +73,19 @@
         <div class="right song-sort">
           <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
 
-          <i matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty('CustomSongs')">fitness_center</i>
-          <i matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor('CustomSongs')">face</i>
-          <i matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName('CustomSongs')">sort</i>
+          <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty('CustomSongs')">fitness_center</i>
+          <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor('CustomSongs')">face</i>
+          <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName('CustomSongs')">sort</i>
 
-          <i matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
-          <i matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
+          <i fast-click matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
+          <i fast-click matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
 
         </div>
-        All My Songs
+        Unsorted Songs
       </h2>
       <ul class="collection song-container" #song_container  dragula="SONGS" [(dragulaModel)]="songs" [attr.data-playlist_id]="'CustomSongs'">
         <li *ngFor="let song of songs;let i = index" class="collection-song avatar" [attr.data-song_id]="song.SongID">
-          <i class="material-icons cursor orange-text drag-indicator right"
+          <i fast-click class="material-icons cursor orange-text drag-indicator right"
              matTooltip="Delete this song." matTooltipPosition="below"
              (click)="removeSong(song.SongID)">close</i>
           <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->

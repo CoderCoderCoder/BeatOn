@@ -1,4 +1,15 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnInit,
+    Output,
+    ViewChild,
+    OnChanges,
+    SimpleChanges,
+    AfterViewChecked,
+} from '@angular/core';
 import { DragulaService } from 'ng2-dragula';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
@@ -18,13 +29,20 @@ import { MatDialog } from '@angular/material/dialog';
 import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
 import { ConfigService } from '../services/config.service';
 import { Subject } from 'rxjs/internal/Subject';
+import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
+import { trigger, transition, style, animate, state } from '@angular/animations';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
     templateUrl: './song-pack-manager.component.html',
     styleUrls: ['./song-pack-manager.component.scss'],
+    animations: [
+        trigger('winkout', [
+            transition(':leave', [style({ transform: 'scale(1)' }), animate('0.1s', style({ transform: 'scale(0)' }))]),
+        ]),
+    ],
 })
-export class SongPackManagerComponent implements OnInit {
+export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChecked {
     @Input('packs') packs;
     @Input('songs') songs;
     @Output('addPack') addPack = new EventEmitter();
@@ -43,7 +61,10 @@ export class SongPackManagerComponent implements OnInit {
     test: string;
     subs = new Subscription();
     scrollObserver: any;
+    lastPackScrollOffset: number;
+    lastSongsScrollOffset: number;
     updateSearchResult: Subject<void>;
+    updateHack: number = 0;
     public constructor(
         private dialog: MatDialog,
         private configSvc: ConfigService,
@@ -92,6 +113,15 @@ export class SongPackManagerComponent implements OnInit {
                         msg.Index = index;
                         this.msgSvc.sendClientMessage(msg);
                     } else {
+                        if (playlistId == 'CustomSongs' && this.packs.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
+                            console.log('making pl');
+                            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
+                            pl.PlaylistID = 'CustomSongs';
+                            pl.PlaylistName = 'Custom Songs';
+                            const plMsg = new ClientAddOrUpdatePlaylist();
+                            plMsg.Playlist = pl;
+                            this.msgSvc.sendClientMessage(plMsg);
+                        }
                         const msg = new ClientMoveSongToPlaylist();
                         msg.ToPlaylistID = playlistId;
                         msg.SongID = songId;
@@ -107,6 +137,24 @@ export class SongPackManagerComponent implements OnInit {
         this.subs.unsubscribe();
     }
     ngOnInit() {}
+    ngOnChanges(changes: SimpleChanges) {
+        if (this.pack_container) {
+            this.lastPackScrollOffset = this.pack_container.nativeElement.scrollTop;
+        }
+        if (this.song_container) {
+            this.lastSongsScrollOffset = this.song_container.nativeElement.scrollTop;
+        }
+    }
+    ngAfterViewChecked() {
+        if (this.lastPackScrollOffset && this.pack_container) {
+            this.pack_container.nativeElement.scrollTop = this.lastPackScrollOffset;
+            this.lastPackScrollOffset = null;
+        }
+        if (this.lastSongsScrollOffset && this.song_container) {
+            this.song_container.nativeElement.scrollTop = this.lastSongsScrollOffset;
+            this.lastSongsScrollOffset = null;
+        }
+    }
     ngAfterViewInit() {
         let drake = this.dragulaService.find('SONGS').drake;
         let scroll = autoScroll([window, this.pack_container.nativeElement], {
@@ -149,7 +197,9 @@ export class SongPackManagerComponent implements OnInit {
     getPackBackground(PlaylistID) {
         let fixedUri = encodeURIComponent(PlaylistID);
         fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
-        return AppSettings.API_ENDPOINT + '/host/beatsaber/playlist/cover?playlistid=' + fixedUri;
+        return (
+            AppSettings.API_ENDPOINT + '/host/beatsaber/playlist/cover?playlistid=' + fixedUri + '&updateCount=' + this.updateHack
+        );
     }
     sortAuthor(PlaylistID: string) {
         this.sortPack(PlaylistID, PlaylistSortMode.LevelAuthor);
@@ -208,11 +258,11 @@ export class SongPackManagerComponent implements OnInit {
                         const msg = new ClientAddOrUpdatePlaylist();
                         msg.Playlist = found;
                         this.msgSvc.sendClientMessage(msg);
-                        // var sub;
-                        // sub = this.msgSvc.configChangeMessage.subscribe(cfg => {
-                        //   sub.unsubscribe();
-                        //   this.updateCounterHack = this.updateCounterHack+1;
-                        // });
+                        var sub;
+                        sub = this.msgSvc.configChangeMessage.subscribe(cfg => {
+                            sub.unsubscribe();
+                            this.updateHack = new Date().getTime();
+                        });
                     }
                 });
             }
@@ -229,6 +279,14 @@ export class SongPackManagerComponent implements OnInit {
         this.msgSvc.sendClientMessage(msg);
     }
     removeSongFromPack(song, pack) {
+        if (this.packs.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
+            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
+            pl.PlaylistID = 'CustomSongs';
+            pl.PlaylistName = 'Custom Songs';
+            const plMsg = new ClientAddOrUpdatePlaylist();
+            plMsg.Playlist = pl;
+            this.msgSvc.sendClientMessage(plMsg);
+        }
         const msg = new ClientMoveSongToPlaylist();
         msg.ToPlaylistID = 'CustomSongs';
         msg.SongID = song.SongID;
@@ -243,5 +301,17 @@ export class SongPackManagerComponent implements OnInit {
         this.songs.forEach(s => {
             s.Selected = this.selectAllToggle;
         });
+    }
+    autoSortName(max: number) {
+        var msg = new ClientAutoCreatePlaylists();
+        msg.MaxPerNamePlaylist = max;
+        msg.SortMode = PlaylistSortMode.Name;
+        this.msgSvc.sendClientMessage(msg);
+    }
+    autoSortDifficulty() {
+        var msg = new ClientAutoCreatePlaylists();
+        msg.MaxPerNamePlaylist = 5;
+        msg.SortMode = PlaylistSortMode.MaxDifficulty;
+        this.msgSvc.sendClientMessage(msg);
     }
 }

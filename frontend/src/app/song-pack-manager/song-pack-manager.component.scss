@@ -1,3 +1,6 @@
+
+@import '../../theme.scss';
+@include mat-core;
 .packs-left,.packs-right{
   display:inline-block;
   float:left;
@@ -13,6 +16,10 @@
 .left{
   float: left;
 }
+button.right  {
+  margin-left: 15px;
+}
+
 .drag-playlist{
   margin-top: -15px;
 }
@@ -56,6 +63,9 @@
 .packOuter{
   color: white;
   vertical-align: middle;
+}
+.packOuter i {
+  margin-left:15px;
 }
 .collection-song.avatar:not(.circle-clipper)>.circle, .collection-song.avatar :not(.circle-clipper)>.circle {
   position: absolute;
@@ -167,6 +177,8 @@
 }
 .song-container {
   height: calc(100% - 75px);
+  background: rgba(255,255,255,0.36);
+  padding-left: 0px;
 }
 .pack-container{
   background: rgba(255,255,255,0.2);
@@ -189,11 +201,19 @@
 .pack-song-container {
   padding-left: 10px;
   padding-right: 10px;
+  background: rgba(255,255,255,0.2);
+}
+
+.pack-song-container-outer ul {
+  margin-block-start:0px;
 }
 .song-sort{
   margin-top: 15px;
   margin-right: 20px;
   vertical-align: middle;
+}
+.song-sort i {
+  padding-left: 15px;
 }
 .hide-this{
   padding: 0;
@@ -205,4 +225,12 @@
   margin-top: -10px;
   font-size: 0.8rem;
   font-style: italic;
+}
+.playlist-check {
+  animation: bigEntry 400ms 1;
+};
+@keyframes bigEntry {
+0% {transform: scale(.2); text-shadow: 1px 1px 5px #ad2c2c, -1px 1px 5px #ad2c2c, 1px -1px 5px #ad2c2c, -1px -1px 5px #ad2c2c }
+50% { transform: scale(1.5); text-shadow: 3px 3px 10px #ad2c2c, -3px 3px 10px #ad2c2c, 3px -3px 10px #ad2c2c, -3px -3px 10px #ad2c2c }
+100% { transform: scale(1); text-shadow: 5px 5px 15px rgba(173, 44, 44, 0) , -5px 5px 15px rgba(173, 44, 44, 0), 5px -5px 15px rgba(173, 44, 44, 0), -5px -5px 15px rgba(173, 44, 44, 0) }
 }
