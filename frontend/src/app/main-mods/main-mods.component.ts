@@ -1,30 +1,52 @@
-import { Component, OnInit } from '@angular/core';
+import {AfterViewInit, Component, OnInit} from '@angular/core';
 import { ConfigService } from '../services/config.service';
 import { BeatOnApiService } from '../services/beat-on-api.service';
 import { HostMessageService } from '../services/host-message.service';
 import { QuestomConfig } from '../models/QuestomConfig';
 import { BeatOnConfig } from '../models/BeatOnConfig';
-import { ModDefinition, ModStatusType } from '../models/ModDefinition';
+import {ModCategory, ModDefinition, ModStatusType} from '../models/ModDefinition';
 import { ClientSetModStatus } from '../models/ClientSetModStatus';
 import { MatSlideToggleChange } from '@angular/material';
 import { HostActionResponse } from '../models/HostActionResponse';
 import { ECANCELED } from 'constants';
+import {NgxSmartModalService} from "ngx-smart-modal";
 
 @Component({
   selector: 'app-main-mods',
   templateUrl: './main-mods.component.html',
   styleUrls: ['./main-mods.component.scss']
 })
-export class MainModsComponent implements OnInit {
+export class MainModsComponent implements OnInit, AfterViewInit {
   config : QuestomConfig = <QuestomConfig> {Mods: []};
   modSwitchInProgress : boolean = false;
   modIDBeingSwitched : string = null;
-  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) { 
+  selectedMod: ModDefinition;
+  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, public ngxSmartModalService: NgxSmartModalService) {
     this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> { this.config = cfg.Config; });
   }
 
   ngOnInit() {
-    this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => { this.config = cfg.Config; });
+    this.configSvc.getConfig().subscribe((cfg : BeatOnConfig) => {
+      // this.config = cfg.Config;
+      var saberMod = new ModDefinition();
+      saberMod.TargetBeatSaberVersion = "1.0.0"
+      saberMod.ID = "1"
+      saberMod.Author = "Yuuki"
+      saberMod.Name = "Custom Sabers"
+      saberMod.InfoUrl = "http://www.google.com"
+      saberMod.Description = "Change the color of your sabers! Choose between a wide spectrum of colors and jam with your favorite mix!"
+      saberMod.Category = ModCategory.Saber
+      this.config.Mods.push(saberMod)
+      var randomSongSelect = new ModDefinition();
+      randomSongSelect.TargetBeatSaberVersion = "1.0.0"
+      randomSongSelect.ID = "2"
+      randomSongSelect.Author = "Yuuki"
+      randomSongSelect.Name = "Random Song Selection"
+      randomSongSelect.InfoUrl = "http://www.google.com"
+      randomSongSelect.Description = "Tired of deciding what song to play? This mod gives you the ability to randomly select a song from your long list of maps you'll probably never get to."
+      randomSongSelect.Category = ModCategory.Gameplay
+      this.config.Mods.push(randomSongSelect)
+    });
   }
 
   toggleMod(ev : MatSlideToggleChange, mod : ModDefinition) {
@@ -45,19 +67,32 @@ export class MainModsComponent implements OnInit {
           //todo: show error
           console.log("mod id "+ msg.ModID + " did not switch properly");
         }
-             
+
       }
     });
     this.msgSvc.sendClientMessage(msg);
-    
+
   }
   getModSwitch(mod) {
     console.log("getting mod status for mod id " + mod.ID);
     if (mod == null)
       return false;
-    if ((mod.Status != 'Installed' && mod.ID != this.modIDBeingSwitched) || (mod.Status == 'Installed' && mod.ID == this.modIDBeingSwitched))
-      return false;
-    return true;
+    return !((mod.Status != 'Installed' && mod.ID != this.modIDBeingSwitched) || (mod.Status == 'Installed' && mod.ID == this.modIDBeingSwitched));
+  }
+
+  onSelect(mod : ModDefinition): void{
+    this.selectedMod = mod;
+  }
+
+  ngAfterViewInit() {
+    const obj: Object = {
+      Name: this.selectedMod.Name,
+      Author: this.selectedMod.Author,
+      Description: this.selectedMod.Description,
+      InfoUrl: this.selectedMod.InfoUrl
+    };
+
+    this.ngxSmartModalService.setModalData(obj, 'myModal');
   }
 
 }

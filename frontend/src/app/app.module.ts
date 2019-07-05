@@ -38,6 +38,7 @@ import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
+import {NgxSmartModalComponent, NgxSmartModalModule} from "ngx-smart-modal";
 
 @NgModule({
   declarations: [
@@ -98,7 +99,9 @@ import { MainModsComponent } from './main-mods/main-mods.component';
     MatInputModule,
     MatTooltipModule,
     MatSlideToggleModule,
-    MatListModule
+    MatListModule,
+    FlexLayoutModule,
+    NgxSmartModalModule.forRoot()
   ],
   providers:[ ],
   bootstrap: [AppComponent]

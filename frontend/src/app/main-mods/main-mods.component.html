@@ -1,34 +1,50 @@
-<div *ngIf="!config.Mods.length">No Mods!</div>
-<div>
-<mat-list  class="viewport"> 
-  
-    <!-- *cdkVirtualFor -->
+<section>
+  <mat-card class="setup-card">
+    <mat-card-header>
+      <div mat-card-avatar>
+        <mat-icon aria-hidden="false" class="setup-icon">cloud_upload</mat-icon>
+      </div>
+      <mat-card-title>Mod Management</mat-card-title>
+      <mat-card-subtitle>Manage all mods available for the quest here. Install, uninstall, and configure mods..</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+</section>
+<section>
+  <div *ngIf="!config">No Mods!</div>
+  <div fxFlex="50%">
+    <mat-list>
+      <!-- *cdkVirtualFor -->
+        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()">
+          <h1 matLine> {{ mod.Name }}</h1>
+          <h3 matLine> Author: {{ mod.Author }}</h3>
+          <p matLine> {{ mod.Description }}</p>
+          <p matLine class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
 
-    <mat-card  mat-list-item class="mod" *ngFor="let mod of config.Mods" >
-        <div class="modId">
-            {{mod.ID}}
-        </div>
-      
-      <div class="modclass {{mod.Category}}">{{mod.Category}}</div>
-      <mat-card-header class="header">
-            <mat-card-title>{{mod?.Name}}</mat-card-title>
-            <mat-card-subtitle>{{mod?.Author}}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content class="content">
-        <div class="description">{{mod?.Description}}</div>
-        
-      </mat-card-content>
-      <p class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
-
-      <mat-card-footer class="bottom">
-        <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
-        <div class="toggleContainer">
-          <div *ngIf="modIDBeingSwitched != mod.ID" class="toggleSpinner"></div>
-          <mat-progress-spinner *ngIf="modIDBeingSwitched == mod.ID" class="toggleSpinner" mode="indeterminate"  diameter="20"></mat-progress-spinner>
-          <mat-slide-toggle class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
-        </div>
-      </mat-card-footer>
-    </mat-card>
-
-  </mat-list>
-</div>
+          <div matLine>
+            <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
+            <div class="toggleContainer">
+              <div *ngIf="modIDBeingSwitched != mod.ID" class="toggleSpinner"></div>
+              <mat-progress-spinner *ngIf="modIDBeingSwitched == mod.ID" class="toggleSpinner" mode="indeterminate"  diameter="20"></mat-progress-spinner>
+              <mat-slide-toggle class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
+            </div>
+          </div>
+        </mat-list-item>
+    </mat-list>
+  </div>
+</section>
+<ngx-smart-modal *ngIf="selectedMod" #myModal [identifier]="'myModal'">
+  <div *ngIf="myModal.hasData()">
+    <div class="modal-header">
+      <button type="button" class="close" aria-label="Close" (click)="myModal.close()"><span aria-hidden="true">&times;</span></button>
+      <h4 class="modal-title" id="myModalLabel2">{{ selectedMod.Name }}</h4>
+    </div>
+    <div class="modal-body">
+      <section class="mat-typography">
+        <h3 class="mat-display-1"> Created by: {{ selectedMod.Author }} </h3>
+        <p> {{ selectedMod.Description }} </p>
+        <button mat-raised-button="" class="md-raised md-primary">Install</button>
+        <a href={{ selectedMod.InfoUrl }} > More Info </a>
+      </section>
+    </div>
+  </div>
+</ngx-smart-modal>
