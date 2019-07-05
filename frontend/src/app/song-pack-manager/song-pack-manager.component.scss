@@ -50,6 +50,7 @@ button.right  {
   padding: 10px 10px;
   margin: 0;
   border-bottom: 1px solid #e0e0e0;
+  user-select: none;
 }
 .pack-song-container .collection-song .checkbox-container{
   display: none;
@@ -60,9 +61,14 @@ button.right  {
 .song-container .collection-song:last-child{
   border-bottom: 1px solid #e0e0e0;
 }
+.handle{
+  touch-action: none;
+  cursor: pointer;
+}
 .packOuter{
   color: white;
   vertical-align: middle;
+  user-select: none;
 }
 .packOuter i {
   margin-left:15px;

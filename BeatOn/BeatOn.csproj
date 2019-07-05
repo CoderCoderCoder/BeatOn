@@ -25,7 +25,7 @@
     <AndroidEnableSGenConcurrent>true</AndroidEnableSGenConcurrent>
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
     <AndroidKeyStore>true</AndroidKeyStore>
-    <AndroidSigningKeyStore>C:\Users\VR\Desktop\platform-tools_r28.0.3-windows\dist\bskey</AndroidSigningKeyStore>
+    <AndroidSigningKeyStore>C:\workspace\BeatOn\bskey</AndroidSigningKeyStore>
     <AndroidSigningStorePass>emulamer</AndroidSigningStorePass>
     <AndroidSigningKeyAlias>bs</AndroidSigningKeyAlias>
     <AndroidSigningKeyPass>emulamer</AndroidSigningKeyPass>
@@ -330,19 +330,19 @@
     <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
+    <AndroidAsset Include="Assets\www\polyfills-es5.a63798811071328cddb9.js" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\assets\default-pack-cover.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.27f584a59c545201cda5.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.0dc782d7114f613cd55f.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.045a94c38b5a9d0e9b37.js" />
+    <AndroidAsset Include="Assets\www\main-es5.e1e205cbb56a4c8ded7e.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.bc9054d4fcfbbf8e6108.css" />
+    <AndroidAsset Include="Assets\www\styles.69a7811cde4dc4d1fab3.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

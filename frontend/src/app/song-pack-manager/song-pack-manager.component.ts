@@ -31,6 +31,7 @@ import { ConfigService } from '../services/config.service';
 import { Subject } from 'rxjs/internal/Subject';
 import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
 import { trigger, transition, style, animate, state } from '@angular/animations';
+import { AppIntegrationService } from '../services/app-integration.service';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -70,7 +71,8 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
         private configSvc: ConfigService,
         private dragulaService: DragulaService,
         private msgSvc: HostMessageService,
-        private changeRef: ChangeDetectorRef
+        private changeRef: ChangeDetectorRef,
+        public integrationService: AppIntegrationService
     ) {
         this.updateSearchResult = new Subject();
         this.dragulaService.createGroup(this.BAG, {
@@ -85,7 +87,7 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
                 );
             },
             moves: (el, source, handle, sibling) => {
-                return !~el.className.indexOf('add-to-drag'); // elements are always draggable by default
+                return !!~handle.className.indexOf('handle'); // elements are always draggable by default
             },
             copyItem: (item: any) => ({ ...item }),
         });

@@ -24,3 +24,10 @@ body { background-color: #424242; margin: 0; font-family: Roboto, "Helvetica Neu
   background:  #cfcfcf;
   border-radius: 4px;
 }
+
+.hide-scroll-bar::-webkit-scrollbar {
+  width: 0;
+}
+.hide-scroll-bar::-webkit-scrollbar-thumb {
+  width: 0;
+}
