@@ -75,71 +75,71 @@ namespace BeatOn.Core.RequestHandlers
         private object _songCoverLock = new object();
         public void HandleRequest(HttpListenerContext context)
         {
+            var req = context.Request;
+            var resp = context.Response;
+
             try
             {
-                var req = context.Request;
-                var resp = context.Response;
-                lock (_songCounterLock)
+                if (string.IsNullOrWhiteSpace(req.Url.Query))
                 {
-                    _songRequestCounter++;
-                    if (_songRequestCounter > MAX_SONG_COVER_REQS)
+                    resp.BadRequest("Expected songid");
+                    return;
+                }
+                string songid = null;
+                foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
+                {
+                    var split = kvp.Split('=');
+                    if (split.Count() < 1)
+                        continue;
+                    if (split[0].ToLower() == "songid")
                     {
-                        resp.StatusCode = 429;
-                        return;
+                        songid = Java.Net.URLDecoder.Decode(split[1]);
+                        break;
                     }
                 }
-
-                lock (_songCoverLock)
+                if (string.IsNullOrEmpty(songid))
+                {
+                    resp.BadRequest("Expected songid");
+                    return;
+                }
+                var song = _getConfig().Config.Playlists.SelectMany(x => x.SongList).FirstOrDefault(x => x.SongID == songid);
+                if (song == null)
+                {
+                    resp.NotFound();
+                    return;
+                }
+                string originalFile = _config.SongsPath.CombineFwdSlash(GetCoverImageFilename(song.SongID));
+                if (originalFile != null)
                 {
                     try
                     {
-                        if (string.IsNullOrWhiteSpace(req.Url.Query))
-                        {
-                            resp.BadRequest("Expected songid");
-                            return;
-                        }
-                        string songid = null;
-                        foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
-                        {
-                            var split = kvp.Split('=');
-                            if (split.Count() < 1)
-                                continue;
-                            if (split[0].ToLower() == "songid")
-                            {
-                                songid = Java.Net.URLDecoder.Decode(split[1]);
-                                break;
-                            }
-                        }
-                        if (string.IsNullOrEmpty(songid))
-                        {
-                            resp.BadRequest("Expected songid");
-                            return;
-                        }
-                        var song = _getConfig().Config.Playlists.SelectMany(x => x.SongList).FirstOrDefault(x => x.SongID == songid);
-                        if (song == null)
-                        {
-                            resp.NotFound();
-                            return;
-                        }
-                        string originalFile = _config.SongsPath.CombineFwdSlash(GetCoverImageFilename(song.SongID));
-                        if (originalFile != null)
-                        {
-                            try
-                            {
-                                byte[] fileBytes = _config.SongFileProvider.Read(originalFile);
-                                string mimeType = MimeMap.GetMimeType(originalFile.GetFilenameFwdSlash());
-                                resp.StatusCode = 200;
-                                resp.ContentType = mimeType;
-                                resp.AppendHeader("Cache-Control", "max-age=86400, public");
-                                resp.OutputStream.Write(fileBytes, 0, fileBytes.Length);                                
-                                return;
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.LogErr($"Exception trying to load original song cover for song ID {song.SongID} from disk, will fall back to assets", ex);
-                            }
-                        }
+                        byte[] fileBytes = _config.SongFileProvider.Read(originalFile);
+                        string mimeType = MimeMap.GetMimeType(originalFile.GetFilenameFwdSlash());
+                        resp.StatusCode = 200;
+                        resp.ContentType = mimeType;
+                        resp.AppendHeader("Cache-Control", "max-age=86400, public");
+                        resp.OutputStream.Write(fileBytes, 0, fileBytes.Length);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr($"Exception trying to load original song cover for song ID {song.SongID} from disk, will fall back to assets", ex);
+                    }
+                }
 
+                try
+                {
+                    lock (_songCounterLock)
+                    {
+                        _songRequestCounter++;
+                        if (_songRequestCounter > MAX_SONG_COVER_REQS)
+                        {
+                            resp.StatusCode = 429;
+                            return;
+                        }
+                    }
+                    lock (_songCoverLock)
+                    {
                         var imgBytes = song.TryGetCoverPngBytes();
                         if (imgBytes == null)
                         {
@@ -154,19 +154,19 @@ namespace BeatOn.Core.RequestHandlers
                             ms.CopyTo(resp.OutputStream);
                         }
                     }
-                    catch (Exception ex)
+                }
+                finally
+                {
+                    lock (_songCounterLock)
                     {
-                        Log.LogErr("Exception handling get song cover!", ex);
-                        resp.StatusCode = 500;
+                        _songRequestCounter--;
                     }
                 }
             }
-            finally
+            catch (Exception ex)
             {
-                lock (_songCounterLock)
-                {
-                    _songRequestCounter--;
-                }
+                Log.LogErr("Exception handling get song cover!", ex);
+                resp.StatusCode = 500;
             }
         }
     }

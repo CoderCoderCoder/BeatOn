@@ -33,9 +33,11 @@ namespace BeatOn.ClientModels
             {MessageType.AutoCreatePlaylists, typeof(ClientAutoCreatePlaylists) },
             {MessageType.SetModStatus, typeof(ClientSetModStatus) },
             {MessageType.MovePlaylist, typeof(ClientMovePlaylist) },
-            {MessageType.MoveSongInPlaylist, typeof(ClientMoveSongInPlaylist) }
+            {MessageType.MoveSongInPlaylist, typeof(ClientMoveSongInPlaylist) },
+            {MessageType.DeleteMod, typeof(ClientDeleteMod) }
         };
-    //todo: make this class map stuff dynamic, the type is on the base type, I can figure it out with reflection and cache it
+
+        //todo: make this class map stuff dynamic, the type is on the base type, I can figure it out with reflection and cache it
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var token = JToken.Load(reader);

@@ -147,6 +147,7 @@ namespace BeatOn
             _browserView.Settings.MediaPlaybackRequiresUserGesture = false;
 
             _browserView.Download += _webView_Download;
+            _toastInjector.Download += _toastInjector_Download;
 
             _webViewClient = new JSWebViewClient(this, _webView);
             _webViewClient.JSInterface.OnBrowserGoBack += JSInterface_OnBrowserGoBack;
@@ -166,6 +167,11 @@ namespace BeatOn
             {
                 ContinueLoad();
             }
+        }
+
+        private void _toastInjector_Download(object sender, string e)
+        {
+            _broadcastReceiver.SendDownloadUrl(new DownloadUrlInfo() { Url = e, MimeType = "" });
         }
 
         private void JSInterface_OnToast(object sender, JSInterface.ToastMsg e)

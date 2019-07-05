@@ -30,6 +30,11 @@ namespace BeatOn
         public const string BEATSABER_APK_BACKUP_FILE = BACKUP_FULL_PATH + "beatsaber-unmodded.apk";
         public const string BEATSABER_APK_MODDED_BACKUP_FILE = BACKUP_FULL_PATH + "beatsaber-modded-donotuse.apk";
 
+        public const string BEATSAVER_ROOT = "https://beatsaver.com/";
+        public const string BEATSAVER_DOWNLOAD_API = BEATSAVER_ROOT + "api/download/key/{0}";
+        public const string BEATSAVER_KEY_API = "api/maps/detail/{0}";
+        public const string BEATSAVER_HASH_API = "api/maps/by-hash/{0}";
+
 
         public const string PLAYLISTS_FOLDER_NAME = "Playlists";
         public const string MOD_STATUS_FILE = "modstatus.json";

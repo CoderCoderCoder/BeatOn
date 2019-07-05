@@ -45,6 +45,7 @@ namespace BeatOn.Core.RequestHandlers
                     }
                     PlaylistSortMode? sortOrder = null;
                     int? maxNumPerNamePlaylist = null;
+                    bool? removeEmptyPlaylists = null;
                     foreach (string kvp in req.Url.Query.TrimStart('?').Split("&"))
                     {
                         var split = kvp.Split('=');
@@ -70,6 +71,12 @@ namespace BeatOn.Core.RequestHandlers
                             }
                             maxNumPerNamePlaylist = maxNum;
                         }
+                        else if (split[0].ToLower() == "removeemptyplaylists")
+                        {
+                            int maxNum;
+                            if (split[1] == "1" || split[1].ToLower() == "true")
+                                removeEmptyPlaylists = true;
+                        }
                     }
                     if (!sortOrder.HasValue)
                     {
@@ -77,7 +84,7 @@ namespace BeatOn.Core.RequestHandlers
                         return;
                     }
 
-                    var op = new AutoCreatePlaylistsOp(sortOrder.Value, maxNumPerNamePlaylist ?? 50);
+                    var op = new AutoCreatePlaylistsOp(sortOrder.Value, maxNumPerNamePlaylist ?? 50, removeEmptyPlaylists??false);
 
                     _getQae().OpManager.QueueOp(op);
                     op.FinishedEvent.WaitOne();

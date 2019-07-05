@@ -49,9 +49,7 @@ namespace BeatOn
         {
             return Path.GetFileNameWithoutExtension(filename.GetFilenameFwdSlash());
         }
-        private const string BEAT_SAVER_ROOT = "https://beatsaver.com/";
-        private const string KEY_API = "api/maps/detail/{0}";
-        private const string HASH_API = "api/maps/by-hash/{0}";
+
 
         public void ImportFile(string filename, string mimeType, byte[] fileData)
         {
@@ -103,20 +101,28 @@ namespace BeatOn
                     WebClient client = new WebClient();
                     var downloads = new List<Download>();
                     var ops = new ConcurrentBag<AssetOp>();
+                    Debouncey<bool> configDebouncer = new Debouncey<bool>(5000, false);
+                    configDebouncer.Debounced += (s, e) =>
+                         {
+                             _getConfig().Config = _getEngine().GetCurrentConfig();
+                         };
                     foreach (var song in bplist.Songs)
                     {
-                        string url = BEAT_SAVER_ROOT;
+                        string url = Constants.BEATSAVER_ROOT;
                         if (!string.IsNullOrWhiteSpace(song.Key))
                         {
-                            url += string.Format(KEY_API, song.Key);
+                            url += string.Format(Constants.BEATSAVER_KEY_API, song.Key);
                         }
                         else if (!string.IsNullOrWhiteSpace(song.Hash))
                         {
-                            url += string.Format(HASH_API, song.Hash);
+                            url += string.Format(Constants.BEATSAVER_HASH_API, song.Hash);
                         }
                         else
                         {
                             Log.LogErr($"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' has no hash or key.");
+                            var dl = new Download("http://localhost", false);
+                            dl.SetStatus(DownloadStatus.Failed, $"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' has no hash or key.");
+                            downloads.Add(dl);
                             continue;
                         }
                         try
@@ -127,11 +133,14 @@ namespace BeatOn
                             if (string.IsNullOrWhiteSpace(downloadUrl))
                             {
                                 Log.LogErr($"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' did not have a downloadURL in the response from beat saver.");
+                                var dl = new Download("http://localhost", false);
+                                dl.SetStatus(DownloadStatus.Failed, $"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' did not have a downloadURL in the response from beat saver.");
+                                downloads.Add(dl);
                                 continue;
                             }
                             try
                             {
-                                var dl = _getDownloadManager().DownloadFile(BEAT_SAVER_ROOT.CombineFwdSlash(downloadUrl),false);
+                                var dl = _getDownloadManager().DownloadFile(Constants.BEATSAVER_ROOT.CombineFwdSlash(downloadUrl), false);
                                 dl.StatusChanged += (s, e) =>
                                 {
                                     if (e.Status == DownloadStatus.Failed)
@@ -152,7 +161,14 @@ namespace BeatOn
                                                     {
                                                         provider.Dispose();
                                                         ms.Dispose();
-                                                    }, bspl);
+                                                    }, bspl, true);
+                                                    op.OpFinished += (so, eo) =>
+                                                      {
+                                                          if (eo.Status == OpStatus.Complete)
+                                                          {
+                                                              configDebouncer.EventRaised(this, true);
+                                                          }
+                                                      };
                                                     ops.Add(op);
                                                 }
                                                 catch
@@ -178,26 +194,47 @@ namespace BeatOn
                             catch (Exception ex)
                             {
                                 Log.LogErr($"Exception making secondary call to get download readirect URL for '{downloadUrl}' on beat saver!", ex);
+                                var dl = new Download("http://localhost", false);
+                                dl.SetStatus(DownloadStatus.Failed, $"Failed to get download information for '{downloadUrl}' from beat saver!");
+                                downloads.Add(dl);
                                 continue;
                             }
                         }
                         catch (Exception ex)
                         {
                             Log.LogErr($"Exception on song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' getting info from beatsaver!", ex);
+                            var dl = new Download("http://localhost", false);
+                            dl.SetStatus(DownloadStatus.Failed, $"Failed to get information on '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' from beatsaver!");
+                            downloads.Add(dl);
                         }
                     }
 
                     if (downloads.Count < 1)
                     {
-                        Log.LogErr($"Every single song in playlist '{bplist.PlaylistTitle} failed to start downloading!");
-                        _showToast("Playlist Failed", $"Every song in the playlist '{bplist.PlaylistTitle} failed to start downloading.", ToastType.Error);
+                        Log.LogErr($"Every single song in playlist '{bplist.PlaylistTitle}' failed to start downloading!");
+                        _showToast("Playlist Failed", $"Every song in the playlist '{bplist.PlaylistTitle}' failed to start downloading.", ToastType.Error);
                         return;
                     }
                     downloads.WaitForFinish();
                     ops.WaitForFinish();
-                   
+
+                    var badDl = downloads.Count(x => x.Status == DownloadStatus.Failed);
+                    var goodCount = ops.Count(x => x.Status == OpStatus.Complete);
+                    var existCount = ops.Count(x => x.Status == OpStatus.Failed && x.Exception as AddSongException != null && ((AddSongException)x.Exception).FailType == AddSongFailType.SongExists);
+                    var badSong = ops.Count(x => x.Status == OpStatus.Failed) - existCount;
                     _getConfig().Config = _getEngine().GetCurrentConfig();
-                      
+                    _showToast("Playlist Import Complete", $"Playlist '{bplist.PlaylistTitle}' has completed.  {goodCount} of {bplist.Songs.Count} songs succeeded.", ToastType.Success, 8);
+                    // successfully downloaded, {existCount} already existed in other playlists, {badDl} failed to download, {badSong} failed to import."
+
+                    //save playlist file for later use on QAE commit
+                    var plFileSave = _qaeConfig.PlaylistsPath.CombineFwdSlash(Path.GetFileNameWithoutExtension(filename) + ".json");
+                    QueuedFileOp qfo = new QueuedFileOp()
+                    {
+                        Type = QueuedFileOperationType.WriteFile,
+                        TargetPath = plFileSave,
+                        SourceData = fileData
+                    };
+                    _getEngine().OpManager.QueueOp(qfo);
                 }
                 catch (Exception ex)
                 {
@@ -279,14 +316,14 @@ namespace BeatOn
             //todo: show a toast here?
         }
 
-        private AssetOp ImportSongFile(IFileProvider provider, Action completionCallback, BeatSaberPlaylist addToPlaylist = null)
+        private AssetOp ImportSongFile(IFileProvider provider, Action completionCallback, BeatSaberPlaylist addToPlaylist = null, bool suppressToast = false)
         {
             try
             {
                 var songPath = ExtractSongGetPath(provider);
                 var songID = songPath.GetFilenameFwdSlash();
                 var playlist = addToPlaylist??GetOrCreateDefaultPlaylist();
-                return QueueAddSongToPlaylistOp(songID, songPath, playlist, completionCallback);
+                return QueueAddSongToPlaylistOp(songID, songPath, playlist, completionCallback, suppressToast);
             }
             catch (ImportException)
             {
@@ -324,7 +361,7 @@ namespace BeatOn
             try
             {
                 //use the incoming file or folder name (without extension) as the song ID.  Since the filesystem has to have unique names, this should help keep songIDs unique also
-                var targetSongID = provider.SourceName;
+                var targetSongID = Path.GetFileNameWithoutExtension(provider.SourceName);
                 if (targetSongID.Contains("."))
                 {
                     targetSongID = targetSongID.Substring(0, targetSongID.LastIndexOf("."));
@@ -400,6 +437,13 @@ namespace BeatOn
             try
             {
                 var def = _getEngine().ModManager.LoadDefinitionFromProvider(provider);
+
+                if (def.Platform != "Quest")
+                {
+                    Log.LogErr($"Attempted to load a mod for a different platform, '{def.Platform ?? "(null)"}', only 'Quest' is supported");
+                    _showToast("Incompatible Mod", "This mod is not supported on the Quest.", ToastType.Error, 5);
+                    return;
+                }
                 var modOutputPath = _qaeConfig.ModsSourcePath.CombineFwdSlash(def.ID);
 
                 if (_qaeConfig.RootFileProvider.DirectoryExists(modOutputPath))
@@ -451,7 +495,7 @@ namespace BeatOn
         /// <param name="songID">The song ID to use for the imported song</param>
         /// <param name="songPath">The path, RELATIVE TO THE BEATONDATA ROOT, of where the custom song exists</param>
         /// <param name="playlist">The playlist to add the song to</param>
-        private AssetOp QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist, Action completionCallback = null)
+        private AssetOp QueueAddSongToPlaylistOp(string songID, string songPath, BeatSaberPlaylist playlist, Action completionCallback = null, bool suppressToast = false)
         {
             var qae = _getEngine();
             var bsSong = new BeatSaberSong()
@@ -468,7 +512,8 @@ namespace BeatOn
                     playlist.SongList.Add(bsSong);
                 if (op.Status == OpStatus.Complete)
                 {
-                    _showToast($"Song Added", $"{songID} was downloaded and added successfully", ClientModels.ToastType.Success);
+                    if (!suppressToast)
+                        _showToast($"Song Added", $"{songID} was downloaded and added successfully", ClientModels.ToastType.Success);
                 }
                 else if (op.Status == OpStatus.Failed)
                 {
@@ -481,16 +526,19 @@ namespace BeatOn
                         }
                         else if (ex.FailType == AddSongFailType.InvalidFormat)
                         {
-                            _showToast($"Song Invalid", $"{songID} failed to import, it wasn't in a valid format.", ClientModels.ToastType.Error);
+                            if (!suppressToast)
+                                _showToast($"Song Invalid", $"{songID} failed to import, it wasn't in a valid format.", ClientModels.ToastType.Error);
                         }
                         else
                         {
-                            _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                            if (!suppressToast)
+                                _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
                         }
                     }
                     else
                     {
-                        _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
+                        if (!suppressToast)
+                            _showToast($"Song Failed", $"{songID} failed to import!", ClientModels.ToastType.Error);
                     }
                 }
                 completionCallback?.Invoke();

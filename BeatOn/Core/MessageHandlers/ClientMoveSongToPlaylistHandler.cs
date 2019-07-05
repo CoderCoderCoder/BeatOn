@@ -33,6 +33,7 @@ namespace BeatOn.Core.MessageHandlers
             var msg = message as ClientMoveSongToPlaylist;
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
+
             var op = new MoveSongToPlaylistOp(msg.SongID, msg.ToPlaylistID, msg.Index);
             Stopwatch sw = new Stopwatch();
             

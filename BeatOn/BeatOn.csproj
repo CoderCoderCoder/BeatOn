@@ -112,6 +112,7 @@
     <Compile Include="BeatOnUtils.cs" />
     <Compile Include="BPList.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
+    <Compile Include="ClientModels\ClientDeleteMod.cs" />
     <Compile Include="ClientModels\ClientMovePlaylist.cs" />
     <Compile Include="ClientModels\ClientMoveSongInPlaylist.cs" />
     <Compile Include="ClientModels\ClientAddOrUpdatePlaylist.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Core\BeatOnCore.cs" />
     <Compile Include="Core\MessageHandlers\ClientAddOrUpdatePlaylistHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientDeleteModHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientDeletePlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientMovePlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientMoveSongInPlaylistHandler.cs" />
@@ -313,28 +315,34 @@
     <AndroidAsset Include="Assets\www\logo.6c1a8c36d9fd1df75fae.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es2015.27661dfa98f6332c27dc.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.943113ac054b16d954ae.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\runtime-es2015.858f8dd898b75fe86926.js" />
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="Assets\www\runtime-es5.741402d1d47331ce975c.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.22a2db81a5f670c1dfa8.css" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.ec2a5f0343bd037d33d9.js" />
+    <AndroidAsset Include="Assets\www\scripts.43853d6e069605d1aaca.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.0f1bc009a5685d08e5b6.js" />
+    <AndroidAsset Include="Assets\www\styles.e00c9c8a07d08f7a8d3e.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.9efccb7fd442cf9f5d63.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.3385b6dfcc2f2f7f6e04.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\assets\default-pack-cover.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

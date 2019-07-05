@@ -32,6 +32,7 @@ namespace BeatOn.ClientModels
         SetModStatus,
         ActionResponse,
         MoveSongInPlaylist,
-        MovePlaylist
+        MovePlaylist,
+        DeleteMod
     }
 }

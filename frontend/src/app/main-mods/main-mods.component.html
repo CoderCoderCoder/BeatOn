@@ -1,13 +1,10 @@
 <div *ngIf="!config.Mods.length">No Mods!</div>
 <div>
 <mat-list  class="viewport"> 
-  
-    <!-- *cdkVirtualFor -->
-
     <mat-card  mat-list-item class="mod" *ngFor="let mod of config.Mods" >
-        <div class="modId">
-            {{mod.ID}}
-        </div>
+      <!-- <div class="modId">
+          {{mod.ID}}
+      </div> -->
       
       <div class="modclass {{mod.Category}}">{{mod.Category}}</div>
       <mat-card-header class="header">
@@ -19,7 +16,7 @@
         
       </mat-card-content>
       <p class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
-
+      <div (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
       <mat-card-footer class="bottom">
         <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
         <div class="toggleContainer">

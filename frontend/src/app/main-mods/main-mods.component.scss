@@ -35,7 +35,7 @@
     float: left;
     position: absolute;
     top: 5px;
-    right: 0px;
+    left: 0px;
 }
 .modclass.Saber {
     background-color: darkred;
@@ -100,4 +100,17 @@
 }
 .description {
     font-size: 12px;
+}
+
+.deleteMod {
+    position: absolute;
+    top:0;
+    right:0;
+    color: red;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    background-color: rgba(0,0,0,200);
+    font-size: 24px;
+    cursor: pointer;
 }

@@ -166,11 +166,11 @@ namespace BeatOn.Core
 
         public void DownloadUrl(string url, string mimeType)
         {
-            if (mimeType != "application/zip")
-            {
-                ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
-                return;
-            }
+            //if (mimeType != "application/zip" && !url.ToLower().EndsWith("json") && )
+            //{
+            //    ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
+            //    return;
+            //}
             var uri = new Uri(url);
             //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
 
@@ -356,7 +356,7 @@ namespace BeatOn.Core
             _webServer = new WebServer(_context.Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(_qaeConfig, () => CurrentConfig));
-            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig, _qaeConfig));
             _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
             _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
@@ -388,6 +388,7 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.SetModStatus, new ClientSetModStatusHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.AddMessageHandler(MessageType.MoveSongInPlaylist, new ClientMoveSongInPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.DeleteMod, new ClientDeleteModHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.Start();
 
         }

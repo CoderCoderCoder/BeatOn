@@ -110,7 +110,7 @@ namespace BeatOn
                                 return;
                             }
                             DownloadedData = dlArgs.Result;
-                            DownloadedFilename = Path.GetFileNameWithoutExtension((s as UrlWebClient).ResponseUrl.LocalPath);
+                            DownloadedFilename = (s as UrlWebClient).ResponseUrl.LocalPath;
                             StatusChange(DownloadStatus.Downloaded);
                         }
                         catch (Exception ex)

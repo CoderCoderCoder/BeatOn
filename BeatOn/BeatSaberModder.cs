@@ -442,6 +442,12 @@ namespace BeatOn
             }
         }
 
+        public void DeleteModStatus()
+        {
+            if (File.Exists(Constants.ROOT_BEAT_ON_DATA_PATH.CombineFwdSlash(Constants.MOD_STATUS_FILE)))
+                File.Delete(Constants.ROOT_BEAT_ON_DATA_PATH.CombineFwdSlash(Constants.MOD_STATUS_FILE));
+        }
+
         public void ClearHookMods()
         {
             if (Directory.Exists(Constants.MODLOADER_MODS_PATH))
@@ -460,6 +466,7 @@ namespace BeatOn
                 }
             }
         }
+
         public void ResetAssets()
         {
             UpdateStatus("Locating installed Beat Saber app...");

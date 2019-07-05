@@ -17,6 +17,7 @@ namespace BeatOn
     public class ToastInjectorWebViewClient : WebViewClient
     {
         private WebView _webView;
+        public event EventHandler<string> Download;
         public ToastInjectorWebViewClient(WebView webView)
         {
             _webView = webView;
@@ -47,6 +48,30 @@ namespace BeatOn
                     break;
             }
             _webView.EvaluateJavascript($"siiimpleToast.{action}('<b>{title.Replace("'", "")}</b><br />{message.Replace("'", "")}');", null);
+        }
+        public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
+        {
+            var url = request.Url.ToString();
+            var lowerUrl = url.ToLower();
+            if (lowerUrl.StartsWith("modsaber://playlist/"))
+            {
+                string dlurl = url.Substring(20);
+                
+                Download?.Invoke(this, dlurl);
+
+                return true;
+            }
+            else if (lowerUrl.StartsWith("beatsaver://"))
+            {
+                string dlurl = url.Substring(12);
+                Download?.Invoke(this, string.Format(Constants.BEATSAVER_DOWNLOAD_API, dlurl));
+                return true;
+            }
+            return base.ShouldOverrideUrlLoading(view, request);
+        }
+        public override WebResourceResponse ShouldInterceptRequest(WebView view, IWebResourceRequest request)
+        {
+            return base.ShouldInterceptRequest(view, request);
         }
     }
 }
