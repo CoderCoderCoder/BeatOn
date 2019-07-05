@@ -1,11 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Output, EventEmitter } from '@angular/core';
 import { ToastType } from '../models/HostShowToast';
+import { AppButtonEvent } from '../models/AppButtonEvent';
 
 @Injectable({
     providedIn: 'root',
 })
 export class AppIntegrationService {
-    constructor() {}
+    @Output() appButtonPressed = new EventEmitter<AppButtonEvent>();
+    constructor() {
+        window.addEventListener(
+            'appbutton',
+            (e: CustomEvent) => {
+                this.appButtonPressed.emit(<AppButtonEvent>e.detail);
+            },
+            false
+        );
+    }
 
     private static INTERFACE_NAME: string = 'BeatOnAppInterface';
     isBrowserShown: boolean = false;

@@ -26,6 +26,9 @@
       </h2>
       <div class="pack-container" #pack_container dragula="SONGS" [(dragulaModel)]="packs" [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}">
         <div class="packOuter" *ngFor="let pack of packs" [attr.data-playlist_id]="pack.PlaylistID">
+          <div class="pack-handle-backer">
+            <div class="handle pack-handle-backer"></div>
+          </div>
           <i fast-click matTooltip="Collapse this pack" matTooltipPosition="below"
              class="material-icons right show-pack cursor"
              (click)="updateImages(50); pack.IsOpen = !pack.IsOpen;">
@@ -39,7 +42,7 @@
           <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(pack)" class="material-icons right cursor" >edit</i>
           <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
              class="material-icons right cursor playlist-check">done_all</i>
-          <img  [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(pack.PlaylistID)" [errorImage]="defaultImage"
+          <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(pack.PlaylistID)" [errorImage]="defaultImage"
                class="pack-image  handle"/>
           <i class="material-icons cursor grey-text drag-indicator left drag-playlist handle"
              matTooltip="Drag this playlist to re-order" matTooltipPosition="below"
@@ -49,6 +52,7 @@
             <ul class="collection pack-song-container" *ngIf="pack.IsOpen"  dragula="SONGS" [(dragulaModel)]="pack.SongList"
                 [attr.data-playlist_id]="pack.PlaylistID">
               <li *ngFor="let song of pack.SongList" class="collection-song avatar" [attr.data-song_id]="song.SongID">
+                <div class="handle song-handle-backer"></div>
                 <i fast-click class="material-icons cursor orange-text drag-indicator right"
                    matTooltip="Remove song from playlist" matTooltipPosition="below"
                    (click)="removeSongFromPack(song,pack)">close</i>
@@ -69,6 +73,7 @@
   </div>
   <div class="right-col">
     <div class="packs-right">
+      <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(songsPack.PlaylistID)" [errorImage]="defaultImage" class="main-pack-image"/>
       <h2>
         <div class="right song-sort">
           <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
@@ -81,10 +86,12 @@
           <i fast-click matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
 
         </div>
-        Unsorted Songs
+        {{ songsPack.PlaylistName }}
+        <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(songsPack)" class="material-icons cursor edit-main-playlist" >edit</i>
       </h2>
       <ul class="collection song-container" #song_container  dragula="SONGS" [(dragulaModel)]="songs" [attr.data-playlist_id]="'CustomSongs'" [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}">
         <li *ngFor="let song of songs;let i = index" class="collection-song avatar" [attr.data-song_id]="song.SongID">
+          <div class="handle song-handle-backer"></div>
           <i fast-click class="material-icons cursor orange-text drag-indicator right"
              matTooltip="Delete this song." matTooltipPosition="below"
              (click)="removeSong(song.SongID)">close</i>

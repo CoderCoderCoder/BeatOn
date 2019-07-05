@@ -14,6 +14,7 @@
   *ngIf="config&&customPlaylist"
   [packs]="config.Playlists"
   [songs]="customPlaylist.SongList"
+  [songsPack] = "customPlaylist"
   (editPack)="addPack.name = $event.name;addPack.id = $event.id;addPack.coverImagePath = $event.coverImagePath;"
   (addPack)="true"
   (saveJson)="true"

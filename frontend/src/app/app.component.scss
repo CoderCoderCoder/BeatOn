@@ -16,13 +16,25 @@
   height: 50px;
   display: block!important;
 }
+.sync-spot {
+  width: 155px;
+  height: 39px;
+}
+.sync-placeholder {
+  margin-top: 6px;
+}
+.undo-spot {
+  margin-top: 6px;
+  color: #ff5722;
+  margin-left:6px;
+  margin-right:6px;
+}
 .top-button{
   margin-top: 6px;
   margin-right: 1.5em;
 }
 .sync-button{
-  margin-top: 10px;
-  margin-right: 1.5em;
+  margin-top: 7px;
 }
 .logo {
   background: url("../assets/logo.png") no-repeat center;
@@ -79,9 +91,10 @@
   float: right;
 }
  .warning {
+   height: 35px;
     background-color: #004A7F;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
     border: none;
     color: #FFFFFF;
     cursor: pointer;

@@ -349,8 +349,16 @@ namespace BeatOn.Core
             SendMessageToClient(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
         }
 
-        //this is private instead of inline so that the ops completion event can invalidate cache on any playlists that were updated
-        private GetPlaylistCover _playlistCover;
+        private void FullEngineReset()
+        {
+            _currentConfig = null;
+            if (_qae != null)
+            {
+                _qae.Dispose();
+                _qae = null;
+            }
+        }
+
         private void SetupWebApp()
         {
             _webServer = new WebServer(_context.Assets, "www");
@@ -366,16 +374,10 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "mod/install/step2", new PostModInstallStep2(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "mod/install/step3", new PostModInstallStep3(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "beatsaber/playlist/autocreate", new PostAutoCreatePlaylists(() => Engine, () => CurrentConfig));
-            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
-            {
-                _currentConfig = null;
-                if (_qae != null)
-                {
-                    _qae.Dispose();
-                    _qae = null;
-                }
-            }));
+            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, FullEngineReset));
             _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
+            _webServer.Router.AddRoute("DELETE", "/beatsaber/config", new DeletePendingConfig(SendConfigChangeMessage, FullEngineReset));
+            _webServer.Router.AddRoute("POST", "/mod/postlogs", new PostUploadLogs());
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
             _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));

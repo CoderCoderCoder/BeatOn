@@ -32,6 +32,7 @@ import { Subject } from 'rxjs/internal/Subject';
 import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
 import { trigger, transition, style, animate, state } from '@angular/animations';
 import { AppIntegrationService } from '../services/app-integration.service';
+import { AppButtonEvent, AppButtonType } from '../models/AppButtonEvent';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -43,9 +44,10 @@ declare let autoScroll;
         ]),
     ],
 })
-export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChecked {
+export class SongPackManagerComponent implements OnInit, OnChanges {
     @Input('packs') packs;
     @Input('songs') songs;
+    @Input('songsPack') songsPack;
     @Output('addPack') addPack = new EventEmitter();
     @Output('editPack') editPack = new EventEmitter();
     @Output('saveJson') saveJson = new EventEmitter();
@@ -133,6 +135,43 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
                 }
             })
         );
+        this.subs.add(
+            this.integrationService.appButtonPressed.subscribe((be: AppButtonEvent) => {
+                const SCROLL_SIZE: number = 300;
+                var bounds = this.song_container.nativeElement.getBoundingClientRect();
+                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                    //pointer is in the song container when the button was pressed
+                    return;
+                }
+                bounds = this.pack_container.nativeElement.getBoundingClientRect();
+                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                    //pointer is in the packs container when the button was pressed
+                    if (be.button == AppButtonType.Down) {
+                        var ele = this.pack_container.nativeElement;
+                        if (ele.scrollTop < ele.scrollHeight - ele.offsetHeight) {
+                            var scrollAmt = ele.scrollHeight - ele.offsetHeight - ele.scrollTop;
+                            if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
+                            ele.scrollTo(ele.scrollLeft, ele.scrollTop + scrollAmt);
+                        }
+                    } else if (be.button == AppButtonType.Up) {
+                        var ele = this.pack_container.nativeElement;
+                        if (ele.scrollTop > 0) {
+                            var scrollAmt: number = ele.scrollTop;
+                            if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
+                            ele.scrollTo(ele.scrollLeft, ele.scrollTop - scrollAmt);
+                        }
+                    }
+                    return;
+                }
+                //check any other elements that may need to respond to button presses
+            })
+        );
+        this.subs.add(
+            this.msgSvc.configChangeMessage.subscribe(cfg => {
+                console.log('Cancelling drag in progress because a config update came in.');
+                dragulaService.find(this.BAG).drake.cancel(true);
+            })
+        );
     }
     ngOnDestroy() {
         this.dragulaService.destroy('SONGS');
@@ -140,21 +179,26 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
     }
     ngOnInit() {}
     ngOnChanges(changes: SimpleChanges) {
+        const doScrollThingie = ele => {
+            if (ele.scrollHeight > ele.clientHeight) {
+                var lastPackScrollOffset = ele.scrollTop;
+                var listener = () => {
+                    setTimeout(() => {
+                        var old = ele.style.scrollBehavior;
+                        ele.style.scrollBehavior = 'unset';
+                        ele.scrollTop = lastPackScrollOffset;
+                        ele.style.scrollBehavior = old;
+                        ele.removeEventListener('scroll', listener);
+                    }, 0);
+                };
+                ele.addEventListener('scroll', listener);
+            }
+        };
         if (this.pack_container) {
-            this.lastPackScrollOffset = this.pack_container.nativeElement.scrollTop;
+            doScrollThingie(this.pack_container.nativeElement);
         }
         if (this.song_container) {
-            this.lastSongsScrollOffset = this.song_container.nativeElement.scrollTop;
-        }
-    }
-    ngAfterViewChecked() {
-        if (this.lastPackScrollOffset && this.pack_container) {
-            this.pack_container.nativeElement.scrollTop = this.lastPackScrollOffset;
-            this.lastPackScrollOffset = null;
-        }
-        if (this.lastSongsScrollOffset && this.song_container) {
-            this.song_container.nativeElement.scrollTop = this.lastSongsScrollOffset;
-            this.lastSongsScrollOffset = null;
+            doScrollThingie(this.song_container.nativeElement);
         }
     }
     ngAfterViewInit() {
@@ -225,7 +269,12 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
             width: '450px',
             height: '320px',
             disableClose: true,
-            data: { playlist: playlist || <BeatSaberPlaylist>{}, isNew: !playlist },
+            data: {
+                playlist: playlist
+                    ? <BeatSaberPlaylist>{ PlaylistID: playlist.PlaylistID, PlaylistName: playlist.PlaylistName }
+                    : null || <BeatSaberPlaylist>{},
+                isNew: !playlist,
+            },
         });
         dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
     }
@@ -249,15 +298,19 @@ export class SongPackManagerComponent implements OnInit, OnChanges, AfterViewChe
                     cfg.Config.Playlists.forEach(p => {
                         if (p.PlaylistID == result.playlist.PlaylistID) {
                             found = p;
-                            if (result.playlist.CoverImageBytes && result.playlist.CoverImageBytes > 50) {
-                                p.CoverImageBytes = result.playlist.CoverImageBytes;
+                            console.log(result.playlist.CoverImageBytes);
+                            if (result.playlist.CoverImageBytes && result.playlist.CoverImageBytes.length > 50) {
+                                console.log('yesimage');
+                                found.CoverImageBytes = result.playlist.CoverImageBytes;
                             }
-                            p.PlaylistName = result.playlist.PlaylistName;
+                            found.PlaylistName = result.playlist.PlaylistName;
                         }
                     });
                     if (found) {
+                        console.log('itshouldupdate');
                         const msg = new ClientAddOrUpdatePlaylist();
                         msg.Playlist = found;
+                        console.log(JSON.stringify(msg));
                         this.msgSvc.sendClientMessage(msg);
                         var sub;
                         sub = this.msgSvc.configChangeMessage.subscribe(cfg => {

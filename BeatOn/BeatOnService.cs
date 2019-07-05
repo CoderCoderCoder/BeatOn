@@ -69,6 +69,7 @@ namespace BeatOn
             Log.SetLogSink(new AndroidLogger());
             _fileLogger = new FileLogger(Constants.SERVICE_LOGFILE);
             Log.SetLogSink(_fileLogger);
+            Log.LogMsg($"Beat On Service v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()} starting up");
             QuestomAssets.Utils.FileUtils.GetTempDirectoryOverride = () =>
             {
                 try

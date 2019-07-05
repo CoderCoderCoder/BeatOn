@@ -25,7 +25,7 @@
     <AndroidEnableSGenConcurrent>true</AndroidEnableSGenConcurrent>
     <AndroidHttpClientHandlerType>Xamarin.Android.Net.AndroidClientHandler</AndroidHttpClientHandlerType>
     <AndroidKeyStore>true</AndroidKeyStore>
-    <AndroidSigningKeyStore>C:\workspace\BeatOn\bskey</AndroidSigningKeyStore>
+    <AndroidSigningKeyStore>..\bskey</AndroidSigningKeyStore>
     <AndroidSigningStorePass>emulamer</AndroidSigningStorePass>
     <AndroidSigningKeyAlias>bs</AndroidSigningKeyAlias>
     <AndroidSigningKeyPass>emulamer</AndroidSigningKeyPass>
@@ -157,6 +157,8 @@
     <Compile Include="Core\RequestHandlers\GetPlaylistCover.cs" />
     <Compile Include="Core\RequestHandlers\GetSongCover.cs" />
     <Compile Include="Core\RequestHandlers\PostAutoCreatePlaylists.cs" />
+    <Compile Include="Core\RequestHandlers\DeletePendingConfig.cs" />
+    <Compile Include="Core\RequestHandlers\PostUploadLogs.cs" />
     <Compile Include="Core\ResponseExtensions.cs" />
     <Compile Include="Debouncey.cs" />
     <Compile Include="Download.cs" />

@@ -37,13 +37,16 @@ button.right  {
 .outer-container{
   height: calc(100% - 10px);
   overflow:hidden;
-  margin-top: -15px;
+  margin-top: -10px;
   color: white;
 }
 .collection-song.avatar {
   height: 65px;
   padding-left: 72px;
   position: relative;
+}
+.edit-main-playlist {
+  margin-left: 10px;
 }
 .collection-song {
   line-height: 1rem;
@@ -90,6 +93,15 @@ button.right  {
   float: left;
   margin-left: 8px;
   margin-top: -14px;
+}
+.main-pack-image {
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  display: inline-block;
+  float: left;
+  margin-top: 15px;
+  margin-right: 12px;
 }
 .select-song{
   margin-top: 15px;
@@ -168,12 +180,34 @@ button.right  {
 .no-margin-top {
   margin-top: 0;
 }
+.song-handle-backer {
+  width: 110px;
+  height: calc(100% - 16px);
+  position: absolute;
+  left: 0px;
+  top: 8px;
+}
+.pack-handle-backer {
+  position: relative;
+  width: 0;
+  height: 0;
+}
+.pack-handle-backer div:first-child {
+  width: 100px;
+  /* height: 90px; */
+  position: absolute;
+  left: 5px;
+  top: 0px;
+  margin-top: -15px;
+  height: 50px;
+}
 .pack-container,.song-container {
   height: calc(100% - 75px);
   overflow: auto;
   border: 1px solid #cfcfcf;
   border-right: 0px solid #cfcfcf!important;
   border-left: 1px solid #cfcfcf!important;
+  scroll-behavior: smooth;
 }
 .material-icons.right.cursor{
   margin-right: 8px;
