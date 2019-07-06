@@ -23,6 +23,7 @@
     "@angular/router": "~8.0.1",
     "@ngu/carousel": "^1.5.5",
     "angular-vertical-tabs": "github:SamuelMarks/angular-vertical-material-tabs",
+    "bootstrap": "^4.1.3",
     "hammerjs": "^2.0.8",
     "material-design-icons": "^3.0.1",
     "ngx-smart-modal": "6.0.0",
