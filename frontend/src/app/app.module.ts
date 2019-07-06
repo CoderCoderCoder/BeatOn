@@ -4,7 +4,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatTooltipModule, MatSlideToggleModule, MatButtonToggleModule, MatChipsModule, MatProgressBarModule, MatMenuModule, MatGridListModule, MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, MatDialogModule, MatProgressSpinnerModule, MatListModule} from '@angular/material';
+import {
+  MatTooltipModule,
+  MatSlideToggleModule,
+  MatButtonToggleModule,
+  MatChipsModule,
+  MatProgressBarModule,
+  MatMenuModule,
+  MatGridListModule,
+  MatButtonModule,
+  MatCardModule,
+  MatIconModule,
+  MatToolbarModule,
+  MatDialogModule,
+  MatProgressSpinnerModule,
+  MatListModule,
+  MatSidenavModule
+} from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
 import { SetupStep1Component } from './setup-step1/setup-step1.component';
@@ -27,7 +43,7 @@ import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { DownloadIndicatorComponent } from './download-indicator/download-indicator.component';
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
-import { DragDropDirective } from "./drag-drop.directive";
+import { DragDropDirective } from "./directives/drag-drop.directive";
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { AddEditPlaylistDialogComponent } from './add-edit-playlist-dialog/add-edit-playlist-dialog.component';
 import { FormsModule } from '@angular/forms';
@@ -38,7 +54,7 @@ import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
-import {NgxSmartModalComponent, NgxSmartModalModule} from "ngx-smart-modal";
+import {NgxSmartModalModule, NgxSmartModalService} from "ngx-smart-modal";
 
 @NgModule({
   declarations: [
@@ -101,9 +117,10 @@ import {NgxSmartModalComponent, NgxSmartModalModule} from "ngx-smart-modal";
     MatSlideToggleModule,
     MatListModule,
     FlexLayoutModule,
-    NgxSmartModalModule.forRoot()
+    NgxSmartModalModule,
+    MatSidenavModule
   ],
-  providers:[ ],
+  providers:[ NgxSmartModalService ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

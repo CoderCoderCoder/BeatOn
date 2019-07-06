@@ -14,7 +14,7 @@
   <div fxFlex="50%">
     <mat-list>
       <!-- *cdkVirtualFor -->
-        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()">
+        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); modDetails.open()">
           <h1 matLine> {{ mod.Name }}</h1>
           <h3 matLine> Author: {{ mod.Author }}</h3>
           <p matLine> {{ mod.Description }}</p>
@@ -32,19 +32,21 @@
     </mat-list>
   </div>
 </section>
-<ngx-smart-modal *ngIf="selectedMod" #myModal [identifier]="'myModal'">
-  <div *ngIf="myModal.hasData()">
-    <div class="modal-header">
-      <button type="button" class="close" aria-label="Close" (click)="myModal.close()"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title" id="myModalLabel2">{{ selectedMod.Name }}</h4>
+<section>
+  <ngx-smart-modal customClass="modal right fade" #modDetails [identifier]="'modDetails'">
+    <div *ngIf="selectedMod" >
+      <div class="modal-header">
+        <button type="button" class="close" aria-label="Close" (click)="modDetails.close()"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel2">{{ selectedMod.Name }}</h4>
+      </div>
+      <div class="modal-body">
+        <section class="mat-typography">
+          <h3 class="mat-display-1"> Created by: {{ selectedMod.Author }} </h3>
+          <p> {{ selectedMod.Description }} </p>
+          <button mat-raised-button="" class="md-raised md-primary">Install</button>
+          <a href="{{ selectedMod.InfoUrl }}" > More Info </a>
+        </section>
+      </div>
     </div>
-    <div class="modal-body">
-      <section class="mat-typography">
-        <h3 class="mat-display-1"> Created by: {{ selectedMod.Author }} </h3>
-        <p> {{ selectedMod.Description }} </p>
-        <button mat-raised-button="" class="md-raised md-primary">Install</button>
-        <a href={{ selectedMod.InfoUrl }} > More Info </a>
-      </section>
-    </div>
-  </div>
-</ngx-smart-modal>
+  </ngx-smart-modal>
+</section>

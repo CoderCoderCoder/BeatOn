@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnInit} from '@angular/core';
+import { Component, OnInit} from '@angular/core';
 import { ConfigService } from '../services/config.service';
 import { BeatOnApiService } from '../services/beat-on-api.service';
 import { HostMessageService } from '../services/host-message.service';
@@ -9,19 +9,19 @@ import { ClientSetModStatus } from '../models/ClientSetModStatus';
 import { MatSlideToggleChange } from '@angular/material';
 import { HostActionResponse } from '../models/HostActionResponse';
 import { ECANCELED } from 'constants';
-import {NgxSmartModalService} from "ngx-smart-modal";
 
 @Component({
   selector: 'app-main-mods',
   templateUrl: './main-mods.component.html',
   styleUrls: ['./main-mods.component.scss']
 })
-export class MainModsComponent implements OnInit, AfterViewInit {
+export class MainModsComponent implements OnInit {
   config : QuestomConfig = <QuestomConfig> {Mods: []};
   modSwitchInProgress : boolean = false;
   modIDBeingSwitched : string = null;
   selectedMod: ModDefinition;
-  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, public ngxSmartModalService: NgxSmartModalService) {
+  opened: boolean;
+  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) {
     this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> { this.config = cfg.Config; });
   }
 
@@ -83,16 +83,4 @@ export class MainModsComponent implements OnInit, AfterViewInit {
   onSelect(mod : ModDefinition): void{
     this.selectedMod = mod;
   }
-
-  ngAfterViewInit() {
-    const obj: Object = {
-      Name: this.selectedMod.Name,
-      Author: this.selectedMod.Author,
-      Description: this.selectedMod.Description,
-      InfoUrl: this.selectedMod.InfoUrl
-    };
-
-    this.ngxSmartModalService.setModalData(obj, 'myModal');
-  }
-
 }
