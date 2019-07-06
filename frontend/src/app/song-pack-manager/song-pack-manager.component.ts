@@ -138,29 +138,31 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         this.subs.add(
             this.integrationService.appButtonPressed.subscribe((be: AppButtonEvent) => {
                 const SCROLL_SIZE: number = 300;
-                var bounds = this.song_container.nativeElement.getBoundingClientRect();
-                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
-                    //pointer is in the song container when the button was pressed
-                    return;
-                }
-                bounds = this.pack_container.nativeElement.getBoundingClientRect();
-                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
-                    //pointer is in the packs container when the button was pressed
+                var scrollFunc = ele => {
                     if (be.button == AppButtonType.Down) {
-                        var ele = this.pack_container.nativeElement;
                         if (ele.scrollTop < ele.scrollHeight - ele.offsetHeight) {
                             var scrollAmt = ele.scrollHeight - ele.offsetHeight - ele.scrollTop;
                             if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
                             ele.scrollTo(ele.scrollLeft, ele.scrollTop + scrollAmt);
                         }
                     } else if (be.button == AppButtonType.Up) {
-                        var ele = this.pack_container.nativeElement;
                         if (ele.scrollTop > 0) {
                             var scrollAmt: number = ele.scrollTop;
                             if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
                             ele.scrollTo(ele.scrollLeft, ele.scrollTop - scrollAmt);
                         }
                     }
+                };
+                var bounds = this.song_container.nativeElement.getBoundingClientRect();
+                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                    //pointer is in the song container when the button was pressed
+                    scrollFunc(this.song_container.nativeElement);
+                    return;
+                }
+                bounds = this.pack_container.nativeElement.getBoundingClientRect();
+                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                    //pointer is in the packs container when the button was pressed
+                    scrollFunc(this.pack_container.nativeElement);
                     return;
                 }
                 //check any other elements that may need to respond to button presses

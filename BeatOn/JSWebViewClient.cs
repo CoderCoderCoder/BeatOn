@@ -22,7 +22,7 @@ namespace BeatOn
 {
     public class BeatOnWebViewClient : WebViewClient
     {
-        private const string JS_TRIGGER_BUTTON_EVENT = @"(function() { var event = new CustomEvent('appbutton', { detail: { button: '{0}', x: {1}, y: {2} } }); window.dispatchEvent(event); })();";
+        private const string JS_TRIGGER_BUTTON_EVENT = @"(function() {{ var event = new CustomEvent('appbutton', {{ detail: {{ button: '{0}', x: {1}, y: {2} }} }}); window.dispatchEvent(event); }})();";
         private Activity _activity;
         public WebView WebView { get; private set; }
 

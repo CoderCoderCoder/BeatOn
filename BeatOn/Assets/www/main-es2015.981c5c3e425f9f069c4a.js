@@ -37117,32 +37117,31 @@
             ),
             this.subs.add(
               this.integrationService.appButtonPressed.subscribe(t => {
-                var e = this.song_container.nativeElement.getBoundingClientRect();
-                if (
-                  !(
-                    t.x >= e.left &&
-                    t.x <= e.right &&
-                    t.y >= e.top &&
-                    t.y <= e.bottom
-                  ) &&
-                  ((e = this.pack_container.nativeElement.getBoundingClientRect()),
-                  t.x >= e.left &&
-                    t.x <= e.right &&
-                    t.y >= e.top &&
-                    t.y <= e.bottom)
-                )
-                  if (t.button == Nk.Down)
-                    (n = this.pack_container.nativeElement).scrollTop <
-                      n.scrollHeight - n.offsetHeight &&
-                      ((a = n.scrollHeight - n.offsetHeight - n.scrollTop) >
-                        300 && (a = 300),
-                      n.scrollTo(n.scrollLeft, n.scrollTop + a));
-                  else if (t.button == Nk.Up) {
-                    var n, a;
-                    (n = this.pack_container.nativeElement).scrollTop > 0 &&
-                      ((a = n.scrollTop) > 300 && (a = 300),
-                      n.scrollTo(n.scrollLeft, n.scrollTop - a));
-                  }
+                var e = e => {
+                    if (t.button == Nk.Down)
+                      e.scrollTop < e.scrollHeight - e.offsetHeight &&
+                        ((n = e.scrollHeight - e.offsetHeight - e.scrollTop) >
+                          300 && (n = 300),
+                        e.scrollTo(e.scrollLeft, e.scrollTop + n));
+                    else if (t.button == Nk.Up) {
+                      var n;
+                      e.scrollTop > 0 &&
+                        ((n = e.scrollTop) > 300 && (n = 300),
+                        e.scrollTo(e.scrollLeft, e.scrollTop - n));
+                    }
+                  },
+                  n = this.song_container.nativeElement.getBoundingClientRect();
+                t.x >= n.left &&
+                t.x <= n.right &&
+                t.y >= n.top &&
+                t.y <= n.bottom
+                  ? e(this.song_container.nativeElement)
+                  : ((n = this.pack_container.nativeElement.getBoundingClientRect()),
+                    t.x >= n.left &&
+                      t.x <= n.right &&
+                      t.y >= n.top &&
+                      t.y <= n.bottom &&
+                      e(this.pack_container.nativeElement));
               })
             ),
             this.subs.add(

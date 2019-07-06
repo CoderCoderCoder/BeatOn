@@ -42546,32 +42546,31 @@
               ),
               this.subs.add(
                 this.integrationService.appButtonPressed.subscribe(function(t) {
-                  var e = l.song_container.nativeElement.getBoundingClientRect();
-                  if (
-                    !(
-                      t.x >= e.left &&
-                      t.x <= e.right &&
-                      t.y >= e.top &&
-                      t.y <= e.bottom
-                    ) &&
-                    ((e = l.pack_container.nativeElement.getBoundingClientRect()),
-                    t.x >= e.left &&
-                      t.x <= e.right &&
-                      t.y >= e.top &&
-                      t.y <= e.bottom)
-                  )
-                    if (t.button == bx.Down)
-                      (n = l.pack_container.nativeElement).scrollTop <
-                        n.scrollHeight - n.offsetHeight &&
-                        ((o = n.scrollHeight - n.offsetHeight - n.scrollTop) >
-                          300 && (o = 300),
-                        n.scrollTo(n.scrollLeft, n.scrollTop + o));
-                    else if (t.button == bx.Up) {
-                      var n, o;
-                      (n = l.pack_container.nativeElement).scrollTop > 0 &&
-                        ((o = n.scrollTop) > 300 && (o = 300),
-                        n.scrollTo(n.scrollLeft, n.scrollTop - o));
-                    }
+                  var e = function(e) {
+                      if (t.button == bx.Down)
+                        e.scrollTop < e.scrollHeight - e.offsetHeight &&
+                          ((n = e.scrollHeight - e.offsetHeight - e.scrollTop) >
+                            300 && (n = 300),
+                          e.scrollTo(e.scrollLeft, e.scrollTop + n));
+                      else if (t.button == bx.Up) {
+                        var n;
+                        e.scrollTop > 0 &&
+                          ((n = e.scrollTop) > 300 && (n = 300),
+                          e.scrollTo(e.scrollLeft, e.scrollTop - n));
+                      }
+                    },
+                    n = l.song_container.nativeElement.getBoundingClientRect();
+                  t.x >= n.left &&
+                  t.x <= n.right &&
+                  t.y >= n.top &&
+                  t.y <= n.bottom
+                    ? e(l.song_container.nativeElement)
+                    : ((n = l.pack_container.nativeElement.getBoundingClientRect()),
+                      t.x >= n.left &&
+                        t.x <= n.right &&
+                        t.y >= n.top &&
+                        t.y <= n.bottom &&
+                        e(l.pack_container.nativeElement));
                 })
               ),
               this.subs.add(
