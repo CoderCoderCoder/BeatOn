@@ -54,7 +54,6 @@ import { CreditsComponent } from './credits/credits.component';
 import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
-import { DragulaModule } from 'ng2-dragula';
 import { SongPackManagerComponent } from './song-pack-manager/song-pack-manager.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
@@ -122,7 +121,6 @@ import { NoCustomSongsPipe } from './pipes/no-custom-songs';
         FormsModule,
         MatInputModule,
         MatTooltipModule,
-        DragulaModule.forRoot(),
         MatSlideToggleModule,
         MatListModule,
         LazyLoadImageModule,

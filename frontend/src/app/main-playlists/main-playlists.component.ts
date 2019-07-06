@@ -5,6 +5,8 @@ import { BeatOnConfig } from '../models/BeatOnConfig';
 import { BeatSaberPlaylist } from '../models/BeatSaberPlaylist';
 import { ConfigService } from '../services/config.service';
 import { PlaylistTempConfig } from '../models/PlaylistTempConfig';
+import { ClientAddOrUpdatePlaylist } from '../models/ClientAddOrUpdatePlaylist';
+import { HostMessageService } from '../services/host-message.service';
 
 @Component({
     selector: 'app-main-playlists',
@@ -20,7 +22,7 @@ export class MainPlaylistsComponent implements OnInit {
     selectedPlaylist: BeatSaberPlaylist = <BeatSaberPlaylist>{};
     customPlaylist: BeatSaberPlaylist;
     hasLastConfig: boolean;
-    constructor(private beatOnApi: BeatOnApiService, private configSvc: ConfigService) {}
+    constructor(private beatOnApi: BeatOnApiService, private configSvc: ConfigService, private msgSvc: HostMessageService) {}
 
     ngOnInit() {
         this.configSvc.getConfig().subscribe(this.handleConfig.bind(this));
@@ -60,6 +62,15 @@ export class MainPlaylistsComponent implements OnInit {
     }
 
     setupPlaylists() {
+        if (this.config.Playlists.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
+            console.log('making pl');
+            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
+            pl.PlaylistID = 'CustomSongs';
+            pl.PlaylistName = 'Custom Songs';
+            const plMsg = new ClientAddOrUpdatePlaylist();
+            plMsg.Playlist = pl;
+            this.msgSvc.sendClientMessage(plMsg);
+        }
         const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
         if (customIndex > -1) {
             this.customPlaylist = this.config.Playlists[customIndex];
@@ -72,6 +83,5 @@ export class MainPlaylistsComponent implements OnInit {
                 CoverImageBytes: null,
             };
         }
-        if (this.config.Playlists.length && !this.hasLastConfig) this.config.Playlists[0].IsOpen = true;
     }
 }

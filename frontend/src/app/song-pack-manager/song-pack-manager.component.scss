@@ -184,8 +184,9 @@ button.right  {
   width: 110px;
   height: calc(100% - 16px);
   position: absolute;
-  left: 0px;
+  left: 0;
   top: 8px;
+  z-index: 99;
 }
 .pack-handle-backer {
   position: relative;
@@ -242,6 +243,9 @@ button.right  {
   padding-left: 10px;
   padding-right: 10px;
   background: rgba(255,255,255,0.2);
+  //min-height: 86px;
+  //max-height: 400px;
+  //overflow: auto;
 }
 
 .pack-song-container-outer ul {
