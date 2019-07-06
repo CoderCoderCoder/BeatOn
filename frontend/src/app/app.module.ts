@@ -59,6 +59,7 @@ import { SongPackManagerComponent } from './song-pack-manager/song-pack-manager.
 import { MainModsComponent } from './main-mods/main-mods.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { NgxSmartModalModule, NgxSmartModalService } from 'ngx-smart-modal';
+import { NoCustomSongsPipe } from './pipes/no-custom-songs';
 
 @NgModule({
     declarations: [
@@ -72,6 +73,7 @@ import { NgxSmartModalModule, NgxSmartModalService } from 'ngx-smart-modal';
         MainPlaylistsComponent,
         MainBrowserComponent,
         SafePipe,
+        NoCustomSongsPipe,
         PlaylistSliderComponent,
         PlaylistSongsComponent,
         ToolsComponent,

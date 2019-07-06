@@ -12,7 +12,7 @@
 <app-song-pack-manager
   #songManager
   *ngIf="config&&customPlaylist"
-  [packs]="config.Playlists"
+  [packs]="config.Playlists | nocustomsongs"
   [songs]="customPlaylist.SongList"
   [songsPack] = "customPlaylist"
   (editPack)="addPack.name = $event.name;addPack.id = $event.id;addPack.coverImagePath = $event.coverImagePath;"

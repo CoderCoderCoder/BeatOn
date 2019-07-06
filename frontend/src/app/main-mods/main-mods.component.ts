@@ -6,10 +6,12 @@ import { QuestomConfig } from '../models/QuestomConfig';
 import { BeatOnConfig } from '../models/BeatOnConfig';
 import { ModCategory, ModDefinition, ModStatusType } from '../models/ModDefinition';
 import { ClientSetModStatus } from '../models/ClientSetModStatus';
-import { MatSlideToggleChange } from '@angular/material';
+import { MatSlideToggleChange, MatDialog } from '@angular/material';
 import { HostActionResponse } from '../models/HostActionResponse';
 import { ECANCELED } from 'constants';
 import { NgxSmartModalService } from 'ngx-smart-modal';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ClientDeleteMod } from '../models/ClientDeleteMod';
 
 @Component({
     selector: 'app-main-mods',
@@ -25,7 +27,8 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         private configSvc: ConfigService,
         private beatOnApi: BeatOnApiService,
         private msgSvc: HostMessageService,
-        public ngxSmartModalService: NgxSmartModalService
+        public ngxSmartModalService: NgxSmartModalService,
+        private dialog: MatDialog
     ) {
         this.configSvc.configUpdated.subscribe((cfg: BeatOnConfig) => {
             this.config = cfg.Config;
@@ -36,6 +39,7 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         let isInit = false;
         this.configSvc.getConfig().subscribe((cfg: BeatOnConfig) => {
             this.config = cfg.Config;
+            /*
             if (!isInit) {
                 isInit = true;
                 this.selectedMod = cfg.Config.Mods[0];
@@ -66,7 +70,7 @@ export class MainModsComponent implements OnInit, AfterViewInit {
             randomSongSelect.Description =
                 "Tired of deciding what song to play? This mod gives you the ability to randomly select a song from your long list of maps you'll probably never get to.";
             randomSongSelect.Category = ModCategory.Gameplay;
-            this.config.Mods.push(randomSongSelect);
+            this.config.Mods.push(randomSongSelect);*/
         });
     }
 
@@ -76,11 +80,9 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         let msg = new ClientSetModStatus();
         msg.ModID = mod.ID;
         msg.Status = ev.checked ? ModStatusType.Installed : ModStatusType.NotInstalled;
-        console.log('sending message for mod ID ' + msg.ModID);
         let sub;
         sub = this.msgSvc.actionResponseMessage.subscribe((ev: HostActionResponse) => {
             if (ev.ResponseToMessageID == msg.MessageID) {
-                console.log('Got response message in mods for mod ID ' + msg.ModID);
                 this.modIDBeingSwitched = null;
                 this.modSwitchInProgress = false;
                 sub.unsubscribe();
@@ -93,7 +95,6 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         this.msgSvc.sendClientMessage(msg);
     }
     getModSwitch(mod) {
-        console.log('getting mod status for mod id ' + mod.ID);
         if (mod == null) return false;
         return !(
             (mod.Status != 'Installed' && mod.ID != this.modIDBeingSwitched) ||
@@ -105,6 +106,35 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         console.log(mod);
         this.selectedMod = mod;
     }
-
+    clickDeleteMod(mod) {
+        var dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '450px',
+            height: '180px',
+            disableClose: true,
+            data: { title: 'Delete ' + mod.Name + '?', subTitle: 'Are you sure you want to delete this mod?', button1Text: 'Yes' },
+        });
+        dialogRef.afterClosed().subscribe(res => {
+            if (res == 1) {
+                this.modSwitchInProgress = true;
+                var msg = new ClientDeleteMod();
+                msg.ModID = mod.ID;
+                var sub;
+                sub = this.msgSvc.actionResponseMessage.subscribe((ev: HostActionResponse) => {
+                    if (ev.ResponseToMessageID == msg.MessageID) {
+                        console.log('Got response message in mods for mod ID ' + msg.ModID);
+                        this.modIDBeingSwitched = null;
+                        this.modSwitchInProgress = false;
+                        sub.unsubscribe();
+                        if (!ev.Success) {
+                            //todo: show error
+                            console.log('mod id ' + msg.ModID + ' could not delete!');
+                        }
+                    }
+                });
+                console.log('Sending message to delete mod id ' + mod.ID);
+                this.msgSvc.sendClientMessage(msg);
+            }
+        });
+    }
     ngAfterViewInit() {}
 }

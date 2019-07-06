@@ -9,25 +9,30 @@
     </mat-card-header>
   </mat-card>
 </section>
-<section>
+<section class="container" >
   <div *ngIf="!config">No Mods!</div>
   <div fxFlex="50%">
     <mat-list>
-      <!-- *cdkVirtualFor -->
-        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()">
-          <h1 matLine> {{ mod.Name }}</h1>
-          <h3 matLine> Author: {{ mod.Author }}</h3>
-          <p matLine> {{ mod.Description }}</p>
-          <p matLine class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
+      <!-- [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()" -->
+        <mat-list-item class="modContainer" *ngFor="let mod of config.Mods" >
+          <div class="modCategory {{mod.Category}}"></div>
+          <div matTooltip="Delete the mod from Beat On." (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
+          <h1 matLine> {{ mod.Name }} <span class="version">v{{ mod.Version }}</span></h1>
+          <h3 matLine> by {{ mod.Author }}</h3>
+          <div matLine class="description"> {{ mod.Description }}</div>
+          
 
-          <div matLine>
-            <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
+          <div matLine class="footer">
+            <div class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></div>
+            
             <div class="toggleContainer">
               <div *ngIf="modIDBeingSwitched != mod.ID" class="toggleSpinner"></div>
               <mat-progress-spinner *ngIf="modIDBeingSwitched == mod.ID" class="toggleSpinner" mode="indeterminate"  diameter="20"></mat-progress-spinner>
-              <mat-slide-toggle class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
-            </div>
+            <mat-slide-toggle class="toggle" [disabled]="modSwitchInProgress" (change)="toggleMod($event, mod)" ([ngModel])="null" [checked]="getModSwitch(mod)"></mat-slide-toggle>
           </div>
+          <span class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</span>
+        </div>
+
         </mat-list-item>
     </mat-list>
   </div>

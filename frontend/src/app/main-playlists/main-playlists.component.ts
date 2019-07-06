@@ -63,7 +63,6 @@ export class MainPlaylistsComponent implements OnInit {
         const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
         if (customIndex > -1) {
             this.customPlaylist = this.config.Playlists[customIndex];
-            this.config.Playlists.splice(customIndex, 1);
         } else {
             this.customPlaylist = {
                 CoverArtFilename: null,

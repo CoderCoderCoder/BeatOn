@@ -332,19 +332,37 @@
     <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.a63798811071328cddb9.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\assets\default-pack-cover.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.0dc782d7114f613cd55f.js" />
+    <AndroidAsset Include="Assets\www\assets\gameplay.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.e1e205cbb56a4c8ded7e.js" />
+    <AndroidAsset Include="Assets\www\assets\other.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.69a7811cde4dc4d1fab3.css" />
+    <AndroidAsset Include="Assets\www\assets\saber.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\gameplay.198e5d663288bf6e851a.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.033116b1da0c25c77e8c.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.e32c48628c59128b9244.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\other.faa2eba9d63050a34e03.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\saber.d1b47c029d52c0424a1c.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles.a45cb8c6e3e2ad3f3683.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
