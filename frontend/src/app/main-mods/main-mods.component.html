@@ -1,3 +1,17 @@
+<ng-template #modDetails let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="myModalLabel2">{{ selectedMod.Name }}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')"><span aria-hidden="true">&times;</span></button>
+  </div>
+  <div class="modal-body">
+    <section class="mat-typography">
+      <h3 class="mat-display-1"> Created by: {{ selectedMod.Author }} </h3>
+      <p> {{ selectedMod.Description }} </p>
+      <button mat-raised-button="" class="md-raised md-primary">Install</button>
+      <a href="{{selectedMod.InfoUrl }}" >More Info</a>
+    </section>
+  </div>
+</ng-template>
 <section>
   <mat-card class="setup-card">
     <mat-card-header>
@@ -14,7 +28,7 @@
   <div fxFlex="50%">
     <mat-list>
       <!-- *cdkVirtualFor -->
-        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); modDetails.open()">
+        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); openModal(modDetails)">
           <h1 matLine> {{ mod.Name }}</h1>
           <h3 matLine> Author: {{ mod.Author }}</h3>
           <p matLine> {{ mod.Description }}</p>
@@ -31,24 +45,4 @@
         </mat-list-item>
     </mat-list>
   </div>
-</section>
-<section>
-  <ngx-smart-modal #modDetails [identifier]="'modDetails'" [closable]="false" [customClass]="'modal-dialog'">
-    <div *ngIf="selectedMod" class="modal-content">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title" id="myModalLabel2">{{ selectedMod.Name }}</h4>
-          <button type="button" class="close" aria-label="Close" (click)="modDetails.close()"><span aria-hidden="true">&times;</span></button>
-        </div>
-        <div class="modal-body">
-          <section class="mat-typography">
-            <h3 class="mat-display-1"> Created by: {{ selectedMod.Author }} </h3>
-            <p> {{ selectedMod.Description }} </p>
-            <button mat-raised-button="" class="md-raised md-primary">Install</button>
-            <a href="{{selectedMod.InfoUrl }}" >More Info</a>
-          </section>
-        </div>
-      </div>
-    </div>
-  </ngx-smart-modal>
 </section>

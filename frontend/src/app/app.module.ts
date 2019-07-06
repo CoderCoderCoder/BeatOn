@@ -19,7 +19,6 @@ import {
   MatDialogModule,
   MatProgressSpinnerModule,
   MatListModule,
-  MatSidenavModule
 } from '@angular/material';
 import { HttpClientModule } from '@angular/common/http';
 import { SetupComponent } from './setup/setup.component';
@@ -54,7 +53,7 @@ import { BrowserNavComponent } from './browser-nav/browser-nav.component';
 import { FastClickDirective } from './directives/fast-click.directive';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
-import {NgxSmartModalModule, NgxSmartModalService} from "ngx-smart-modal";
+import {NgbModule} from "@ng-bootstrap/ng-bootstrap";
 
 @NgModule({
   declarations: [
@@ -117,10 +116,9 @@ import {NgxSmartModalModule, NgxSmartModalService} from "ngx-smart-modal";
     MatSlideToggleModule,
     MatListModule,
     FlexLayoutModule,
-    NgxSmartModalModule,
-    MatSidenavModule
+    NgbModule
   ],
-  providers:[ NgxSmartModalService ],
+  providers:[ ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

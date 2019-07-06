@@ -1,4 +1,4 @@
-import { Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import { ConfigService } from '../services/config.service';
 import { BeatOnApiService } from '../services/beat-on-api.service';
 import { HostMessageService } from '../services/host-message.service';
@@ -9,6 +9,7 @@ import { ClientSetModStatus } from '../models/ClientSetModStatus';
 import { MatSlideToggleChange } from '@angular/material';
 import { HostActionResponse } from '../models/HostActionResponse';
 import { ECANCELED } from 'constants';
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 
 @Component({
   selector: 'app-main-mods',
@@ -21,7 +22,7 @@ export class MainModsComponent implements OnInit {
   modIDBeingSwitched : string = null;
   selectedMod: ModDefinition;
   opened: boolean;
-  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService) {
+  constructor(private configSvc : ConfigService, private beatOnApi : BeatOnApiService, private msgSvc : HostMessageService, private modalService: NgbModal) {
     this.configSvc.configUpdated.subscribe((cfg : BeatOnConfig)=> { this.config = cfg.Config; });
   }
 
@@ -82,5 +83,9 @@ export class MainModsComponent implements OnInit {
 
   onSelect(mod : ModDefinition): void{
     this.selectedMod = mod;
+  }
+
+  openModal(modal){
+    this.modalService.open(modal, { windowClass: 'modal right fade', size: 'xl'});
   }
 }
