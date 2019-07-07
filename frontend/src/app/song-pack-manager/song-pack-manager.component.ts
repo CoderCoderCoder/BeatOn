@@ -151,15 +151,19 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         const pack_container = data.container.element.nativeElement as HTMLElement;
         const item_element = data.item.element.nativeElement as HTMLElement;
         const playlistId = pack_container.dataset.playlist_id;
-        const index = data.currentIndex;
+        let index = data.currentIndex;
         if (!this.selectedPlaylist && pack_container === this.pack_container.nativeElement) {
             const msg = new ClientMovePlaylist();
             msg.PlaylistID = item_element.dataset.playlist_id;
             msg.Index = index;
             this.msgSvc.sendClientMessage(msg);
         } else {
-            console.log('here', item_element);
             let songId = item_element.dataset.song_id;
+            if (data.container.element.nativeElement === this.song_container.elementRef.nativeElement) {
+                // is the drop destination custom songs list
+                const rr = this.song_container.getRenderedRange();
+                index = data.currentIndex + rr.start;
+            }
             if (pack_container === data.previousContainer.element.nativeElement) {
                 const msg = new ClientMoveSongInPlaylist();
                 msg.SongID = songId;

@@ -28,7 +28,6 @@
            [cdkDropListData]="packs"
            [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}"
            cdkDropList (cdkDropListDropped)="drop($event)">
-        <!--dragula="SONGS" [(dragulaModel)]="packs"-->
         <div  class="packOuter" *ngFor="let pack of packs" cdkDrag [cdkDragData]="pack" [attr.data-playlist_id]="pack.PlaylistID">
           <div class="pack-handle-backer" cdkDragHandle>
             <div class="handle pack-handle-backer"></div>
@@ -127,7 +126,7 @@
             <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
             <mat-checkbox [(ngModel)]="song.Selected" color="primary" class="right select-song" *ngIf="checkboxChecked">Select Song</mat-checkbox>
 
-            <img [scrollObservable]="scrollObserver"  [defaultImage]="defaultImage" [lazyLoad]="getBackground(song.SongID)" [errorImage]="defaultImage" alt="" class="circle red handle" />
+            <img src="{{getBackground(song.SongID)}}" onerror="this.src = 'assets/default-pack-cover.png'" alt="" class="circle red handle" />
             <i class="material-icons cursor grey-text drag-indicator handle"
                matTooltip="Drag this song to a playlist." matTooltipPosition="below"
             >more_vert</i>
