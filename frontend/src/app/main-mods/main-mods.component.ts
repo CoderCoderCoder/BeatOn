@@ -86,6 +86,6 @@ export class MainModsComponent implements OnInit {
   }
 
   openModal(modal){
-    this.modalService.open(modal, { windowClass: 'modal right fade', size: 'xl'});
+    this.modalService.open(modal, { windowClass: 'modal right fade', size: 'xl', container: '#mod-list'});
   }
 }

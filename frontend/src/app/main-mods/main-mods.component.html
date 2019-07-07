@@ -25,12 +25,14 @@
 </section>
 <section>
   <div *ngIf="!config">No Mods!</div>
-  <div fxFlex="50%">
+  <div id="mod-list" fxFlex="50%">
     <mat-list>
       <!-- *cdkVirtualFor -->
         <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); openModal(modDetails)">
-          <h1 matLine> {{ mod.Name }}</h1>
-          <h3 matLine> Author: {{ mod.Author }}</h3>
+
+          <span class="modId">{{ mod.ID }}</span>
+          <h1 matLine class="modName"> {{ mod.Name }}</h1>
+          <h2 matLine> By {{ mod.Author }} </h2>
           <p matLine> {{ mod.Description }}</p>
           <p matLine class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
 
