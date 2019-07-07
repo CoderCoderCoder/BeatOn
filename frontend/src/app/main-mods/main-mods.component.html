@@ -16,7 +16,7 @@
   <mat-card class="setup-card">
     <mat-card-header>
       <div mat-card-avatar>
-        <mat-icon aria-hidden="false" class="setup-icon">cloud_upload</mat-icon>
+        <mat-icon aria-hidden="false" class="setup-icon">settings</mat-icon>
       </div>
       <mat-card-title>Mod Management</mat-card-title>
       <mat-card-subtitle>Manage all mods available for the quest here. Install, uninstall, and configure mods..</mat-card-subtitle>
@@ -28,14 +28,19 @@
   <div id="mod-list" fxFlex="50%">
     <mat-list>
       <!-- *cdkVirtualFor -->
-        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod" (click)="onSelect(mod); openModal(modDetails)">
-
-          <span class="modId">{{ mod.ID }}</span>
-          <h1 matLine class="modName"> {{ mod.Name }}</h1>
-          <h2 matLine> By {{ mod.Author }} </h2>
-          <p matLine> {{ mod.Description }}</p>
-          <p matLine class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
-
+        <mat-list-item *ngFor="let mod of config.Mods" [class.selected]="mod === selectedMod">
+          <div matLine (click)="onSelect(mod); openModal(modDetails)">
+            <span class="modId">{{ mod.ID }}</span>
+            <div matLine>
+              <p class="mod-name"> {{ mod.Name }} </p>
+              <span class="modclass {{ mod.Category }}"> {{ mod.Category }}</span>
+            </div>
+            <div matLine>
+              By <span class="mod-author">{{ mod.Author }} </span>
+            </div>
+            <p matLine> {{ mod.Description }}</p>
+            <p matLine class="modUrl" *ngIf="mod?.InfoUrl?.length"><a [href]="mod.InfoUrl">More Information</a></p>
+          </div>
           <div matLine>
             <div class="enabledtext" [ngClass]="{'active': (mod.Status == 'Installed')}">Mod {{ (mod.Status == 'Installed')?"Active":"Inactive"}}:</div>
             <div class="toggleContainer">
