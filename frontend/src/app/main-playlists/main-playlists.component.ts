@@ -62,15 +62,23 @@ export class MainPlaylistsComponent implements OnInit {
     }
 
     setupPlaylists() {
-        if (this.config.Playlists.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
-            console.log('making pl');
-            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
-            pl.PlaylistID = 'CustomSongs';
-            pl.PlaylistName = 'Custom Songs';
-            const plMsg = new ClientAddOrUpdatePlaylist();
-            plMsg.Playlist = pl;
-            this.msgSvc.sendClientMessage(plMsg);
+        // if (this.config.Playlists.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
+        //   console.log('making pl');
+        //   const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
+        //   pl.PlaylistID = 'CustomSongs';
+        //   pl.PlaylistName = 'Custom Songs';
+        //   const plMsg = new ClientAddOrUpdatePlaylist();
+        //   plMsg.Playlist = pl;
+        //   this.msgSvc.sendClientMessage(plMsg);
+        // }
+        if (this.songManager && this.songManager.selectedPlaylist) {
+            this.config.Playlists.forEach(p => {
+                if (p.PlaylistID === this.songManager.selectedPlaylist.PlaylistID) {
+                    this.songManager.selectedPlaylist = p;
+                }
+            });
         }
+
         const customIndex = this.config.Playlists.map(p => p.PlaylistID).indexOf('CustomSongs');
         if (customIndex > -1) {
             this.customPlaylist = this.config.Playlists[customIndex];

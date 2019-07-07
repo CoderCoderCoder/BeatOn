@@ -9,6 +9,7 @@ import {
     OnChanges,
     SimpleChanges,
     AfterViewChecked,
+    ElementRef,
 } from '@angular/core';
 import { DragulaService } from 'ng2-dragula';
 import { Subscription } from 'rxjs/internal/Subscription';
@@ -48,14 +49,10 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
     @Input('packs') packs;
     @Input('songs') songs;
     @Input('songsPack') songsPack;
-    @Output('addPack') addPack = new EventEmitter();
-    @Output('editPack') editPack = new EventEmitter();
-    @Output('saveJson') saveJson = new EventEmitter();
-    @Output('orderSongs') orderSongs = new EventEmitter();
-    @Output('openSong') openSong = new EventEmitter();
     @ViewChild('song_container', { static: false }) song_container;
     @ViewChild('pack_container', { static: false }) pack_container;
     @ViewChild('mirror_holder', { static: false }) mirror_holder;
+    selectedPlaylist: BeatSaberPlaylist;
     checkboxChecked: boolean;
     selectAllToggle: boolean;
     reverseSortToggle: boolean;
@@ -76,64 +73,6 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         public integrationService: AppIntegrationService
     ) {
         this.updateSearchResult = new Subject();
-        // this.dragulaService.createGroup(this.BAG, {
-        //     copy: (el, source) => {
-        //         return false;
-        //     },
-        //     accepts: (el, target) => {
-        //         return (
-        //             //target !== this.song_container.nativeElement &&
-        //             (el.parentElement === this.pack_container.nativeElement && target === this.pack_container.nativeElement) ||
-        //             (el.parentElement !== this.pack_container.nativeElement && target !== this.pack_container.nativeElement)
-        //         );
-        //     },
-        //     moves: (el, source, handle, sibling) => {
-        //         return !!~handle.className.indexOf('handle'); // elements are always draggable by default
-        //     },
-        //     copyItem: (item: any) => ({ ...item }),
-        // });
-        // this.subs.add(
-        //     dragulaService.drop(this.BAG).subscribe(({ name, el, target, source, sibling }) => {
-        //         let index;
-        //         let playlistId = (target as HTMLElement).dataset.playlist_id;
-        //         if (!sibling) {
-        //             if (target === this.pack_container.nativeElement) {
-        //                 index = this.packs.length + 1; // add one for the custom songs removed
-        //             }
-        //         } else {
-        //             index = Array.prototype.indexOf.call(sibling.parentNode.childNodes, sibling) - 2;
-        //         }
-        //         if (target === this.pack_container.nativeElement) {
-        //             const msg = new ClientMovePlaylist();
-        //             msg.PlaylistID = (el as HTMLElement).dataset.playlist_id;
-        //             msg.Index = index;
-        //             this.msgSvc.sendClientMessage(msg);
-        //         } else {
-        //             let songId = (el as HTMLElement).dataset.song_id;
-        //             if (target === source) {
-        //                 const msg = new ClientMoveSongInPlaylist();
-        //                 msg.SongID = songId;
-        //                 msg.Index = index;
-        //                 this.msgSvc.sendClientMessage(msg);
-        //             } else {
-        //                 if (playlistId == 'CustomSongs' && this.packs.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
-        //                     console.log('making pl');
-        //                     const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
-        //                     pl.PlaylistID = 'CustomSongs';
-        //                     pl.PlaylistName = 'Custom Songs';
-        //                     const plMsg = new ClientAddOrUpdatePlaylist();
-        //                     plMsg.Playlist = pl;
-        //                     this.msgSvc.sendClientMessage(plMsg);
-        //                 }
-        //                 const msg = new ClientMoveSongToPlaylist();
-        //                 msg.ToPlaylistID = playlistId;
-        //                 msg.SongID = songId;
-        //                 msg.Index = index;
-        //                 this.msgSvc.sendClientMessage(msg);
-        //             }
-        //         }
-        //     })
-        // );
         this.subs.add(
             this.integrationService.appButtonPressed.subscribe((be: AppButtonEvent) => {
                 const SCROLL_SIZE: number = 300;
@@ -167,15 +106,8 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
                 //check any other elements that may need to respond to button presses
             })
         );
-        // this.subs.add(
-        //     this.msgSvc.configChangeMessage.subscribe(cfg => {
-        //         console.log('Cancelling drag in progress because a config update came in.');
-        //         dragulaService.find(this.BAG).drake.cancel(true);
-        //     })
-        // );
     }
     ngOnDestroy() {
-        this.dragulaService.destroy('SONGS');
         this.subs.unsubscribe();
     }
     ngOnInit() {}
@@ -203,13 +135,6 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         }
     }
     ngAfterViewInit() {
-        // let drake = this.dragulaService.find('SONGS').drake;
-        // let scroll = autoScroll([window, this.pack_container.nativeElement], {
-        //     margin: 150,
-        //     autoScroll: function() {
-        //         return this.down && drake.dragging;
-        //     },
-        // });
         this.scrollObserver = merge(
             fromEvent(window, 'scroll'),
             fromEvent(this.song_container.nativeElement, 'scroll'),
@@ -227,12 +152,13 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         const item_element = data.item.element.nativeElement as HTMLElement;
         const playlistId = pack_container.dataset.playlist_id;
         const index = data.currentIndex;
-        if (pack_container === this.pack_container.nativeElement) {
+        if (!this.selectedPlaylist && pack_container === this.pack_container.nativeElement) {
             const msg = new ClientMovePlaylist();
             msg.PlaylistID = item_element.dataset.playlist_id;
             msg.Index = index;
             this.msgSvc.sendClientMessage(msg);
         } else {
+            console.log('here', item_element);
             let songId = item_element.dataset.song_id;
             if (pack_container === data.previousContainer.element.nativeElement) {
                 const msg = new ClientMoveSongInPlaylist();
@@ -394,4 +320,5 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         msg.SortMode = PlaylistSortMode.MaxDifficulty;
         this.msgSvc.sendClientMessage(msg);
     }
+    openPack() {}
 }

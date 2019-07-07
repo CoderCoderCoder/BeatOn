@@ -14,12 +14,6 @@
   *ngIf="config&&customPlaylist"
   [packs]="config.Playlists | nocustomsongs"
   [songs]="customPlaylist.SongList"
-  [songsPack] = "customPlaylist"
-  (editPack)="addPack.name = $event.name;addPack.id = $event.id;addPack.coverImagePath = $event.coverImagePath;"
-  (addPack)="true"
-  (saveJson)="true"
-  (removeSong)="true"
-  (openSong)="true"
-  (orderSongs)="true">
+  [songsPack] = "customPlaylist">
 
 </app-song-pack-manager>
