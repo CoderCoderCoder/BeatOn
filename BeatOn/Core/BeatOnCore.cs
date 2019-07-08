@@ -378,6 +378,8 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
             _webServer.Router.AddRoute("DELETE", "/beatsaber/config", new DeletePendingConfig(SendConfigChangeMessage, FullEngineReset));
             _webServer.Router.AddRoute("POST", "/mod/postlogs", new PostUploadLogs());
+            _webServer.Router.AddRoute("GET", "/mod/images", new GetImages(_qaeConfig));
+            _webServer.Router.AddRoute("GET", "/mod/image", new GetImage(_qaeConfig));
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
             _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));

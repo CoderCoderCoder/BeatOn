@@ -13,6 +13,9 @@ body { background-color: #424242; margin: 0; font-family: Roboto, "Helvetica Neu
 
     margin-left: -200px;
 }
+.cdk-virtual-scroll-orientation-vertical .cdk-virtual-scroll-content-wrapper {
+  max-width: 100%;
+}
 ::-webkit-scrollbar {
   height: 16px;
   width: 12px;

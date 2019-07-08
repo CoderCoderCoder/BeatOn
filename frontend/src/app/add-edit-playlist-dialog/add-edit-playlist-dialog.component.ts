@@ -5,6 +5,8 @@ import { ReplaceSource } from 'webpack-sources';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AppSettings } from '../appSettings';
 import { timingSafeEqual } from 'crypto';
+import { ImagePickerDialogComponent } from '../image-picker-dialog/image-picker-dialog.component';
+import { AppIntegrationService } from '../services/app-integration.service';
 @Component({
     selector: 'app-add-edit-playlist-dialog',
     templateUrl: './add-edit-playlist-dialog.component.html',
@@ -14,7 +16,12 @@ import { timingSafeEqual } from 'crypto';
     providedIn: 'root',
 })
 export class AddEditPlaylistDialogComponent implements OnInit {
-    constructor(public dialogRef: MatDialogRef<AddEditPlaylistDialogComponent>, @Inject(MAT_DIALOG_DATA) public data) {
+    constructor(
+        private appInt: AppIntegrationService,
+        public dialogRef: MatDialogRef<AddEditPlaylistDialogComponent>,
+        @Inject(MAT_DIALOG_DATA) public data,
+        private dialog: MatDialog
+    ) {
         var fixedUri = encodeURIComponent(data.playlist.PlaylistID);
         fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
         this.currentCover = AppSettings.API_ENDPOINT + '/host/beatsaber/playlist/cover?playlistid=' + fixedUri;
@@ -22,7 +29,9 @@ export class AddEditPlaylistDialogComponent implements OnInit {
     getCover() {
         return 'url(' + this.currentCover + ')';
     }
-
+    onQuest() {
+        return this.appInt.isAppLoaded();
+    }
     currentCover;
     makeAutoID(input: string) {
         if (input == null || !input.replace(' ', '').length) {
@@ -76,6 +85,19 @@ export class AddEditPlaylistDialogComponent implements OnInit {
 
     clickDelete() {
         this.dialogRef.close({ playlist: this.data.playlist, deletePlaylist: true });
+    }
+    questClick() {
+        const dr = this.dialog.open(ImagePickerDialogComponent, {
+            width: '500px',
+            height: '500px',
+            disableClose: true,
+        });
+        dr.afterClosed().subscribe(res => {
+            if (res) {
+                this.currentCover = res;
+                this.data.playlist.CoverImageBytes = this.currentCover.substring(this.currentCover.indexOf(';base64,') + 8);
+            }
+        });
     }
 
     ngOnInit() {}

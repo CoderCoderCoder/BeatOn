@@ -2,7 +2,7 @@
   <mat-toolbar class="toolbar">
     <div matTooltip="Current connection status.  Click to reconnect." (click)="reconnect()" class="connectionStatus right" [ngStyle]="{'color': getConnStatusColor()}"><mat-icon class="nowifi" *ngIf="!getConnStatusIcon()">close</mat-icon><mat-icon class="wifi" >wifi</mat-icon></div>
     <!-- this one is intentionally not fast-click -->
-    <button (click)="resetConfig()" matTooltip="Undo all pending changes instead of syncing them." disabled="{{ config?.IsCommitted === true}}" class="right undo-spot" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled'" ><mat-icon>undo</mat-icon></button>
+    <button (click)="resetConfig()" matTooltip="Undo all pending changes instead of syncing them." disabled="{{ config?.IsCommitted === true || disableSync()}}" class="right undo-spot" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled'" ><mat-icon>undo</mat-icon></button>
 
     <button matTooltip="Sync the current configuration to Beat Saber." *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && !disableSync()" (click)="commitConfig()" class="warning sync-spot right sync-button">
       Sync to Beat Saber

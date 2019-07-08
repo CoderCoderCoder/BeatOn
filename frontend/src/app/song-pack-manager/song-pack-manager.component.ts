@@ -34,6 +34,12 @@ import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
 import { trigger, transition, style, animate, state } from '@angular/animations';
 import { AppIntegrationService } from '../services/app-integration.service';
 import { AppButtonEvent, AppButtonType } from '../models/AppButtonEvent';
+import { CdkDragPlaceholder } from '@angular/cdk/drag-drop';
+import { BeatOnConfig } from '../models/BeatOnConfig';
+import { BeatSaberSong } from '../models/BeatSaberSong';
+import { NoCustomSongsPipe } from '../pipes/no-custom-songs';
+import { OnlyCustomSongsPipe } from '../pipes/only-custom-songs';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -45,14 +51,17 @@ declare let autoScroll;
         ]),
     ],
 })
-export class SongPackManagerComponent implements OnInit, OnChanges {
-    @Input('packs') packs;
-    @Input('songs') songs;
-    @Input('songsPack') songsPack;
+export class SongPackManagerComponent implements OnInit {
     @ViewChild('song_container', { static: false }) song_container;
+    @ViewChild('pack_song_container', { static: false }) pack_song_container;
     @ViewChild('pack_container', { static: false }) pack_container;
     @ViewChild('mirror_holder', { static: false }) mirror_holder;
+    @ViewChild('empty', { static: true }) empty;
     selectedPlaylist: BeatSaberPlaylist;
+    packs: BeatSaberPlaylist[];
+    songs: BeatSaberSong[];
+    songsPack: BeatSaberPlaylist;
+    private config: BeatOnConfig;
     checkboxChecked: boolean;
     selectAllToggle: boolean;
     reverseSortToggle: boolean;
@@ -69,8 +78,9 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         private dialog: MatDialog,
         private configSvc: ConfigService,
         private msgSvc: HostMessageService,
-        private changeRef: ChangeDetectorRef,
-        public integrationService: AppIntegrationService
+        public integrationService: AppIntegrationService,
+        private nocustomsongs: NoCustomSongsPipe,
+        private onlycustomsongs: OnlyCustomSongsPipe
     ) {
         this.updateSearchResult = new Subject();
         this.subs.add(
@@ -91,90 +101,182 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
                         }
                     }
                 };
-                var bounds = this.song_container.nativeElement.getBoundingClientRect();
-                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
-                    //pointer is in the song container when the button was pressed
-                    scrollFunc(this.song_container.nativeElement);
-                    return;
+                var bounds;
+                if (this.song_container) {
+                    bounds = this.song_container.nativeElement.getBoundingClientRect();
+                    if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                        //pointer is in the song container when the button was pressed
+                        scrollFunc(this.song_container.nativeElement);
+                        return;
+                    }
                 }
-                bounds = this.pack_container.nativeElement.getBoundingClientRect();
-                if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
-                    //pointer is in the packs container when the button was pressed
-                    scrollFunc(this.pack_container.nativeElement);
-                    return;
+                if (this.pack_container) {
+                    bounds = this.pack_container.nativeElement.getBoundingClientRect();
+                    if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                        //pointer is in the packs container when the button was pressed
+                        scrollFunc(this.pack_container.nativeElement);
+                        return;
+                    }
+                }
+                if (this.pack_song_container) {
+                    bounds = this.pack_song_container.nativeElement.getBoundingClientRect();
+                    if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
+                        //pointer is in the packs container when the button was pressed
+                        scrollFunc(this.pack_song_container.nativeElement);
+                        return;
+                    }
                 }
                 //check any other elements that may need to respond to button presses
             })
         );
     }
+
     ngOnDestroy() {
         this.subs.unsubscribe();
     }
-    ngOnInit() {}
-    ngOnChanges(changes: SimpleChanges) {
-        const doScrollThingie = ele => {
-            if (ele && ele.scrollHeight > ele.clientHeight) {
-                var lastPackScrollOffset = ele.scrollTop;
-                var listener = () => {
-                    setTimeout(() => {
-                        var old = ele.style.scrollBehavior;
-                        ele.style.scrollBehavior = 'unset';
-                        ele.scrollTop = lastPackScrollOffset;
-                        ele.style.scrollBehavior = old;
-                        ele.removeEventListener('scroll', listener);
-                    }, 0);
-                };
-                ele.addEventListener('scroll', listener);
-            }
-        };
-        if (this.pack_container) {
-            doScrollThingie(this.pack_container.nativeElement);
-        }
-        if (this.song_container) {
-            doScrollThingie(this.song_container.nativeElement);
-        }
+    ngOnInit() {
+        this.configSvc.getConfig().subscribe(this.handleConfig.bind(this));
+        this.configSvc.configUpdated.subscribe(this.handleConfig.bind(this));
     }
-    ngAfterViewInit() {
-        this.scrollObserver = merge(
-            fromEvent(window, 'scroll'),
-            fromEvent(this.song_container.nativeElement, 'scroll'),
-            fromEvent(this.pack_container.nativeElement, 'scroll'),
-            this.updateSearchResult
-        );
-        this.changeRef.detectChanges();
-        this.updateImages(2500);
-    }
+    ngAfterViewInit() {}
     hasSelected() {
         return this.songs.filter(s => s.Selected).length;
     }
+    private lastDragPointer;
+    dragMove(e) {
+        this.lastDragPointer = e.pointerPosition;
+    }
+    handleConfig(cfg: BeatOnConfig) {
+        this.config = cfg;
+        this.packs = this.nocustomsongs.transform(cfg.Config.Playlists);
+        var customSongsPack = this.onlycustomsongs.transform(cfg.Config.Playlists);
+        if (customSongsPack.length < 1) {
+            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
+            pl.PlaylistID = 'CustomSongs';
+            pl.PlaylistName = 'Custom Songs';
+            const plMsg = new ClientAddOrUpdatePlaylist();
+            plMsg.Playlist = pl;
+            this.msgSvc.sendClientMessage(plMsg);
+            this.songsPack = pl;
+        } else {
+            this.songsPack = customSongsPack[0];
+        }
+        this.songs = this.songsPack.SongList;
+    }
     drop(data) {
-        const pack_container = data.container.element.nativeElement as HTMLElement;
+        const target_pack = data.container.element.nativeElement as HTMLElement;
         const item_element = data.item.element.nativeElement as HTMLElement;
-        const playlistId = pack_container.dataset.playlist_id;
+        var playlistId;
+        if (this.pack_container && this.pack_container.id == data.container.element.id && item_element.dataset.song_id) {
+            //if it's being dropped on top of a playlist, find the playlist under the coordinates of the drop.  cdk dragdrop isn't great in some ways.
+            if (this.pack_container && data.container.element.nativeElement === this.pack_container.nativeElement) {
+                var findPl;
+                findPl = ele => {
+                    if (ele == null) return null;
+                    if (ele.attributes['data-playlist_id']) {
+                        return ele.attributes['data-playlist_id'].value;
+                    } else {
+                        if (ele.id == target_pack.id) return;
+                        else if (ele.parentElement == null) return null;
+                        else return findPl(ele.parentElement);
+                    }
+                };
+                playlistId = findPl(document.elementFromPoint(this.lastDragPointer.x, this.lastDragPointer.y));
+            }
+            if (playlistId == null) {
+                playlistId = this.packs[data.currentIndex].PlaylistID;
+            }
+        } else {
+            playlistId = target_pack.dataset.playlist_id;
+        }
         let index = data.currentIndex;
-        if (!this.selectedPlaylist && pack_container === this.pack_container.nativeElement) {
+        if (!this.selectedPlaylist && target_pack === this.pack_container.nativeElement && !item_element.dataset.song_id) {
+            const csongsindex = this.config.Config.Playlists.findIndex(x => x.PlaylistID == this.songsPack.PlaylistID);
+            if (csongsindex > -1 && index > csongsindex) index = index + 1;
             const msg = new ClientMovePlaylist();
             msg.PlaylistID = item_element.dataset.playlist_id;
             msg.Index = index;
             this.msgSvc.sendClientMessage(msg);
         } else {
-            let songId = item_element.dataset.song_id;
-            if (data.container.element.nativeElement === this.song_container.elementRef.nativeElement) {
-                // is the drop destination custom songs list
-                const rr = this.song_container.getRenderedRange();
-                index = data.currentIndex + rr.start;
+            const rr = this.song_container.getRenderedRange();
+            var rrPack;
+            if (this.pack_song_container) {
+                rrPack = this.pack_song_container.getRenderedRange();
             }
-            if (pack_container === data.previousContainer.element.nativeElement) {
-                const msg = new ClientMoveSongInPlaylist();
-                msg.SongID = songId;
-                msg.Index = index;
-                this.msgSvc.sendClientMessage(msg);
+            let songId = item_element.dataset.song_id;
+            let lastIndex = data.currentIndex;
+            var from: string;
+            var to: string;
+            if (data.container.element.nativeElement === this.song_container.elementRef.nativeElement) {
+                to = 'songs';
+                index = data.currentIndex + rr.start;
+            } else if (
+                this.pack_song_container &&
+                data.container.element.nativeElement === this.pack_song_container.elementRef.nativeElement
+            ) {
+                to = 'packsongs';
+                index = data.currentIndex + rrPack.start;
+            } else if (this.pack_container && data.container.element.nativeElement == this.pack_container.nativeElement) {
+                to = 'pack';
+            }
+            if (data.previousContainer.element.nativeElement == this.song_container.elementRef.nativeElement) {
+                from = 'songs';
+                lastIndex = lastIndex + rr.start;
+            } else if (
+                this.pack_song_container &&
+                data.previousContainer.element.nativeElement == this.pack_song_container.elementRef.nativeElement
+            ) {
+                from = 'packsongs';
+                lastIndex = lastIndex + rrPack.start;
+            } else if (this.pack_container && data.previousContainer.element.nativeElement == this.pack_container.nativeElement) {
+                from = 'pack';
+            }
+            if (from == 'songs' && to == 'pack') {
+                const pl = this.packs.find(x => x.PlaylistID == playlistId);
+                if (pl) {
+                    index = pl.SongList.length;
+                } else {
+                    index = 0;
+                }
+            }
+            console.log(
+                'drop moving songid from ' +
+                    from +
+                    ' at index ' +
+                    lastIndex +
+                    ' to ' +
+                    to +
+                    ' (playlist ID ' +
+                    playlistId +
+                    ') at index ' +
+                    index
+            );
+            if (from == 'pack' && to == 'songs') {
+                var nextIndex = index;
+                data.item.data.SongList.forEach(x => {
+                    const msg = new ClientMoveSongToPlaylist();
+                    msg.ToPlaylistID = playlistId;
+                    msg.SongID = x.SongID;
+                    msg.Index = nextIndex;
+                    this.msgSvc.sendClientMessage(msg);
+                    nextIndex = nextIndex + 1;
+                });
+                this.removePlaylist(data.item.data.PlaylistID);
             } else {
-                const msg = new ClientMoveSongToPlaylist();
-                msg.ToPlaylistID = playlistId;
-                msg.SongID = songId;
-                msg.Index = index;
-                this.msgSvc.sendClientMessage(msg);
+                if (from == to) {
+                    const msg = new ClientMoveSongInPlaylist();
+                    msg.SongID = songId;
+                    msg.Index = index;
+                    this.msgSvc.sendClientMessage(msg);
+                } else {
+                    const msg = new ClientMoveSongToPlaylist();
+                    msg.ToPlaylistID = playlistId;
+                    msg.SongID = songId;
+                    msg.Index = index;
+                    this.msgSvc.sendClientMessage(msg);
+                }
+                data.previousContainer.data.splice(lastIndex, 1);
+                data.container.data.splice(index, 0, data.item.data);
             }
         }
     }
@@ -188,7 +290,7 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
             this.msgSvc.sendClientMessage(msg);
         });
         pack.SongList = pack.SongList.concat(songsToMove);
-        this.songs.forEach(s => (s.selected = false));
+        this.songs.forEach(s => (s.Selected = false));
         this.checkboxChecked = false;
     }
     getBackground(SongID) {
@@ -235,6 +337,29 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         });
         dialogRef.afterClosed().subscribe(res => this.dialogClosed(res));
     }
+    deletePlaylist(playlist: BeatSaberPlaylist) {
+        if (!playlist.SongList.length) {
+            this.removePlaylist(playlist.PlaylistID);
+        } else {
+            const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+                width: '450px',
+                height: '200px',
+                disableClose: true,
+                data: {
+                    title: 'Delete ' + playlist.PlaylistName + '?',
+                    subTitle:
+                        'Are you sure you want to delete this playlist' +
+                        (playlist.SongList.length ? ' and all ' + playlist.SongList.length + ' songs on it?' : '?'),
+                    button1Text: 'Yes',
+                },
+            });
+            dialogRef.afterClosed().subscribe(res => {
+                if (res == 1) {
+                    this.removePlaylist(playlist.PlaylistID);
+                }
+            });
+        }
+    }
     dialogClosed(result) {
         //if cancelled
         if (result == null) return;
@@ -255,9 +380,7 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
                     cfg.Config.Playlists.forEach(p => {
                         if (p.PlaylistID == result.playlist.PlaylistID) {
                             found = p;
-                            console.log(result.playlist.CoverImageBytes);
                             if (result.playlist.CoverImageBytes && result.playlist.CoverImageBytes.length > 50) {
-                                console.log('yesimage');
                                 found.CoverImageBytes = result.playlist.CoverImageBytes;
                             }
                             found.PlaylistName = result.playlist.PlaylistName;
@@ -266,7 +389,6 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
                     if (found) {
                         const msg = new ClientAddOrUpdatePlaylist();
                         msg.Playlist = found;
-                        console.log(JSON.stringify(msg));
                         this.msgSvc.sendClientMessage(msg);
                         var sub;
                         sub = this.msgSvc.configChangeMessage.subscribe(cfg => {
@@ -289,14 +411,6 @@ export class SongPackManagerComponent implements OnInit, OnChanges {
         this.msgSvc.sendClientMessage(msg);
     }
     removeSongFromPack(song, pack) {
-        if (this.packs.findIndex(x => x.PlaylistID == 'CustomSongs') < 0) {
-            const pl: BeatSaberPlaylist = <BeatSaberPlaylist>{ SongList: [] };
-            pl.PlaylistID = 'CustomSongs';
-            pl.PlaylistName = 'Custom Songs';
-            const plMsg = new ClientAddOrUpdatePlaylist();
-            plMsg.Playlist = pl;
-            this.msgSvc.sendClientMessage(plMsg);
-        }
         const msg = new ClientMoveSongToPlaylist();
         msg.ToPlaylistID = 'CustomSongs';
         msg.SongID = song.SongID;

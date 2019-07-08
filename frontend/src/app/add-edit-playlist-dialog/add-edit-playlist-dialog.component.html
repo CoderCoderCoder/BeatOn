@@ -3,7 +3,7 @@
 
     <mat-card-header>
         <input type="file" accept="image/*" #file (change)="loadCover(file.files)" hidden>
-        <button fast-click (click)="file.click()" mat-raised-button class="coverContainer">
+        <button fast-click (click)="onQuest()?questClick():file.click()" mat-raised-button class="coverContainer">
             <div class="coverPlaceholder">Choose Cover Image</div>
             <img class="cover" [style.background-image]="getCover()" />
           </button>

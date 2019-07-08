@@ -59,7 +59,8 @@ import { MainModsComponent } from './main-mods/main-mods.component';
 import { LazyLoadImageModule } from 'ng-lazyload-image';
 import { NgxSmartModalModule, NgxSmartModalService } from 'ngx-smart-modal';
 import { NoCustomSongsPipe } from './pipes/no-custom-songs';
-
+import { OnlyCustomSongsPipe } from './pipes/only-custom-songs';
+import { ImagePickerDialogComponent } from './image-picker-dialog/image-picker-dialog.component';
 @NgModule({
     declarations: [
         AppComponent,
@@ -73,6 +74,7 @@ import { NoCustomSongsPipe } from './pipes/no-custom-songs';
         MainBrowserComponent,
         SafePipe,
         NoCustomSongsPipe,
+        OnlyCustomSongsPipe,
         PlaylistSliderComponent,
         PlaylistSongsComponent,
         ToolsComponent,
@@ -87,8 +89,14 @@ import { NoCustomSongsPipe } from './pipes/no-custom-songs';
         ConfirmDialogComponent,
         SongPackManagerComponent,
         MainModsComponent,
+        ImagePickerDialogComponent,
     ],
-    entryComponents: [ProgressSpinnerDialogComponent, AddEditPlaylistDialogComponent, ConfirmDialogComponent],
+    entryComponents: [
+        ProgressSpinnerDialogComponent,
+        AddEditPlaylistDialogComponent,
+        ConfirmDialogComponent,
+        ImagePickerDialogComponent,
+    ],
     imports: [
         ToastrModule.forRoot({
             positionClass: 'toast-bottom-right',
@@ -127,6 +135,7 @@ import { NoCustomSongsPipe } from './pipes/no-custom-songs';
         MatListModule,
         FlexLayoutModule,
         NgxSmartModalModule,
+        MatGridListModule,
     ],
     providers: [NgxSmartModalService],
     bootstrap: [AppComponent],

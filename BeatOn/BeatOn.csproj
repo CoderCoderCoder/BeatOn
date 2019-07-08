@@ -152,9 +152,11 @@
     <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
+    <Compile Include="Core\RequestHandlers\GetImages.cs" />
     <Compile Include="Core\RequestHandlers\GetModStatus.cs" />
     <Compile Include="Core\RequestHandlers\GetNetInfo.cs" />
     <Compile Include="Core\RequestHandlers\GetPlaylistCover.cs" />
+    <Compile Include="Core\RequestHandlers\GetImage.cs" />
     <Compile Include="Core\RequestHandlers\GetSongCover.cs" />
     <Compile Include="Core\RequestHandlers\PostAutoCreatePlaylists.cs" />
     <Compile Include="Core\RequestHandlers\DeletePendingConfig.cs" />
@@ -326,9 +328,6 @@
     <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\scripts.43853d6e069605d1aaca.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
   </ItemGroup>
   <ItemGroup>
@@ -356,13 +355,13 @@
     <AndroidAsset Include="Assets\www\saber.d1b47c029d52c0424a1c.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.a45cb8c6e3e2ad3f3683.css" />
+    <AndroidAsset Include="Assets\www\styles.897db6043558b11e7565.css" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.2077e7dde0b6782efc4b.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.7c5693f7439c9918f1de.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.981c5c3e425f9f069c4a.js" />
+    <AndroidAsset Include="Assets\www\main-es5.d4e51f334f2311759f72.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

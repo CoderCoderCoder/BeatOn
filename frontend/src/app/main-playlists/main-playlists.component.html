@@ -12,8 +12,9 @@
 <app-song-pack-manager
   #songManager
   *ngIf="config&&customPlaylist"
-  [packs]="config.Playlists | nocustomsongs"
-  [songs]="customPlaylist.SongList"
-  [songsPack] = "customPlaylist">
 
+  >
+ <!-- [packs]="config.Playlists | nocustomsongs"
+  [songs]="customPlaylist.SongList"
+  [songsPack] = "customPlaylist"-->
 </app-song-pack-manager>

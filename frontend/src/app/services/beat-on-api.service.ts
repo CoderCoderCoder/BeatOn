@@ -79,4 +79,12 @@ export class BeatOnApiService {
     postLogs(tag) {
         return this.http.post(this.hostname + '/host/mod/postlogs?tag=' + encodeURIComponent(tag), {});
     }
+
+    getImageBlob(filename) {
+        return this.http.get(this.hostname + '/host/mod/image?filename=' + encodeURIComponent(filename), { responseType: 'blob' });
+    }
+
+    getImages() {
+        return this.http.get(this.hostname + '/host/mod/images');
+    }
 }

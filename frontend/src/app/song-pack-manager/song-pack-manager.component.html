@@ -1,7 +1,8 @@
+<span cdkDropListGroup>
 <div class="outer-container">
   <div class="left-col" *ngIf="!selectedPlaylist">
     <div class="packs-left side-packs">
-      <h2>
+      <h4 class="playlists-label-top">
 
         <button fast-click mat-flat-button class="right"
                 color="primary"
@@ -10,7 +11,7 @@
           <mat-icon>playlist_add</mat-icon>
         </button>
         <button matTooltip="Auto Sort into Playlists" class="right" fast-click mat-raised-button [matMenuTriggerFor]="menu" mat-button color="accent" >
-          <mat-icon>sort</mat-icon>
+          <mat-icon>sort</mat-icon> 
         </button>
         <mat-menu #menu="matMenu">
           <button fast-click [matMenuTriggerFor]="subMenuNameCount" mat-menu-item>Sort into New Playlists by Name</button>
@@ -23,42 +24,50 @@
           <button fast-click (click)="autoSortName(100)"  mat-menu-item>100 Per Playlist</button>
         </mat-menu>
         My Playlists
-      </h2>
+      </h4>
       <div class="pack-container" #pack_container
-           [cdkDropListData]="packs"
+           [cdkDropListData]="packs" 
            [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}"
-           cdkDropList (cdkDropListDropped)="drop($event)">
-        <div  class="packOuter" *ngFor="let pack of packs" cdkDrag [cdkDragData]="pack" [attr.data-playlist_id]="pack.PlaylistID">
+           cdkDropList (cdkDropListDropped)="drop($event)"
+           >
+        <div class="packOuter" *ngFor="let pack of packs" cdkDrag [cdkDragData]="pack" [attr.data-playlist_id]="pack.PlaylistID" (click)="selectedPlaylist = pack;">
           <div class="pack-handle-backer" cdkDragHandle>
-            <div class="handle pack-handle-backer"></div>
+            <div (click)="selectedPlaylist = pack; $event.stopPropagation();" class="handle pack-handle-backer"></div>
           </div>
-          <i fast-click matTooltip="Open this playlist" matTooltipPosition="below"
-             class="material-icons right show-pack cursor"
-             (click)="selectedPlaylist = pack;"
-          >
-            navigate_next
-          </i>
+
           <!--<i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>-->
           <!--<i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>-->
           <!--<i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>-->
           <!--<i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>-->
           <!--&lt;!&ndash;<i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>&ndash;&gt;-->
-          <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(pack)" class="material-icons right cursor" >edit</i>
-          <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack)"
+          <i fast-click class="material-icons cursor orange-text right"
+          matTooltip="Remove playlist" matTooltipPosition="below"
+          (click)="deletePlaylist(pack); $event.stopPropagation();">close</i>
+          <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(pack); $event.stopPropagation();" class="material-icons right cursor" >edit</i>
+          <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below" *ngIf="hasSelected()" (click)="addSelected(pack); $event.stopPropagation();"
              class="material-icons right cursor playlist-check">done_all</i>
-          <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(pack.PlaylistID)" [errorImage]="defaultImage"
+          <img src="{{getPackBackground(pack.PlaylistID)}}" 
                class="pack-image  handle"/>
           <i class="material-icons cursor grey-text drag-indicator left drag-playlist handle"
              matTooltip="Drag this playlist to re-order" matTooltipPosition="below"
           >more_vert</i>
-          <h3 class="name truncate">{{pack.PlaylistName}}</h3>
+          <i fast-click matTooltip="Open this playlist" matTooltipPosition="below"
+          class="material-icons right show-pack cursor"
+          (click)="selectedPlaylist = pack; $event.stopPropagation();"
+       >
+         navigate_next
+       </i>
+          <div (click)="selectedPlaylist = pack; $event.stopPropagation();" class="cursor name truncate">{{pack.PlaylistName}}</div>
         </div>
       </div>
     </div>
-  </div>
-  <span cdkDropListGroup>
-    <div class="left-col" *ngIf="selectedPlaylist">
+   </div>
+   
+  <div class="left-col" *ngIf="selectedPlaylist">
       <div class="playlistInner" [attr.data-playlist_id]="selectedPlaylist.PlaylistID">
+        <div class="pack-handle-backer" cdkDragHandle>
+            <div (click)="selectedPlaylist = null;" class="handle pack-handle-backer"></div>
+        </div>
         <i fast-click matTooltip="Back to playlists" matTooltipPosition="below"
            class="material-icons show-pack cursor left"
            (click)="selectedPlaylist = null;">
@@ -73,71 +82,74 @@
         <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below"
            *ngIf="hasSelected()" (click)="addSelected(selectedPlaylist)"
            class="material-icons right cursor playlist-check">done_all</i>
-        <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(selectedPlaylist.PlaylistID)" [errorImage]="defaultImage"
+        <img (click)="selectedPlaylist = null;" src="{{getPackBackground(selectedPlaylist.PlaylistID)}}" 
              class="pack-image  handle"/>
-        <h3 class="name-top truncate">{{selectedPlaylist.PlaylistName}}</h3>
+        <h4 (click)="selectedPlaylist = null;" class="name-top truncate">{{selectedPlaylist.PlaylistName}}</h4>
       </div>
-
-        <div class="pack-song-container-outer">
-          <ul [cdkDropListData]="selectedPlaylist.SongList" class="collection pack-song-container" cdkDropList (cdkDropListDropped)="drop($event)"
-              [attr.data-playlist_id]="selectedPlaylist.PlaylistID">
-            <li *ngFor="let song of selectedPlaylist.SongList" cdkDrag [cdkDragData]="song" class="collection-song avatar" [attr.data-song_id]="song.SongID">
-              <div class="handle song-handle-backer" cdkDragHandle></div>
-              <i fast-click class="material-icons cursor orange-text drag-indicator right"
-                 matTooltip="Remove song from playlist" matTooltipPosition="below"
-                 (click)="removeSongFromPack(song,selectedPlaylist)">close</i>
-              <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getBackground(song.SongID)" [errorImage]="defaultImage" alt="" class="circle red handle" />
-              <i class="material-icons cursor grey-text drag-indicator handle"
-                 matTooltip="Drag this song to reorder" matTooltipPosition="below"
-              >more_vert</i>
-              <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.SongName}}</span>
-              <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.LevelAuthorName?'Level Author: '+song.LevelAuthorName:''}}{{song.SongAuthorName?' - Song Author: '+song.SongAuthorName:''}}{{song.SongName?' - '+song.SongName:''}}</p>
-            </li>
-            <li class="add-to-drag">Drop song here to add!</li>
-          </ul>
-        </div>
-    </div>
-    <div class="right-col">
-      <div class="packs-right">
-        <img [scrollObservable]="scrollObserver" [defaultImage]="defaultImage" [lazyLoad]="getPackBackground(songsPack.PlaylistID)" [errorImage]="defaultImage" class="main-pack-image"/>
-        <h2>
-          <div class="right song-sort">
-            <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
-
-            <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty('CustomSongs')">fitness_center</i>
-            <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor('CustomSongs')">face</i>
-            <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName('CustomSongs')">sort</i>
-
-            <i fast-click matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
-            <i fast-click matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
-
-          </div>
-          {{ songsPack.PlaylistName }}
-          <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(songsPack)" class="material-icons cursor edit-main-playlist" >edit</i>
-        </h2>
-        <cdk-virtual-scroll-viewport [cdkDropListData]="songs"  [itemSize]="86" class="collection song-container" #song_container cdkDropList (cdkDropListDropped)="drop($event)"
-                                     [attr.data-playlist_id]="'CustomSongs'" [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}">
-          <!--dragula="SONGS" [(dragulaModel)]="songs"-->
-          <li *cdkVirtualFor="let song of songs;let i = index" cdkDrag [cdkDragData]="song" class="collection-song avatar" [attr.data-song_id]="song.SongID">
+      <div class="pack-song-container-outer">
+        <cdk-virtual-scroll-viewport  [itemSize]="86"  [cdkDropListData]="selectedPlaylist.SongList" class="collection pack-song-container" cdkDropList (cdkDropListDropped)="drop($event)"
+          #pack_song_container  [attr.data-playlist_id]="selectedPlaylist.PlaylistID">
+          <li *cdkVirtualFor="let song of selectedPlaylist.SongList" (cdkDragMoved)="dragMove($event)" cdkDrag [cdkDragData]="song" class="collection-song avatar" [attr.data-song_id]="song.SongID">
             <div class="handle song-handle-backer" cdkDragHandle></div>
             <i fast-click class="material-icons cursor orange-text drag-indicator right"
-               matTooltip="Delete this song." matTooltipPosition="below"
-               (click)="removeSong(song.SongID)">close</i>
-            <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
-            <mat-checkbox [(ngModel)]="song.Selected" color="primary" class="right select-song" *ngIf="checkboxChecked">Select Song</mat-checkbox>
-
-            <img src="{{getBackground(song.SongID)}}" onerror="this.src = 'assets/default-pack-cover.png'" alt="" class="circle red handle" />
+                matTooltip="Remove song from playlist" matTooltipPosition="below"
+                (click)="removeSongFromPack(song,selectedPlaylist)">close</i>
+            <img src="{{getBackground(song.SongID)}}" alt="" class="circle red handle" />
             <i class="material-icons cursor grey-text drag-indicator handle"
-               matTooltip="Drag this song to a playlist." matTooltipPosition="below"
+                matTooltip="Drag this song to reorder" matTooltipPosition="below"
             >more_vert</i>
             <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.SongName}}</span>
             <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.LevelAuthorName?'Level Author: '+song.LevelAuthorName:''}}{{song.SongAuthorName?' - Song Author: '+song.SongAuthorName:''}}{{song.SongName?' - '+song.SongName:''}}</p>
           </li>
+          <li class="add-to-drag">Drop song here to add!</li>
         </cdk-virtual-scroll-viewport>
       </div>
+  </div>
+  <ng-template style="width:10px; height:10px; background: yellow;" #empty>
+
+  </ng-template>
+  <div class="right-col">
+    <div class="packs-right">
+      <img src="{{getPackBackground(songsPack.PlaylistID)}}" class="main-pack-image"/>
+      <h4>
+        <div class="right song-sort">
+          <!--<i matTooltip="Sort by Recent" matTooltipPosition="below" class="material-icons right cursor" (click)="orderSongs.emit('recent')">swap_vert</i>-->
+
+          <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty('CustomSongs')">fitness_center</i>
+          <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor('CustomSongs')">face</i>
+          <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName('CustomSongs')">sort</i>
+
+          <i fast-click matTooltip="Select multiple songs to add to a pack" (click)="checkboxChecked = !checkboxChecked" matTooltipPosition="below" class="material-icons right cursor">check_box</i>
+          <i fast-click matTooltip="Select all / Deselect all" (click)="selectAll()" matTooltipPosition="below" class="material-icons right cursor">done_all</i>
+
+        </div>
+        <div class="truncate songpackname">{{ songsPack.PlaylistName }}</div>
+        <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(songsPack)" class="material-icons cursor edit-main-playlist" >edit</i>
+      </h4>
+      <cdk-virtual-scroll-viewport [cdkDropListData]="songs"  [itemSize]="86" class="collection song-container" #song_container cdkDropList (cdkDropListDropped)="drop($event)"
+                                    [attr.data-playlist_id]="'CustomSongs'" [ngClass]="{'hide-scroll-bar':integrationService.isAppLoaded()}">
+        <!--dragula="SONGS" [(dragulaModel)]="songs"-->
+        <li *cdkVirtualFor="let song of songs;let i = index" (cdkDragMoved)="dragMove($event)" cdkDrag [cdkDragData]="song" class="collection-song avatar" [attr.data-song_id]="song.SongID">
+          <div class="handle song-handle-backer" cdkDragHandle></div>
+          <i fast-click class="material-icons cursor orange-text drag-indicator right"
+              matTooltip="Delete this song." matTooltipPosition="below"
+              (click)="removeSong(song.SongID)">close</i>
+          <!--<i class="material-icons cursor drag-indicator right" (click)="openSong.emit(song.SongID)">folder_open</i>-->
+          <mat-checkbox [(ngModel)]="song.Selected" color="primary" class="right select-song" *ngIf="checkboxChecked">Select Song</mat-checkbox>
+
+          <img src="{{getBackground(song.SongID)}}" onerror="this.src = 'assets/default-pack-cover.png'" alt="" class="circle red handle" />
+          <i class="material-icons cursor grey-text drag-indicator handle"
+              matTooltip="Drag this song to a playlist." matTooltipPosition="below"
+          >more_vert</i>
+          <span class="title truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.SongName}}</span>
+          <p class="description truncate" [ngStyle]="{'width': checkboxChecked?'calc(100% - 250px)':'calc(100% - 150px)'}">{{song.LevelAuthorName?'Level Author: '+song.LevelAuthorName:''}}{{song.SongAuthorName?' - Song Author: '+song.SongAuthorName:''}}{{song.SongName?' - '+song.SongName:''}}</p>
+        </li>
+        <li class="add-to-drag">Drop song here to add!</li>
+      </cdk-virtual-scroll-viewport>
     </div>
-  </span>
+  </div>  
 </div>
+</span>
 <ul class="collection hide-this" #mirror_holder>
 
 </ul>
