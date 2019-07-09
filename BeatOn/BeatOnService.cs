@@ -37,7 +37,7 @@ namespace BeatOn
                     if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage) == Android.Content.PM.Permission.Granted)
                     {
                         //Toast.makeText(getApplicationContext(), "Hello Javatpoint", Toast.LENGTH_SHORT).show();
-                        _core = new BeatOnCore(this, _transciever.SendPackageInstall, _transciever.SendPackageUninstall);
+                        _core = new BeatOnCore(this, _transciever.SendPackageInstall, _transciever.SendPackageUninstall, (x) => { _transciever.SendIntentAction(new IntentAction() { PackageName = x, Type = IntentActionType.Exit }); });
                         _core.Start();
                     }
                 }

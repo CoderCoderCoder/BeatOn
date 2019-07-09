@@ -152,6 +152,7 @@
     <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
+    <Compile Include="Core\RequestHandlers\PostPackageAction.cs" />
     <Compile Include="Core\RequestHandlers\GetImages.cs" />
     <Compile Include="Core\RequestHandlers\GetModStatus.cs" />
     <Compile Include="Core\RequestHandlers\GetNetInfo.cs" />
@@ -358,10 +359,10 @@
     <AndroidAsset Include="Assets\www\styles.897db6043558b11e7565.css" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.7c5693f7439c9918f1de.js" />
+    <AndroidAsset Include="Assets\www\main-es2015.f34b9a11eac6e441fa7b.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.d4e51f334f2311759f72.js" />
+    <AndroidAsset Include="Assets\www\main-es5.dd1861acc121638d015d.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

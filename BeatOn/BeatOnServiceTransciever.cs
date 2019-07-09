@@ -34,6 +34,16 @@ namespace BeatOn
     {
         public string PackageUrl { get; set; }
     }
+    public class IntentAction
+    {
+        public IntentActionType Type { get; set; }
+        public string PackageName { get; set; }
+    }
+    public enum IntentActionType
+    {
+        Launch,
+        Exit
+    }
 
     public enum BeatOnIntent
     {
@@ -42,7 +52,8 @@ namespace BeatOn
         RestartCore,
         ImportConfigFile,
         InstallPackage,
-        UninstallPackage
+        UninstallPackage,
+        IntentAction
     }
 
     public class BeatOnServiceTransceiver : BroadcastReceiver
@@ -61,6 +72,7 @@ namespace BeatOn
         public event EventHandler<DownloadUrlInfo> DownloadUrlReceived;
         public event EventHandler<PackageInfo> InstallPackageReceived;
         public event EventHandler<PackageInfo> UninstallPackageReceived;
+        public event EventHandler<IntentAction> IntentActionReceived;
 
         public void RegisterContextForIntents(params BeatOnIntent[] intents)
         {
@@ -75,7 +87,6 @@ namespace BeatOn
             _context.UnregisterReceiver(this);
             IsRegistered = false;
         }
-
 
         private void SendIntent(BeatOnIntent intent, string json)
         {
@@ -117,6 +128,11 @@ namespace BeatOn
             SendIntent(BeatOnIntent.ImportConfigFile, JsonConvert.SerializeObject(info));
         }
 
+        public void SendIntentAction(IntentAction action)
+        {
+            SendIntent(BeatOnIntent.IntentAction, JsonConvert.SerializeObject(action));
+        }
+
         public override void OnReceive(Context context, Intent intent)
         {
             try
@@ -148,6 +164,9 @@ namespace BeatOn
                         break;
                     case BeatOnIntent.InstallPackage:
                         UninstallPackageReceived?.Invoke(this, JsonConvert.DeserializeObject<PackageInfo>(json));
+                        break;
+                    case BeatOnIntent.IntentAction:
+                        IntentActionReceived?.Invoke(this, JsonConvert.DeserializeObject<IntentAction>(json));
                         break;
                     default:
                         Log.LogErr($"Unhandled enum type in OnReceive: {intentType}");

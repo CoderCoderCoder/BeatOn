@@ -87,4 +87,7 @@ export class BeatOnApiService {
     getImages() {
         return this.http.get(this.hostname + '/host/mod/images');
     }
+    startBeatSaber() {
+        return this.http.post(this.hostname + '/host/mod/package?action=start&package=com.beatgames.beatsaber', {});
+    }
 }

@@ -27,7 +27,7 @@ namespace BeatOn.Core
         private Context _context;
         public ImportManager ImportManager { get; private set; }
 
-        public BeatOnCore(Context context, Action<string> triggerPackageInstall, Action<string> triggerPackageUninstall)
+        public BeatOnCore(Context context, Action<string> triggerPackageInstall, Action<string> triggerPackageUninstall, Action<string> triggerStopPackage)
         {
             _context = context;
             _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
@@ -35,8 +35,11 @@ namespace BeatOn.Core
             ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
+            _triggerStopPackage = triggerStopPackage;
             ImageUtils.Instance = new ImageUtilsDroid();
         }
+
+        Action<string> _triggerStopPackage;
 
         public void Start()
         {
@@ -112,6 +115,33 @@ namespace BeatOn.Core
             {
                 _qae.Dispose();
             }
+        }
+
+
+        private void SendPackageStop(string packageName)
+        {
+            throw new NotImplementedException("this doesn't seem to work from a service");
+            _triggerStopPackage(packageName);
+            //var intent = new Intent("com.oculus.system_activity");
+            //intent.SetPackage(packageName);
+            //intent.PutExtra("intent_pkg", "com.oculus.vrshell");
+            //intent.PutExtra("intent_cmd", "{\"Command\":\"exitToHome\", \"PlatformUIVersion\":3, \"ToPackage\":\""+packageName+"\"}");
+            //_context.SendBroadcast(intent);
+            //intent.PutExtra("intent_cmd", "{\"Command\":\"returnToLauncher\", \"PlatformUIVersion\":3, \"ToPackage\":\"" + packageName + "\"}");
+            //_context.SendBroadcast(intent);
+            
+        }
+
+        private void SendPackageLaunch(string packageName)
+        {
+            var intent = _context.PackageManager.GetLaunchIntentForPackage(packageName);
+            intent.PutExtra("intent_cmd", "");
+            intent.PutExtra("intent_pkg", "com.oculus.vrshell");
+            _context.StartActivity(intent);
+            //Intent intent = new Intent("android.intent.action.VIEW");
+            //intent.SetComponent(new ComponentName("com.oculus.vrshell", "com.oculus.vrshell.MainActivity"));
+            //intent.SetData(Android.Net.Uri.Parse("apk://"+ packageName));
+            //_context.StartActivity(intent);
         }
 
         //private void UpdateConfig(BeatSaberQuestomConfig config)
@@ -401,6 +431,7 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "/mod/postlogs", new PostUploadLogs());
             _webServer.Router.AddRoute("GET", "/mod/images", new GetImages(_qaeConfig));
             _webServer.Router.AddRoute("GET", "/mod/image", new GetImage(_qaeConfig));
+            _webServer.Router.AddRoute("POST", "/mod/package", new PostPackageAction(SendPackageLaunch, SendPackageStop));
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
             _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));

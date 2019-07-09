@@ -8,7 +8,8 @@
       Sync to Beat Saber
     </button>
     <button matTooltip="Beat On is processing, wait for it to finish to sync." class="right sync-spot sync-placeholder nosync" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === false && disableSync()">Processing...</button>
-    <button matTooltip="Beat Saber is in sync." class="right sync-placeholder sync-spot" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true" >Beat Saber Synced</button>
+    <button matTooltip="Beat Saber is in sync." class="right sync-placeholder sync-spot" mat-button *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true && !appIntegrated" >Beat Saber Synced</button>
+    <button matTooltip="Beat Saber is in sync." (click)="clickStartBeatSaber()"  class="sync-spot right sync-button happy" *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && config?.IsCommitted === true && appIntegrated" >Start Beat Saber</button>
     <app-browser-nav matTooltip="Browse to web site." class="right top-button" (linkSelected)="linkSelected($event)" *ngIf="modStatusLoaded &&  modStatus.CurrentStatus == 'ModInstalled' && showBrowser"></app-browser-nav>
     
     <button matTooltip="Refresh" class="right top-button" fast-click (click)="clickRefresh()" @fade *ngIf="modStatusLoaded && modStatus.CurrentStatus == 'ModInstalled' && showRefreshButton" mat-stroked-button ><mat-icon>cached</mat-icon></button>
@@ -19,17 +20,19 @@
 
     <div class="logo"></div>
   </mat-toolbar>
-
-  <mat-card fxLayout="column" *ngIf="!modStatusLoaded" class="setup-card">
-
-    <div fxLayout="column" *ngIf="!modStatusLoaded" >
-      <h2>Checking mod installation status...</h2>
-    </div>
-    <p>Depending on how many songs are loaded, Beat On may take 5-120 seconds to load...</p>
-
-  </mat-card>
   <div  class="fullheight" fxLayout="column">
     <router-outlet fxLayout="column" [hidden]="!modStatusLoaded" ></router-outlet>
   </div>
+  <mat-card *ngIf="!modStatusLoaded || (this.config.Config == null && modStatus.CurrentStatus == 'ModInstalled')">
+      <div fxLayout="column" *ngIf="!modStatusLoaded" >
+        <h3>Checking mod installation status...</h3>
+      </div>
+  
+      <div *ngIf="(modStatusLoaded && this.config.Config == null && modStatus.CurrentStatus == 'ModInstalled')" fxLayout="column" >
+      <h3>
+      Loading configuration... depending on how many songs are loaded, Beat On may take 5-90 seconds to load...
+    </h3></div>
+  </mat-card>
+
 </div>
 

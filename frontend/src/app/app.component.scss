@@ -132,3 +132,29 @@
     50% { background-color: #FF0000; box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
   }
+
+
+  
+ .happy {
+  height: 35px;
+   background-color: #004A7F;
+   -webkit-border-radius: 4px;
+   border-radius: 4px;
+   border: none;
+   color: #FFFFFF;
+   cursor: pointer;
+   display: inline-block;
+   font-family: Arial;
+   font-size: 14px;
+   padding: 5px 10px;
+   text-align: center;
+   text-decoration: none;
+   animation: glowing-happy 3500ms infinite;
+ };
+
+  @keyframes glowing-happy {
+    0% { background-color: #20599d; box-shadow: 0 0 10px #20599d; }
+    50% { background-color: #216bad; box-shadow: 0 0 20px #216bad; }
+    100% { background-color: #20599d; box-shadow: 0 0 10px #20599d; }
+  }
+
