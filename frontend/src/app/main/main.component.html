@@ -1,4 +1,4 @@
-   
+
 <div style="height: 100%" fxLayout="column">
   <nav class="tabNav" fxLayout="row" mat-tab-nav-bar>
     <a mat-tab-link
@@ -11,8 +11,8 @@
     {{link.label}}
     </a>
   </nav>
-  <div id="mainContentDiv" class="fullheight" fxLayout="column" [@routerTransition]="getState(o)">
-  <router-outlet fxLayout="column" #o="outlet"></router-outlet>    
+  <div id="mainContentDiv" class="fullheight" fxLayout="column" >
+  <router-outlet fxLayout="column" #o="outlet"></router-outlet>
   </div>
 
 

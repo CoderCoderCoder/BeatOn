@@ -13,10 +13,10 @@ export interface HostDownload
 
 export enum HostDownloadStatusType
 {
-    NotStarted,
-    Downloading,
-    Downloaded,
-    Installing,
-    Installed,
-    Failed
+    NotStarted = <any>"NotStarted",
+    Downloading = <any>"Downloading",
+    Downloaded = <any>"Downloaded",
+    Processing = <any>"Proccessing",
+    Processed = <any>"Processed",
+    Failed = <any>"Failed"
 }

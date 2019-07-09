@@ -25,6 +25,9 @@ namespace BeatOn.Core.MessageHandlers
             _getQae = getQae;
             _getConfig = getConfig;
         }
+
+        public MessageType HandlesType => MessageType.AddOrUpdatePlaylist;
+
         public void HandleMessage(MessageBase message)
         {
             var msg = message as ClientAddOrUpdatePlaylist;

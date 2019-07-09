@@ -10,27 +10,29 @@ import { MainBrowserComponent } from './main-browser/main-browser.component';
 import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { CreditsComponent } from './credits/credits.component';
+import { MainModsComponent } from './main-mods/main-mods.component';
 
 const routes: Routes = [
-  { path: 'setup', component: SetupComponent },
-  { path: 'setupstep1', component: SetupStep1Component },
-  { path: 'setupstep2', component: SetupStep2Component },
-  { path: 'setupstep3', component: SetupStep3Component },
-  {
-    path: 'main',
-    component: MainComponent,
-    children: [
-      {path: 'playlists', component: MainPlaylistsComponent},
-      {path: 'browser', component: MainBrowserComponent},
-      {path: 'tools', component: ToolsComponent},
-      {path: 'upload', component: RemoteUploadComponent},
-      {path: 'credits', component: CreditsComponent}
-    ]
-  }
+    { path: 'setup', component: SetupComponent },
+    { path: 'setupstep1', component: SetupStep1Component },
+    { path: 'setupstep2', component: SetupStep2Component },
+    { path: 'setupstep3', component: SetupStep3Component },
+    {
+        path: 'main',
+        component: MainComponent,
+        children: [
+            { path: 'playlists', component: MainPlaylistsComponent },
+            { path: 'browser', component: MainBrowserComponent },
+            { path: 'tools', component: ToolsComponent },
+            { path: 'upload', component: RemoteUploadComponent },
+            { path: 'credits', component: CreditsComponent },
+            { path: 'mods', component: MainModsComponent },
+        ],
+    },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

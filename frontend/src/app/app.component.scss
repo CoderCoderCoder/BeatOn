@@ -14,6 +14,27 @@
 .toolbar {
   min-height: 50px;
   height: 50px;
+  display: block!important;
+}
+.sync-spot {
+  width: 155px;
+  height: 39px;
+}
+.sync-placeholder {
+  margin-top: 6px;
+}
+.undo-spot {
+  margin-top: 6px;
+  color: #ff5722;
+  margin-left:6px;
+  margin-right:6px;
+}
+.top-button{
+  margin-top: 6px;
+  margin-right: 1.5em;
+}
+.sync-button{
+  margin-top: 7px;
 }
 .logo {
   background: url("../assets/logo.png") no-repeat center;
@@ -49,10 +70,31 @@
   left: 2px;
   font-size:32;
 }
+
+.nosync {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Arial;
+  font-size: 14px;
+  padding: 5px 10px;
+  text-align: center;
+  text-decoration: none;
+  background-color: darkgoldenrod;
+  height: 26px;
+  width: 140.63px;
+}
+.right{
+  float: right;
+}
  .warning {
+   height: 35px;
     background-color: #004A7F;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
     border: none;
     color: #FFFFFF;
     cursor: pointer;
@@ -66,25 +108,25 @@
     -moz-animation: glowing 1500ms infinite;
     -o-animation: glowing 1500ms infinite;
     animation: glowing 1500ms infinite;
-  }
+  };
   @-webkit-keyframes glowing {
     0% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; -webkit-box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; -webkit-box-shadow: 0 0 3px #B20000; }
   }
-  
+
   @-moz-keyframes glowing {
     0% { background-color: #B20000; -moz-box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; -moz-box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; -moz-box-shadow: 0 0 3px #B20000; }
   }
-  
+
   @-o-keyframes glowing {
     0% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; box-shadow: 0 0 40px #FF0000; }
     100% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
   }
-  
+
   @keyframes glowing {
     0% { background-color: #B20000; box-shadow: 0 0 3px #B20000; }
     50% { background-color: #FF0000; box-shadow: 0 0 40px #FF0000; }

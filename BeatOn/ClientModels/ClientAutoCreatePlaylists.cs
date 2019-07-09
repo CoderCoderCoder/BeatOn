@@ -18,5 +18,6 @@ namespace BeatOn.ClientModels
         public override MessageType Type => MessageType.AutoCreatePlaylists;
         public PlaylistSortMode SortMode { get; set; }
         public int? MaxPerNamePlaylist { get; set; }
+        public bool RemoveEmptyPlaylists { get; set; }
     }
 }

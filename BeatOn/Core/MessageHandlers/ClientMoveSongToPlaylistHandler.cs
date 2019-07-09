@@ -26,12 +26,15 @@ namespace BeatOn.Core.MessageHandlers
             _getConfig = getConfig;
         }
 
+        public MessageType HandlesType => MessageType.MoveSongToPlaylist;
+
         public void HandleMessage(MessageBase message)
         {
             var msg = message as ClientMoveSongToPlaylist;
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
-            var op = new MoveSongToPlaylistOp(msg.SongID, msg.ToPlaylistID);
+
+            var op = new MoveSongToPlaylistOp(msg.SongID, msg.ToPlaylistID, msg.Index);
             Stopwatch sw = new Stopwatch();
             
             var qae = _getQae();

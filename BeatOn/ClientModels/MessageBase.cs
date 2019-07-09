@@ -16,6 +16,8 @@ namespace BeatOn.ClientModels
     [JsonConverter(typeof(MessageTypeConverter))]
     public abstract class MessageBase
     {
+        public Guid MessageID { get; set; } = Guid.NewGuid();
+        public Guid? ResponseToMessageID { get; set; }
         public abstract MessageType Type { get; }
     }
 }

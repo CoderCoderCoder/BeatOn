@@ -19,5 +19,10 @@ export class DownloadIndicatorComponent implements OnInit {
         this.downloads = ev;
     });
   }
-
+getColor() {
+  if (this.downloads.Downloads && this.downloads.Downloads.length>0)
+    return 'accent';
+  else
+    return '';
+}
 }

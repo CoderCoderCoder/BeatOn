@@ -31,7 +31,7 @@ namespace BeatOn.Core
             _context = context;
             _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig.Config, () => Engine, ShowToast);
+            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
         }
@@ -74,12 +74,19 @@ namespace BeatOn.Core
         private BeatOnConfig _currentConfig;
         private List<AssetOp> _trackedOps = new List<AssetOp>();
 
+        private bool _checkedBackup = false;
+
         private QuestomAssetsEngine Engine
         {
             get
             {
                 if (_qae == null)
                 {
+                    if (!_checkedBackup)
+                    {
+                        _mod.CheckCreateModdedBackup();
+                        _checkedBackup = true;
+                    }
                     _qae = new QuestomAssetsEngine(_qaeConfig);
                     _qae.OpManager.OpStatusChanged += OpManager_OpStatusChanged;
                 }
@@ -159,20 +166,20 @@ namespace BeatOn.Core
 
         public void DownloadUrl(string url, string mimeType)
         {
-            if (mimeType != "application/zip")
-            {
-                ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
-                return;
-            }
+            //if (mimeType != "application/zip" && !url.ToLower().EndsWith("json") && )
+            //{
+            //    ShowToast("Unable to Download", "File isn't a zip file!  Not downloading it.", ToastType.Error, 8);
+            //    return;
+            //}
             var uri = new Uri(url);
             //ShowToast("Starting Download...", uri.ToString(), ToastType.Info, 2);
 
-            var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
-            if (_qaeConfig.RootFileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
-            {
-                ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
-                return;
-            }
+            //var fileName = Path.GetFileNameWithoutExtension(uri.LocalPath);
+            //if (_qaeConfig.RootFileProvider.FileExists(Path.Combine(_qaeConfig.SongsPath, fileName)))
+            //{
+            //    ShowToast("Unable to Download", "A custom song folder with the name of this zip already exists.  Not downloading it.", ToastType.Error, 8);
+            //    return;
+            //}
             _SongDownloadManager.DownloadFile(url);
         }
  
@@ -180,6 +187,7 @@ namespace BeatOn.Core
         {
             SendConfigChangeMessage();
         }
+
 
         private QaeConfig _qaeConfig
         {
@@ -189,10 +197,14 @@ namespace BeatOn.Core
                 {
                     RootFileProvider = new FolderFileProvider(Constants.ROOT_BEAT_ON_DATA_PATH, false),
                     PlaylistArtPath = "Art",
-                    AssetsPath = "BeatSaberAssets",
-                    ModsSourcePath = "Mods",
-                    SongsPath = "CustomSongs",
-                    ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false)
+                    AssetsPath = Constants.BEATSABER_ASSETS_FOLDER_NAME,
+                    ModsSourcePath = Constants.MODS_FOLDER_NAME,
+                    SongsPath = Constants.CUSTOM_SONGS_FOLDER_NAME,
+                    ModLibsFileProvider = new FolderFileProvider(Constants.MODLOADER_MODS_PATH, false, false),
+                    ModsStatusFile = Constants.MOD_STATUS_FILE,
+                    BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
+                    ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE,
+                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -284,7 +296,7 @@ namespace BeatOn.Core
             {
                 if (_sendClientOpsChanged == null)
                 {
-                    _sendClientOpsChanged = new Debouncey<HostOpStatus>(1000, false);
+                    _sendClientOpsChanged = new Debouncey<HostOpStatus>(400, false);
                     _sendClientOpsChanged.Debounced += (e2, a) =>
                     {
                         SendMessageToClient(a);
@@ -294,6 +306,7 @@ namespace BeatOn.Core
             if (e.Status == OpStatus.Complete && e.IsWriteOp)
             {
                 CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
+                SendConfigChangeMessage();
             }
             _sendClientOpsChanged.EventRaised(this, opstat);
         }
@@ -306,13 +319,13 @@ namespace BeatOn.Core
                 switch (e.Status)
                 {
                     case DownloadStatus.Downloading:
-                        ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
+                        //ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
                         break;
                     case DownloadStatus.Failed:
                         ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
                         break;
                     case DownloadStatus.Processed:
-                        ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
+                        //ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
                         break;
                 }
                 var hds = new HostDownloadStatus();
@@ -336,12 +349,22 @@ namespace BeatOn.Core
             SendMessageToClient(new HostShowToast() { Title = title, Message = message, ToastType = type, Timeout = (int)(durationSec * 1000) });
         }
 
+        private void FullEngineReset()
+        {
+            _currentConfig = null;
+            if (_qae != null)
+            {
+                _qae.Dispose();
+                _qae = null;
+            }
+        }
+
         private void SetupWebApp()
         {
             _webServer = new WebServer(_context.Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
-            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(() => CurrentConfig));
-            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(_qaeConfig, () => CurrentConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig, _qaeConfig));
             _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
             _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
             _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
@@ -351,16 +374,12 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "mod/install/step2", new PostModInstallStep2(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "mod/install/step3", new PostModInstallStep3(_mod, SendMessageToClient));
             _webServer.Router.AddRoute("POST", "beatsaber/playlist/autocreate", new PostAutoCreatePlaylists(() => Engine, () => CurrentConfig));
-            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, () =>
-            {
-                _currentConfig = null;
-                if (_qae != null)
-                {
-                    _qae.Dispose();
-                    _qae = null;
-                }
-            }));
+            _webServer.Router.AddRoute("POST", "mod/resetassets", new PostResetAssets(_mod, ShowToast, SendConfigChangeMessage, FullEngineReset));
             _webServer.Router.AddRoute("POST", "mod/uninstallbeatsaber", new PostUninstallBeatSaber(_mod, ShowToast));
+            _webServer.Router.AddRoute("DELETE", "/beatsaber/config", new DeletePendingConfig(SendConfigChangeMessage, FullEngineReset));
+            _webServer.Router.AddRoute("POST", "/mod/postlogs", new PostUploadLogs());
+            _webServer.Router.AddRoute("GET", "/mod/images", new GetImages(_qaeConfig));
+            _webServer.Router.AddRoute("GET", "/mod/image", new GetImage(_qaeConfig));
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
             _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));
@@ -370,6 +389,10 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.GetOps, new ClientGetOpsHandler(_trackedOps, SendMessageToClient));
             _webServer.AddMessageHandler(MessageType.SortPlaylist, new ClientSortPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.AutoCreatePlaylists, new ClientAutoCreatePlaylistsHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.SetModStatus, new ClientSetModStatusHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
+            _webServer.AddMessageHandler(MessageType.MoveSongInPlaylist, new ClientMoveSongInPlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.DeleteMod, new ClientDeleteModHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.Start();
 
         }

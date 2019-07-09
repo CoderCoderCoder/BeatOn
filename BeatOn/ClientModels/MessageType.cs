@@ -28,6 +28,11 @@ namespace BeatOn.ClientModels
         OpStatus,
         GetOps,
         SortPlaylist,
-        AutoCreatePlaylists
+        AutoCreatePlaylists,
+        SetModStatus,
+        ActionResponse,
+        MoveSongInPlaylist,
+        MovePlaylist,
+        DeleteMod
     }
 }

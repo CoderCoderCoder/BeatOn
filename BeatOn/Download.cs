@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -24,7 +24,8 @@ namespace BeatOn
     {
         public int PercentageComplete { get; private set; }
         public Guid ID { get; } = Guid.NewGuid();
-        private WebClient _client = new WebClient();
+        private UrlWebClient _client = new UrlWebClient();
+        internal bool ProcessAfterDownload { get; private set; }
         public event EventHandler<DownloadStatusChangeArgs> StatusChanged;
 
         private void StatusChange(DownloadStatus status, string message = null)
@@ -46,10 +47,11 @@ namespace BeatOn
             }
         }
 
-        public Download(string url)
+        public Download(string url, bool processAfterDownload = true)
         {
             DownloadUrl = new Uri(url);
             Status = DownloadStatus.NotStarted;
+            ProcessAfterDownload = processAfterDownload;
         }
 
         //public Download(QaeConfig config, byte[] downloadedData, string downloadedFilename, Func<QuestomAssets.QuestomAssetsEngine> engineFactory)
@@ -62,12 +64,33 @@ namespace BeatOn
         //    _engineFactory = engineFactory;
         //}
 
+        private class UrlWebClient : WebClient
+        {
+            Uri _responseUrl;
+
+            public Uri ResponseUrl
+            {
+                get { return _responseUrl; }
+            }
+            protected override WebResponse GetWebResponse(WebRequest request, IAsyncResult result)
+            {
+                WebResponse response = base.GetWebResponse(request, result);
+                _responseUrl = response.ResponseUri;
+                return response;
+            }
+
+            protected override WebResponse GetWebResponse(WebRequest request)
+            {
+                WebResponse response = base.GetWebResponse(request);
+                _responseUrl = response.ResponseUri;
+                return response;
+            }
+        }
+
         public void Start()
         {
             if (DownloadUrl.IsAbsoluteUri)
             {
-                var fileName = Path.GetFileNameWithoutExtension(DownloadUrl.LocalPath);
-                
                 _client.DownloadDataCompleted += (s, dlArgs) =>
                 {
                     System.Threading.Tasks.Task.Run(() =>
@@ -87,7 +110,7 @@ namespace BeatOn
                                 return;
                             }
                             DownloadedData = dlArgs.Result;
-                            DownloadedFilename = fileName;
+                            DownloadedFilename = (s as UrlWebClient).ResponseUrl.LocalPath;
                             StatusChange(DownloadStatus.Downloaded);
                         }
                         catch (Exception ex)
@@ -106,48 +129,14 @@ namespace BeatOn
             }
         }
         
-        //private void ProcessDownloadedData()
-        //{
-        //    try
-        //    {
-        //        using (MemoryStream ms = new MemoryStream(DownloadedData))
-        //        {
-        //            Ionic.Zip.ZipFile zip = Ionic.Zip.ZipFile.Read(ms, new Ionic.Zip.ReadOptions() { Encoding = System.Text.Encoding.UTF8 });
-
-        //            DownloadType = IdentifyFileType(zip);
-        //            switch (DownloadType)
-        //            {
-        //                case DownloadType.ModFile:
-        //                    ProcessDownloadedMod(zip);
-        //                    break;
-        //                case DownloadType.OldSongFile:
-        //                    throw new NotImplementedException("Old format songs aren't supported yet");
-        //                case DownloadType.SongFile:
-        //                    ProcessDownloadedSong(zip);                            
-        //                    break;
-        //                default:
-        //                    break;
-        //            }
-
-
-        //            if (PercentageComplete != 100)
-        //                PercentCompleteChange(100);
-
-        //            StatusChange(DownloadStatus.Downloaded);
-        //        }
-        //    } 
-        //    catch (Exception ex)
-        //    {
-        //        Log.LogErr($"Exception processing downoaded file.", ex);
-        //        StatusChange(DownloadStatus.Failed, "Unable to extract file");
-        //    }
-        //}
-
         public void SetStatus(DownloadStatus status, string message = null)
         {
             StatusChange(status, message);
-        }            
+            if (status == DownloadStatus.Processed || status == DownloadStatus.Failed)
+                DownloadFinishedHandle.Set();
+        }
 
+        public ManualResetEvent DownloadFinishedHandle { get; } = new ManualResetEvent(false);
         public string DownloadedFilename { get; set; }
         public byte[] DownloadedData { get; private set; }
         public Uri DownloadUrl { get; private set; }

@@ -59,12 +59,15 @@ namespace BeatOn.Core
                 WriteBody(resp, message);
             }
         }
-
-        public static void Serialize<T>(this HttpListenerResponse resp, T obj)
+        public static void Serialize<T>(this HttpListenerResponse resp, int statusCode, T obj)
         {
-            resp.StatusCode = 200;
+            resp.StatusCode = statusCode;
             resp.ContentType = "application/json";
             WriteBody(resp, JsonConvert.SerializeObject(obj));
+        }
+        public static void SerializeOk<T>(this HttpListenerResponse resp, T obj)
+        {
+            Serialize(resp, 200, obj);
         }
 
     }

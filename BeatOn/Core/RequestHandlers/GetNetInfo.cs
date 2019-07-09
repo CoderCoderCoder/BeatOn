@@ -29,7 +29,7 @@ namespace BeatOn.Core.RequestHandlers
             var resp = context.Response;
             try
             {
-                resp.Serialize(new NetInfo()
+                resp.SerializeOk(new NetInfo()
                 {
                     Url = _webServer.ListeningOnUrl,
                     WebSocketUrl = _webServer.WebSocketUrl

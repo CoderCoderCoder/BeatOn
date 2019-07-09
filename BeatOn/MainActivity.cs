@@ -41,6 +41,7 @@ namespace BeatOn
             Log.ClearSinksOfType<AndroidLogger>((x) => true);
             Log.SetLogSink(new AndroidLogger());
 
+            Log.LogMsg($"Beat On MainActivity v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()} starting up");
             QuestomAssets.Utils.FileUtils.GetTempDirectoryOverride = () =>
             {
                 try
@@ -56,15 +57,19 @@ namespace BeatOn
                     throw ex;
                 }
             };
-
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
         }
+
+   
 
 
 
         private WebView _webView;
-        private JSWebViewClient _webViewClient;
+        private BeatOnWebViewClient _webViewClient;
         private BeatOnServiceTransceiver _broadcastReceiver;
+        private bool _isBrowserShown = false;
+        private float _lastX;
+        private float _lastY;
 
         private void _webView_Download(object sender, DownloadEventArgs e)
         {
@@ -133,13 +138,12 @@ namespace BeatOn
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_main);
 
-
             base.OnCreate(savedInstanceState);
             _webView = FindViewById<WebView>(Resource.Id.webView1);
             _browserView= FindViewById<WebView>(Resource.Id.webView2);
             _toastInjector = new ToastInjectorWebViewClient(_browserView);
             _browserView.SetWebViewClient(_toastInjector);
-            _browserView.SetWebChromeClient(new LoggingChromeClient());
+            _browserView.SetWebChromeClient(new WebChromeClient());
             _browserView.Settings.JavaScriptEnabled = true;
             _browserView.Settings.AllowContentAccess = true;
             _browserView.Settings.CacheMode = CacheModes.Default;
@@ -147,15 +151,15 @@ namespace BeatOn
             _browserView.Settings.MediaPlaybackRequiresUserGesture = false;
 
             _browserView.Download += _webView_Download;
+            _toastInjector.Download += _toastInjector_Download;
 
-            _webViewClient = new JSWebViewClient(this, _webView);
+            _webViewClient = new BeatOnWebViewClient(this, _webView);
             _webViewClient.JSInterface.OnBrowserGoBack += JSInterface_OnBrowserGoBack;
             _webViewClient.JSInterface.OnHideBrowser += JSInterface_OnHideBrowser;
             _webViewClient.JSInterface.OnNavigateBrowser += JSInterface_OnNavigateBrowser;
             _webViewClient.JSInterface.OnRefreshBrowser += JSInterface_OnRefreshBrowser;
             _webViewClient.JSInterface.OnShowBrowser += JSInterface_OnShowBrowser;
             _webViewClient.JSInterface.OnToast += JSInterface_OnToast;
-            
 
             if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage)
                 != Android.Content.PM.Permission.Granted)
@@ -168,6 +172,11 @@ namespace BeatOn
             }
         }
 
+        private void _toastInjector_Download(object sender, string e)
+        {
+            _broadcastReceiver.SendDownloadUrl(new DownloadUrlInfo() { Url = e, MimeType = "" });
+        }
+
         private void JSInterface_OnToast(object sender, JSInterface.ToastMsg e)
         {
             Log.LogMsg("got toast from JSInterface");
@@ -178,14 +187,29 @@ namespace BeatOn
 
         public override bool DispatchKeyEvent(KeyEvent e)
         {
+            //_webView.
             if (e.Action == KeyEventActions.Down && e.KeyCode == Keycode.DpadDown)
             {
-                SmoothScrollBrowser(true);
+                if (_isBrowserShown)
+                {
+                    SmoothScrollBrowser(true);
+                }
+                else
+                {
+                    _webViewClient.SendButtonToClient(BeatOnWebViewClient.ButtonType.Down, _lastX, _lastY);
+                }
                 return true;
             }
             else if (e.Action == KeyEventActions.Down && e.KeyCode == Keycode.DpadUp)
             {
-                SmoothScrollBrowser(false);
+                if (_isBrowserShown)
+                {
+                    SmoothScrollBrowser(false);
+                }
+                else
+                {
+                    _webViewClient.SendButtonToClient(BeatOnWebViewClient.ButtonType.Up, _lastX, _lastY);
+                }
                 return true;
             }
             else
@@ -193,10 +217,11 @@ namespace BeatOn
                 return base.DispatchKeyEvent(e);
             }
         }
+
         private ObjectAnimator _currentScroll = null;
         private void SmoothScrollBrowser(bool down)
         {
-            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 600 : -600));
+            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 300 : -300));
             if (_currentScroll != null)
             {
                 _currentScroll.End();
@@ -210,20 +235,17 @@ namespace BeatOn
             _currentScroll = anim;
         }
 
+
         public override bool DispatchGenericMotionEvent(MotionEvent ev)
         {
-            //if (ev.Action == MotionEventActions.PointerIndexShift)
-            //{
-            //    var vscroll = ev.GetAxisValue(Axis.Vscroll, ev.ActionIndex);
-            //    if (Math.Abs(vscroll) > 0.04F)
-            //    {
-            //        //scrolled
-            //    }
-            //}
+            if (ev.Action == MotionEventActions.HoverMove)
+            {
+                _lastX = ev.GetX();
+                _lastY = ev.GetY();
+            }
+            
             return base.DispatchGenericMotionEvent(ev);
         }
-
-
 
         private void JSInterface_OnShowBrowser(object sender, int e)
         {
@@ -245,6 +267,7 @@ namespace BeatOn
                 try
                 {
                     _webView.LayoutParameters = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MatchParent, dp);
+                    _isBrowserShown = true;
                 }
                 catch (Exception ex)
                 {
@@ -254,8 +277,7 @@ namespace BeatOn
                 Log.LogMsg($"Putting browser at {dp}");
             });
         }
-
-
+        
         private void JSInterface_OnRefreshBrowser(object sender, EventArgs e)
         {
             RunOnUiThread(() =>
@@ -277,6 +299,7 @@ namespace BeatOn
             RunOnUiThread(() =>
             {
                 _webView.LayoutParameters = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MatchParent, RelativeLayout.LayoutParams.MatchParent);
+                _isBrowserShown = false;
             });
         }
 

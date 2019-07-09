@@ -57,8 +57,8 @@ namespace BeatOn
                     if (interfaces.Count() < 1)
                     {
                         Log.LogErr("No active network interface found");
-                        _ip = "";
-                        return "";
+                        _ip = "localhost";
+                        return "localhost";
                     }
                     else if (interfaces.Count() > 1)
                     {
@@ -67,7 +67,7 @@ namespace BeatOn
                     var addr = interfaces.First().GetIPProperties().UnicastAddresses.Where(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault()?.Address?.ToString();
                     if (string.IsNullOrEmpty(addr))
                     {
-                        _ip = "";
+                        _ip = "localhost";
                     }
                     else
                     {
@@ -173,8 +173,7 @@ namespace BeatOn
         private void StartWebSocketServer()
         {
             try
-            {
-                
+            {                
                 _webSocket = new WebSocketServer($"ws://0.0.0.0:{WEBSOCKET_PORT}");
                 _webSocket.ListenerSocket.NoDelay = true;
                 _webSocket.RestartAfterListenError = true;
@@ -258,7 +257,7 @@ namespace BeatOn
         {
             try
             {
-                var context = _listener.EndGetContext(iar);
+                 var context = _listener.EndGetContext(iar);
                 if (_started)
                     _listener.BeginGetContext(HandleRequest, null);
                 var method = context.Request.HttpMethod;

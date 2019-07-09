@@ -7,7 +7,7 @@
       <mat-card-subtitle>Tools and Utilities</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <span color="primary" class="netInfo">Accessible via browser at <div class="url">{{netInfo.Url}}</div></span>
+      <span color="primary" class="netInfo">Accessible via browser at <div *ngIf="netInfo" class="url">{{netInfo.Url}}</div></span>
           <mat-card>
             <ul>
               <li>
@@ -19,14 +19,18 @@
               <li>
                 <b>Uninstall Beat Saber:</b> <span class="descrip">Uninstalls whatever Beat Saber APK is currently installed.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</span>
               </li>
+              <li>
+                  <b>Upload Logs:</b> <span class="descrip">If you've just run into a problem, upload your logs to help the developers track it down.</span>
+              </li>
             </ul>
-            
+
               <mat-card-actions>
                 <button fast-click (click)="clickResetAssets()" mat-raised-button color="accent">Reset Assets</button>
                 <button fast-click (click)="clickReloadSongsFolder()" mat-raised-button color="accent">Reload Songs Folder</button>
                 <button fast-click (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall Beat Saber</button>
+                <button fast-click (click)="clickUploadLogs()" mat-raised-button color="accent">Upload Logs</button>
               </mat-card-actions>
           </mat-card>
     </mat-card-content>
-    
+
   </mat-card>

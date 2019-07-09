@@ -18,6 +18,7 @@ namespace BeatOn.ClientModels
 
         public string SongID { get; set; }
         public string ToPlaylistID { get; set; }
+        public int? Index { get; set; }
 
     }
 }
