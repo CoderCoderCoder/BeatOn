@@ -57,8 +57,8 @@ namespace BeatOn
                     if (interfaces.Count() < 1)
                     {
                         Log.LogErr("No active network interface found");
-                        _ip = "localhost";
-                        return "localhost";
+                        _ip = "127.0.0.1";
+                        return "127.0.0.1";
                     }
                     else if (interfaces.Count() > 1)
                     {
@@ -67,7 +67,7 @@ namespace BeatOn
                     var addr = interfaces.First().GetIPProperties().UnicastAddresses.Where(x => x.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).FirstOrDefault()?.Address?.ToString();
                     if (string.IsNullOrEmpty(addr))
                     {
-                        _ip = "localhost";
+                        _ip = "127.0.0.1";
                     }
                     else
                     {
@@ -197,7 +197,7 @@ namespace BeatOn
                     };
                     socket.OnMessage = message =>
                     {
-                        HandleWebSocketMessage(message);
+                        HandleWebSocketMessage(message, new SendHostMessageDelegate(SendMessage));
                     };
                 });
                 Log.LogMsg($"Started web socket server on port {WEBSOCKET_PORT}");
@@ -208,7 +208,7 @@ namespace BeatOn
             }
         }
 
-        public void HandleWebSocketMessage(string message)
+        public void HandleWebSocketMessage(string message, SendHostMessageDelegate sendHostMessage)
         {
             try
             {
@@ -216,7 +216,7 @@ namespace BeatOn
                 if (msg == null)
                     throw new Exception("Unable to deserialize message");
                 if (_messageHandlers.ContainsKey(msg.Type))
-                    _messageHandlers[msg.Type].HandleMessage(msg);
+                    _messageHandlers[msg.Type].HandleMessage(msg, sendHostMessage);
                 else
                     Log.LogErr($"No message handler for type {msg.Type}");
             }

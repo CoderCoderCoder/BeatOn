@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-
+using System.Text.RegularExpressions;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -367,22 +367,49 @@ namespace BeatOn
                     targetSongID = targetSongID.Substring(0, targetSongID.LastIndexOf("."));
                 }
 
+                //checking this first to maintain compability with song IDs that are just <songid> and are not <songid>_<name> - <author>
                 var targetOutputDir = _qaeConfig.SongsPath.CombineFwdSlash(targetSongID);
-
-                if (!_qaeConfig.RootFileProvider.DirectoryExists(targetOutputDir))
-                    _qaeConfig.RootFileProvider.MkDir(targetOutputDir);
-
                 if (_qaeConfig.RootFileProvider.FileExists(targetOutputDir.CombineFwdSlash("info.dat")))
                 {
                     Log.LogMsg($"ImportManager skipping extract because {targetOutputDir} already exists and has an info.dat.");
                     return targetOutputDir;
                 }
+
                 var allFiles = provider.FindFiles("*");
                 var firstInfoDat = allFiles.FirstOrDefault(x => x.ToLower() == "info.dat");
                 if (firstInfoDat == null)
                 {
                     throw new ImportException($"Unable to find info.dat in provider {provider.SourceName}", $"Zip file {provider.SourceName} doesn't seem to be a song (no info.dat).");
                 }
+
+                //deserialize the info to get song name and stuff
+                try
+                {
+                    var infoStr = provider.ReadToString(firstInfoDat);
+                    var bml = JsonConvert.DeserializeObject<BeatmapLevelDataObject>(infoStr);
+                    if (bml == null)
+                        throw new Exception("Info.dat returned null from deserializer.");
+                    if (bml.SongName == null)
+                        throw new Exception("Info.dat deserialized with a null SongName.");
+                    var songName = $"{bml.SongName} - {bml.SongAuthorName}";
+                    songName = Regex.Replace(songName, "[^a-zA-Z0-9 -]", "");
+                    targetSongID = $"{targetSongID}_{songName}";
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr($"Deserializing song info for file {provider.SourceName} failed", ex);
+                    throw new ImportException($"Deserializing song info for file {provider.SourceName} failed", $"Info.dat file in zip {provider.SourceName} doesn't appear to be a valid song.", ex);
+                }
+
+                targetOutputDir = _qaeConfig.SongsPath.CombineFwdSlash(targetSongID);
+
+                if (_qaeConfig.RootFileProvider.FileExists(targetOutputDir.CombineFwdSlash("info.dat")))
+                {
+                    Log.LogMsg($"ImportManager skipping extract because {targetOutputDir} already exists and has an info.dat.");
+                    return targetOutputDir;
+                }
+                if (!_qaeConfig.RootFileProvider.DirectoryExists(targetOutputDir))
+                    _qaeConfig.RootFileProvider.MkDir(targetOutputDir);
 
                 //get the path of where the info.dat is and assume that the rest of the files will be in the same directory as it.  
                 //  This is to handle zips that have duplicate info or nested folders

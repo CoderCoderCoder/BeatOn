@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using QuestomAssets;
 using QuestomAssets.AssetOps;
 using QuestomAssets.Models;
+using QuestomAssets.Utils;
 
 namespace BeatOn.Core
 {
@@ -34,6 +35,7 @@ namespace BeatOn.Core
             ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
+            ImageUtils.Instance = new ImageUtilsDroid();
         }
 
         public void Start()
@@ -358,6 +360,25 @@ namespace BeatOn.Core
                 _qae = null;
             }
         }
+        private bool CanSync()
+        {
+            //quick little double check to make sure there's no small gap in between ops getting queued.
+            if (Engine.OpManager.IsProcessing || _SongDownloadManager.InProgress > 0)
+            {
+                return false;
+            }
+            System.Threading.Thread.Sleep(200);
+            if (Engine.OpManager.IsProcessing || _SongDownloadManager.InProgress > 0)
+            {
+                return false;
+            }
+            if (Engine.IsManagerLocked())
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         private void SetupWebApp()
         {
@@ -366,7 +387,7 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(_qaeConfig, () => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig, _qaeConfig));
             _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
-            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage));
+            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, () => CanSync()));
             _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
             _webServer.Router.AddRoute("GET", "mod/status", new GetModStatus(_mod));
             _webServer.Router.AddRoute("GET", "mod/netinfo", new GetNetInfo(_webServer));
