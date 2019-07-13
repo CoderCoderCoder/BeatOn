@@ -24,7 +24,9 @@ namespace BeatOn.Core.RequestHandlers
         private GetBeatOnConfigDelegate _getConfig;
         private Action _triggerConfigChanged;
         private Func<bool> _canSync;
-        public PostCommitConfig(BeatSaberModder mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged, Func<bool> canSync)
+        private Action _killBeatSaber;
+        private Func<bool> _saveCommittedConfig;
+        public PostCommitConfig(BeatSaberModder mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged, Func<bool> canSync, Action killBeatSaber, Func<bool> saveCommittedConfig)
         {
             _mod = mod;
             _showToast = showToast;
@@ -33,6 +35,8 @@ namespace BeatOn.Core.RequestHandlers
             _getConfig = getConfig;
             _triggerConfigChanged = triggerConfigChanged;
             _canSync = canSync;
+            _killBeatSaber = killBeatSaber;
+            _saveCommittedConfig = saveCommittedConfig;
         }
 
         public void HandleRequest(HttpListenerContext context)
@@ -55,9 +59,14 @@ namespace BeatOn.Core.RequestHandlers
                     resp.BadRequest("Operations in progress, can't sync");
                     return;
                 }
+                _killBeatSaber();
                 _showToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 3);
                 _getQae().Save();
                 _getConfig().IsCommitted = (!_getQae().HasChanges);
+                if (!_saveCommittedConfig())
+                {
+                    Log.LogErr("Attempted to save committed config after commit post, but it failed.");
+                }
                 _triggerConfigChanged();
                 resp.Ok();
             }

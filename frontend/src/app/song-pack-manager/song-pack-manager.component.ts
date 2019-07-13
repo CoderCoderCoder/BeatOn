@@ -11,7 +11,6 @@ import {
     AfterViewChecked,
     ElementRef,
 } from '@angular/core';
-import { DragulaService } from 'ng2-dragula';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
 import { PlaylistSortMode } from '../models/PlaylistSortMode';
@@ -323,7 +322,9 @@ export class SongPackManagerComponent implements OnInit {
         this.checkboxChecked = false;
     }
     getBackground(SongID) {
-        return AppSettings.API_ENDPOINT + '/host/beatsaber/song/cover?songid=' + SongID;
+        let fixedUri = encodeURIComponent(SongID);
+        fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
+        return AppSettings.API_ENDPOINT + '/host/beatsaber/song/cover?songid=' + fixedUri;
     }
     updateImages(timeout: number) {
         setTimeout(() => this.updateSearchResult.next(), timeout);

@@ -18,8 +18,6 @@
 .modContainer {
     height: 115px !important;
 }
-
-
 .modCategory {
     position: absolute;
     left: 0px;
@@ -30,15 +28,13 @@
     background-repeat: no-repeat;
     border-radius: 5px 0 0 5px;
 }
-.modCategory.Saber {
-    background-image: url(../../assets/saber.png);
-}
-.modCategory.Gameplay {
-    background-image: url(../../assets/gameplay.png);
-}
+.builtinMods {
+    float:right;
+    top: 103px;
 
-.modCategory.Other {
-    background-image: url(../../assets/other.png);
+}
+.colorName {
+    text-shadow: -1.5px 0 2px black, 0 1.5px 2px black, 1.5px 0 2px black, 0 -1.5px 2px black;
 }
 .container {
     height: 330px;

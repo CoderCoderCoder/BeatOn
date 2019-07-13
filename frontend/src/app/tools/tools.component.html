@@ -7,7 +7,11 @@
       <mat-card-subtitle>Tools and Utilities</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <span color="primary" class="netInfo">Accessible via browser at <div *ngIf="netInfo" class="url">{{netInfo.Url}}</div></span>
+      <div class="info">
+        <span color="primary">Accessible via browser at <div *ngIf="netInfo" class="url">{{netInfo.Url}}</div></span><br />
+        <span>Version {{getVersion()}}</span><br />
+        <span>Backup Status: {{getBackupStatus()}}</span>
+      </div>
           <mat-card>
             <ul>
               <li>
@@ -17,18 +21,26 @@
                 <b>Load Songs Folder:</b> <span class="descrip">Attempt to load any new songs from folders in /sdcard/BeatOnData/CustomSongs</span>
               </li>
               <li>
-                <b>Uninstall Beat Saber:</b> <span class="descrip">Uninstalls whatever Beat Saber APK is currently installed.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</span>
+                <b>Quick Fix:</b><span class="descrip">If you're having problems, try this button.  This will reset your assets, reload your songs, then try loading the last config that you synced successfully.  Also, it will upload your logs so the problem may get identifier and fixed faster.</span>
+              </li>
+              <li>
+                <b>Uninstall BS:</b> <span class="descrip">Uninstalls whatever Beat Saber APK is currently installed.  This can't be undone, Beat Saber will have to be reinstalled and re-modded.</span>
               </li>
               <li>
                   <b>Upload Logs:</b> <span class="descrip">If you've just run into a problem, upload your logs to help the developers track it down.</span>
+              </li>
+              <li>
+                  <b>Exit Beat On:</b> <span class="descrip">Exits Beat On immediately and stops all background processes.</span>
               </li>
             </ul>
 
               <mat-card-actions>
                 <button fast-click (click)="clickResetAssets()" mat-raised-button color="accent">Reset Assets</button>
                 <button fast-click (click)="clickReloadSongsFolder()" mat-raised-button color="accent">Reload Songs Folder</button>
-                <button fast-click (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall Beat Saber</button>
+                <button fast-click (click)="clickQuickFix()" mat-raised-button color="accent">Quick Fix</button>
                 <button fast-click (click)="clickUploadLogs()" mat-raised-button color="accent">Upload Logs</button>
+                <button fast-click (click)="clickUninstallBeatSaber()" mat-raised-button color="accent">Uninstall BS</button>
+                <button color="warn" (click)="clickQuit()" mat-raised-button>Exit Beat On</button>                                
               </mat-card-actions>
           </mat-card>
     </mat-card-content>

@@ -19,10 +19,14 @@ namespace BeatOn.Core.RequestHandlers
 {
     public class PutConfig : IHandleRequest
     {
-        private UpdateConfigDelegate _updateConfig;
-        public PutConfig(UpdateConfigDelegate updateConfig)
+        private GetQaeDelegate _getQae;
+        private Action _triggerConfigChanged;
+        private GetBeatOnConfigDelegate _getConfig;
+        public PutConfig( GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged)
         {
-            _updateConfig = updateConfig;
+            _getQae = getQae;
+            _getConfig = getConfig;
+            _triggerConfigChanged = triggerConfigChanged;
         }
 
         public void HandleRequest(HttpListenerContext context)
@@ -44,7 +48,18 @@ namespace BeatOn.Core.RequestHandlers
                     {
                         throw new Exception("Error deserializing config!");
                     }
-                    _updateConfig(config);
+                    try
+                    {
+                        _getQae().UpdateConfig(config);
+                    }
+                    catch (AssetOpsException aoe)
+                    {
+                        Log.LogErr($"Updating config completed, but {aoe.FailedOps?.Count} operations failed.");
+                    }
+                    Log.LogMsg("Reload song folders sending change message");
+                    _getConfig().Config = _getQae().GetCurrentConfig();
+                    _triggerConfigChanged();
+                    Log.LogMsg("Reload song folders responding OK");
                 }
                 catch (Exception ex)
                 {

@@ -29,4 +29,5 @@ export enum MessageType {
     MoveSongInPlaylist = <any>'MoveSongInPlaylist',
     MovePlaylist = <any>'MovePlaylist',
     DeleteMod = <any>'DeleteMod',
+    ChangeColor = <any>'ChangeColor',
 }

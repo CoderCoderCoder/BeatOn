@@ -12,6 +12,9 @@ import { ECANCELED } from 'constants';
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ClientDeleteMod } from '../models/ClientDeleteMod';
+import { AppSettings } from '../appSettings';
+import { BeatSaberColor } from '../models/BeatSaberColor';
+import { ClientChangeColor, ColorType } from '../models/ClientChangeColor';
 
 @Component({
     selector: 'app-main-mods',
@@ -35,6 +38,68 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         });
     }
 
+    get leftColor() {
+        if (this.config && this.config.LeftColor) {
+            return (
+                'rgba(' +
+                this.config.LeftColor.R +
+                ', ' +
+                this.config.LeftColor.G +
+                ', ' +
+                this.config.LeftColor.B +
+                ', ' +
+                this.config.LeftColor.A +
+                ')'
+            );
+        }
+        return 'rgba(0,0,0,0)';
+    }
+    set leftColor(val) {}
+    leftColorSelected(color) {
+        console.log(color);
+        color = color.substr(4, color.length - 5);
+        var colors = color.split(',');
+        var msg = new ClientChangeColor();
+        msg.Color = <BeatSaberColor>{
+            R: parseInt(colors[0]),
+            G: parseInt(colors[1]),
+            B: parseInt(colors[2]),
+            A: colors.length > 3 ? Math.ceil(parseFloat(colors[3]) * 255) : 255,
+        };
+        msg.ColorType = ColorType.LeftColor;
+        this.msgSvc.sendClientMessage(msg);
+    }
+    get rightColor() {
+        if (this.config && this.config.RightColor) {
+            return (
+                'rgba(' +
+                this.config.RightColor.R +
+                ', ' +
+                this.config.RightColor.G +
+                ', ' +
+                this.config.RightColor.B +
+                ', ' +
+                this.config.RightColor.A +
+                ')'
+            );
+        }
+        return 'rgba(0,0,0,0)';
+    }
+    set rightColor(val) {}
+    rightColorSelected(color) {
+        console.log(color);
+        color = color.substr(4, color.length - 5);
+        var colors = color.split(',');
+        var msg = new ClientChangeColor();
+        msg.Color = <BeatSaberColor>{
+            R: parseInt(colors[0]),
+            G: parseInt(colors[1]),
+            B: parseInt(colors[2]),
+            A: colors.length > 3 ? Math.ceil(parseFloat(colors[3]) * 255) : 255,
+        };
+        msg.ColorType = ColorType.RightColor;
+        this.msgSvc.sendClientMessage(msg);
+    }
     ngOnInit() {
         let isInit = false;
         this.configSvc.getConfig().subscribe((cfg: BeatOnConfig) => {
@@ -72,6 +137,22 @@ export class MainModsComponent implements OnInit, AfterViewInit {
             randomSongSelect.Category = ModCategory.Gameplay;
             this.config.Mods.push(randomSongSelect);*/
         });
+    }
+
+    getModBG(mod: ModDefinition) {
+        if (!mod.CoverImageFilename) {
+            if (mod.Category == ModCategory.Saber) {
+                return 'url(../../assets/saber.png)';
+            } else if (mod.Category == ModCategory.Gameplay) {
+                return 'url(../../assets/gameplay.png)';
+            } else {
+                return 'url(../../assets/other.png)';
+            }
+        } else {
+            let fixedUri = encodeURIComponent(mod.ID);
+            fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
+            return 'url(' + AppSettings.API_ENDPOINT + '/host/beatsaber/mod/cover?modid=' + fixedUri + ')';
+        }
     }
 
     toggleMod(ev: MatSlideToggleChange, mod: ModDefinition) {

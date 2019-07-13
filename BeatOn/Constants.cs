@@ -14,6 +14,9 @@ namespace BeatOn
 {
     public static class Constants
     {
+
+        public const string LAST_COMMITTED_CONFIG = "config.json";
+        public const string LAST_TEMP_CONFIG = "tempconfig.json";
         public const string LOGGLY_TOKEN = "271fee44-1ebb-4629-861e-e15d8e5a4659";
         public const string CONFIG_FILE = ROOT_BEAT_ON_DATA_PATH + "beatonconfig.json";
         public const string ROOT_BEAT_ON_DATA_PATH = "/sdcard/BeatOnData/";

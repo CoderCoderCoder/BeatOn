@@ -58,6 +58,7 @@ namespace BeatOn
                 }
             };
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
+
         }
 
    
@@ -359,6 +360,15 @@ namespace BeatOn
 
         private void ContinueLoad()
         {
+            try
+            {
+                ActivityManager am = (ActivityManager)GetSystemService(Context.ActivityService);
+                am.KillBackgroundProcesses("com.beatgames.beatsaber");
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception trying to kill background process for beatsaber.", ex);
+            }
             Intent serviceToStart = new Intent(this, typeof(BeatOnService));
             Log.LogMsg("Starting service");
             StartService(serviceToStart);
@@ -399,6 +409,17 @@ namespace BeatOn
                          BeatSaberModder m = new BeatSaberModder(this, null, null);
                          m.TriggerPackageInstall(p.PackageUrl);
                      };
+                    _broadcastReceiver.HardQuitReceived += (s, i) =>
+                    {
+                        Intent serviceToStart = new Intent(this, typeof(BeatOnService));
+                        Log.LogMsg("Stopping service");
+                        StopService(serviceToStart);
+                        Log.LogMsg("Service Stopped");
+                        Log.LogMsg("Killing app");
+                        Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                        Java.Lang.JavaSystem.Exit(0);
+                        Log.LogMsg("Should be dead");
+                    };
                     _broadcastReceiver.IntentActionReceived += (s, i) =>
                      {
                          if (i.Type == IntentActionType.Exit)

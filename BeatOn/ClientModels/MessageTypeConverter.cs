@@ -34,7 +34,8 @@ namespace BeatOn.ClientModels
             {MessageType.SetModStatus, typeof(ClientSetModStatus) },
             {MessageType.MovePlaylist, typeof(ClientMovePlaylist) },
             {MessageType.MoveSongInPlaylist, typeof(ClientMoveSongInPlaylist) },
-            {MessageType.DeleteMod, typeof(ClientDeleteMod) }
+            {MessageType.DeleteMod, typeof(ClientDeleteMod) },
+            {MessageType.ChangeColor, typeof(ClientChangeColor) }
         };
 
         //todo: make this class map stuff dynamic, the type is on the base type, I can figure it out with reflection and cache it

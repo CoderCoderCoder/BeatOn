@@ -53,7 +53,8 @@ namespace BeatOn
         ImportConfigFile,
         InstallPackage,
         UninstallPackage,
-        IntentAction
+        IntentAction,
+        HardQuit
     }
 
     public class BeatOnServiceTransceiver : BroadcastReceiver
@@ -73,6 +74,7 @@ namespace BeatOn
         public event EventHandler<PackageInfo> InstallPackageReceived;
         public event EventHandler<PackageInfo> UninstallPackageReceived;
         public event EventHandler<IntentAction> IntentActionReceived;
+        public event EventHandler HardQuitReceived;
 
         public void RegisterContextForIntents(params BeatOnIntent[] intents)
         {
@@ -102,6 +104,11 @@ namespace BeatOn
         public void SendServerStatusInfo(ServiceStatusInfo info)
         {
             SendIntent(BeatOnIntent.ServerStatusInfo, JsonConvert.SerializeObject(info));
+        }
+
+        public void SendHardQuit()
+        {
+            SendIntent(BeatOnIntent.HardQuit, "");
         }
 
         public void SendDownloadUrl(DownloadUrlInfo info)
@@ -167,6 +174,9 @@ namespace BeatOn
                         break;
                     case BeatOnIntent.IntentAction:
                         IntentActionReceived?.Invoke(this, JsonConvert.DeserializeObject<IntentAction>(json));
+                        break;
+                    case BeatOnIntent.HardQuit:
+                        HardQuitReceived?.Invoke(this, new EventArgs());
                         break;
                     default:
                         Log.LogErr($"Unhandled enum type in OnReceive: {intentType}");

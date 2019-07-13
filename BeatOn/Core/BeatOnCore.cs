@@ -19,6 +19,7 @@ using QuestomAssets;
 using QuestomAssets.AssetOps;
 using QuestomAssets.Models;
 using QuestomAssets.Utils;
+using static Android.App.ActivityManager;
 
 namespace BeatOn.Core
 {
@@ -32,14 +33,28 @@ namespace BeatOn.Core
             _context = context;
             _mod = new BeatSaberModder(_context, triggerPackageInstall, triggerPackageUninstall);
             _mod.StatusUpdated += _mod_StatusUpdated;
-            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager);
+            ImportManager = new ImportManager(_qaeConfig, () => CurrentConfig, () => Engine, ShowToast, () => _SongDownloadManager, SendConfigChangeMessage);
             _SongDownloadManager = new DownloadManager(ImportManager);
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
             _triggerStopPackage = triggerStopPackage;
             ImageUtils.Instance = new ImageUtilsDroid();
+            KillBeatSaber();
         }
 
         Action<string> _triggerStopPackage;
+
+        private void KillBeatSaber()
+        {
+            try
+            {
+                ActivityManager am = (ActivityManager)_context.GetSystemService(Context.ActivityService);
+                am.KillBackgroundProcesses("com.beatgames.beatsaber");                
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception trying to kill background process for beatsaber.", ex);
+            }
+        }
 
         public void Start()
         {
@@ -118,19 +133,55 @@ namespace BeatOn.Core
         }
 
 
-        private void SendPackageStop(string packageName)
+        /// <summary>
+        /// Saves the current committed config to disk.  Returns false if the current config isn't committed
+        /// </summary>
+        private bool SaveCommittedConfigToDisk()
         {
-            throw new NotImplementedException("this doesn't seem to work from a service");
-            _triggerStopPackage(packageName);
-            //var intent = new Intent("com.oculus.system_activity");
-            //intent.SetPackage(packageName);
-            //intent.PutExtra("intent_pkg", "com.oculus.vrshell");
-            //intent.PutExtra("intent_cmd", "{\"Command\":\"exitToHome\", \"PlatformUIVersion\":3, \"ToPackage\":\""+packageName+"\"}");
-            //_context.SendBroadcast(intent);
-            //intent.PutExtra("intent_cmd", "{\"Command\":\"returnToLauncher\", \"PlatformUIVersion\":3, \"ToPackage\":\"" + packageName + "\"}");
-            //_context.SendBroadcast(intent);
-            
+            if (!CurrentConfig.IsCommitted || Engine.HasChanges)
+                return false;
+            lock (_configFileLock)
+            {
+                try
+                {
+                    var configString = JsonConvert.SerializeObject(CurrentConfig.Config);
+                    _qaeConfig.RootFileProvider.Write(Constants.LAST_COMMITTED_CONFIG, System.Text.Encoding.UTF8.GetBytes(configString), true);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.LogErr($"Exception saving committed config to disk.", ex);
+                    return false;
+                }
+            }
         }
+        private object _configTempSaveDebounceLock = new object();
+        private Debouncey<object> _configTempSaveDebounce;
+        private void SaveTempConfigToDisk()
+        {
+            //this isn't needed at the moment.
+            return;
+            lock (_configTempSaveDebounceLock)
+            {
+                if (_configTempSaveDebounce == null)
+                {
+                    _configTempSaveDebounce = new Debouncey<object>(5000, false);
+                    _configTempSaveDebounce.Debounced += (e, a) =>
+                    {
+                        try
+                        {
+                            var configString = JsonConvert.SerializeObject(CurrentConfig.Config);
+                            _qaeConfig.RootFileProvider.Write(Constants.LAST_TEMP_CONFIG, System.Text.Encoding.UTF8.GetBytes(configString), true);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.LogErr($"Exception saving temp config to disk.", ex);
+                        }
+                    };
+                }
+            }
+        }
+        
 
         private void SendPackageLaunch(string packageName)
         {
@@ -220,7 +271,6 @@ namespace BeatOn.Core
             SendConfigChangeMessage();
         }
 
-
         private QaeConfig _qaeConfig
         {
             get
@@ -244,26 +294,6 @@ namespace BeatOn.Core
         }
 
         private object _configFileLock = new object();
-
-        private void LoadConfigFromFile()
-        {
-            //todo: reset engine, load config from json, call UpdateConfig
-        }
-
-        /// <summary>
-        /// Saves the currently loaded configuration to the config file, but not to the beat saber assets
-        /// </summary>
-        private void SaveCurrentConfigToFile()
-        {
-            //save to json in filesystem
-            lock (_configFileLock)
-            {
-                using (StreamWriter sw = new StreamWriter(Constants.CONFIG_FILE, false))
-                {
-                    sw.Write(JsonConvert.SerializeObject(CurrentConfig.Config));
-                }
-            }
-        }
 
         private void SendStatusMessage(string message)
         {
@@ -289,7 +319,8 @@ namespace BeatOn.Core
             }
             //todo: see if this is needed or makes sense here.  Could cause noise on the messages.
             CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
-            _configChangeMsgDebounce.EventRaised(this, null);            
+            _configChangeMsgDebounce.EventRaised(this, null);
+            SaveTempConfigToDisk();
         }
 
         private object _sendClientOpsChangedLock = new object();
@@ -331,7 +362,11 @@ namespace BeatOn.Core
                     _sendClientOpsChanged = new Debouncey<HostOpStatus>(400, false);
                     _sendClientOpsChanged.Debounced += (e2, a) =>
                     {
-                        SendMessageToClient(a);
+                        lock (lastSendOpsLock)
+                        {
+                            lastOpsSendHadOps = (a.Ops.Count > 0);
+                            SendMessageToClient(a);
+                        }
                     };
                 }
             }
@@ -340,7 +375,24 @@ namespace BeatOn.Core
                 CurrentConfig.IsCommitted = CurrentConfig.IsCommitted && (!Engine.HasChanges);
                 SendConfigChangeMessage();
             }
+            //if the last send didn't have ops and this one does, send the message immediately in addition to debouncing it.
+            //  this will send a duplicate message because the debounce is called in addition to the message being sent, but it'll assure keeping things in sync with the client
+            lock(lastSendOpsLock)
+            {
+                if ((opstat.Ops.Count > 0) && !lastOpsSendHadOps)
+                {
+                    lastOpsSendHadOps = true;
+                    SendMessageToClient(opstat);
+                }
+            }
             _sendClientOpsChanged.EventRaised(this, opstat);
+        }
+        private object lastSendOpsLock = new object();
+        private bool lastOpsSendHadOps = false;
+
+        private void SendPackageStop(string packageName)
+        {
+            //doesn't work
         }
 
         private void _SongDownloadManager_StatusChanged(object sender, DownloadStatusChangeArgs e)
@@ -410,14 +462,21 @@ namespace BeatOn.Core
             return true;
         }
 
+        public event EventHandler HardQuitTriggered;
+        private void HardQuit()
+        {
+            HardQuitTriggered?.Invoke(this, new EventArgs());
+        }
+
         private void SetupWebApp()
         {
             _webServer = new WebServer(_context.Assets, "www");
             _webServer.Router.AddRoute("GET", "beatsaber/config", new GetConfig(() => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/song/cover", new GetSongCover(_qaeConfig, () => CurrentConfig));
             _webServer.Router.AddRoute("GET", "beatsaber/playlist/cover", new GetPlaylistCover(() => CurrentConfig, _qaeConfig));
+            _webServer.Router.AddRoute("GET", "beatsaber/mod/cover", new GetModCover(_qaeConfig, () => CurrentConfig));
             _webServer.Router.AddRoute("POST", "beatsaber/upload", new PostFileUpload(_mod, ShowToast, () => ImportManager));
-            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, () => CanSync()));
+            _webServer.Router.AddRoute("POST", "beatsaber/commitconfig", new PostCommitConfig(_mod, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, () => CanSync(), KillBeatSaber, SaveCommittedConfigToDisk));
             _webServer.Router.AddRoute("POST", "beatsaber/reloadsongfolders", new PostReloadSongFolders(_mod, _qaeConfig, ShowToast, SendMessageToClient, () => Engine, () => CurrentConfig, SendConfigChangeMessage, (suppress) => { _suppressConfigChangeMessage = suppress; }));
             _webServer.Router.AddRoute("GET", "mod/status", new GetModStatus(_mod));
             _webServer.Router.AddRoute("GET", "mod/netinfo", new GetNetInfo(_webServer));
@@ -431,7 +490,11 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "/mod/postlogs", new PostUploadLogs());
             _webServer.Router.AddRoute("GET", "/mod/images", new GetImages(_qaeConfig));
             _webServer.Router.AddRoute("GET", "/mod/image", new GetImage(_qaeConfig));
+            _webServer.Router.AddRoute("POST", "/mod/exit", new PostExit(HardQuit));
             _webServer.Router.AddRoute("POST", "/mod/package", new PostPackageAction(SendPackageLaunch, SendPackageStop));
+            _webServer.Router.AddRoute("PUT", "/beatsaber/config", new PutConfig(() => Engine, () => CurrentConfig, SendConfigChangeMessage));
+            _webServer.Router.AddRoute("POST", "beatsaber/config/restore", new PostConfigRestore(() => Engine, () => _qaeConfig, ()=> CurrentConfig, SendConfigChangeMessage));
+
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
             _webServer.AddMessageHandler(MessageType.DeletePlaylist, new ClientDeletePlaylistHandler(() => Engine, () => CurrentConfig));
@@ -445,6 +508,7 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.MoveSongInPlaylist, new ClientMoveSongInPlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.DeleteMod, new ClientDeleteModHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
+            _webServer.AddMessageHandler(MessageType.ChangeColor, new ClientChangeColorHandler(() => Engine, () => CurrentConfig));
             _webServer.Start();
 
         }

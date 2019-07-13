@@ -33,13 +33,15 @@ namespace BeatOn
         private QaeConfig _qaeConfig;
         private ShowToastDelegate _showToast;
         private Func<DownloadManager> _getDownloadManager;
-        public ImportManager(QaeConfig qaeConfig, Func<BeatOnConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast, Func<DownloadManager> getDownloadManager)
+        private Action _triggerConfigChanged;
+        public ImportManager(QaeConfig qaeConfig, Func<BeatOnConfig> getConfig, Func<QuestomAssetsEngine> getEngine, ShowToastDelegate showToast, Func<DownloadManager> getDownloadManager, Action triggerConfigChanged)
         {
             _qaeConfig = qaeConfig;
             _getConfig = getConfig;
             _getEngine = getEngine;
             _showToast = showToast;
             _getDownloadManager = getDownloadManager;
+            _triggerConfigChanged = triggerConfigChanged;
         }
 
         /// <summary>
@@ -455,65 +457,71 @@ namespace BeatOn
                 throw new ImportException($"Exception importing song from provider {provider.SourceName}", $"Error importing song from {provider.SourceName}", ex);
             }
         }
-
+        private object _modInstallLock = new object();
         /// <summary>
         /// Extracts a mod from a provider and returns the path RELATIVE TO THE BEATONDATAROOT
         /// </summary>
         private void ExtractAndInstallMod(IFileProvider provider)
         {
-            try
+            lock (_modInstallLock)
             {
-                var def = _getEngine().ModManager.LoadDefinitionFromProvider(provider);
-
-                if (def.Platform != "Quest")
+                try
                 {
-                    Log.LogErr($"Attempted to load a mod for a different platform, '{def.Platform ?? "(null)"}', only 'Quest' is supported");
-                    _showToast("Incompatible Mod", "This mod is not supported on the Quest.", ToastType.Error, 5);
-                    return;
-                }
-                var modOutputPath = _qaeConfig.ModsSourcePath.CombineFwdSlash(def.ID);
+                    var def = _getEngine().ModManager.LoadDefinitionFromProvider(provider);
 
-                if (_qaeConfig.RootFileProvider.DirectoryExists(modOutputPath))
-                {
-                    Log.LogMsg($"Installing mod ID {def.ID} but it seems to exist.  Deleting the existing mod folder.");
-                    _qaeConfig.RootFileProvider.RmRfDir(modOutputPath);
-                }
-
-                _qaeConfig.RootFileProvider.MkDir(modOutputPath);
-
-                var allFiles = provider.FindFiles("*");
-                foreach (var file in allFiles)
-                {
-                    try
+                    if (def.Platform != "Quest")
                     {
-                        var targetFile = modOutputPath.CombineFwdSlash(file);
-                        var dir = targetFile.GetDirectoryFwdSlash();
-                        if (!_qaeConfig.RootFileProvider.DirectoryExists(dir))
-                            _qaeConfig.RootFileProvider.MkDir(dir);
+                        Log.LogErr($"Attempted to load a mod for a different platform, '{def.Platform ?? "(null)"}', only 'Quest' is supported");
+                        _showToast("Incompatible Mod", "This mod is not supported on the Quest.", ToastType.Error, 5);
+                        return;
+                    }
+                    var modOutputPath = _qaeConfig.ModsSourcePath.CombineFwdSlash(def.ID);
 
-                        using (Stream fs = _qaeConfig.RootFileProvider.GetWriteStream(targetFile))
+                    if (_qaeConfig.RootFileProvider.DirectoryExists(modOutputPath))
+                    {
+                        Log.LogMsg($"Installing mod ID {def.ID} but it seems to exist.  Deleting the existing mod folder.");
+                        _qaeConfig.RootFileProvider.RmRfDir(modOutputPath);
+                    }
+
+                    _qaeConfig.RootFileProvider.MkDir(modOutputPath);
+
+                    var allFiles = provider.FindFiles("*");
+                    foreach (var file in allFiles)
+                    {
+                        try
                         {
-                            using (Stream rs = provider.GetReadStream(file, true))
+                            var targetFile = modOutputPath.CombineFwdSlash(file);
+                            var dir = targetFile.GetDirectoryFwdSlash();
+                            if (!_qaeConfig.RootFileProvider.DirectoryExists(dir))
+                                _qaeConfig.RootFileProvider.MkDir(dir);
+
+                            using (Stream fs = _qaeConfig.RootFileProvider.GetWriteStream(targetFile))
                             {
-                                rs.CopyTo(fs);
+                                using (Stream rs = provider.GetReadStream(file, true))
+                                {
+                                    rs.CopyTo(fs);
+                                }
+                                //TODO: this won't work with zip file provider on the root because the stream has to stay open until Save()
                             }
-                            //TODO: this won't work with zip file provider on the root because the stream has to stay open until Save()
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.LogErr($"Exception extracting {file} from provider {provider.SourceName} on mod ID {def.ID}", ex);
+                            throw new ImportException($"Exception extracting {file} from provider {provider.SourceName}", $"Unable to extract files from mod file {provider.SourceName}!", ex);
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Log.LogErr($"Exception extracting {file} from provider {provider.SourceName} on mod ID {def.ID}", ex);
-                        throw new ImportException($"Exception extracting {file} from provider {provider.SourceName}", $"Unable to extract files from mod file {provider.SourceName}!", ex);
-                    }
+                    var eng = _getEngine();
+                    eng.ModManager.ModAdded(def);
+                    _getEngine().ModManager.ResetCache();
+                    QueueModInstall(def);
+
                 }
-                _getEngine().ModManager.ResetCache();
-                QueueModInstall(def);
+                catch (Exception ex)
+                {
+                    Log.LogErr($"Exception trying to load mod from provider {provider.SourceName}", ex);
+                    throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it does not appear to be a valid mod file.", ex);
+                }
             }
-            catch (Exception ex)
-            {
-                Log.LogErr($"Exception trying to load mod from provider {provider.SourceName}", ex);
-                throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it does not appear to be a valid mod file.", ex);
-            }            
         }
 
         /// <summary>
@@ -587,7 +595,6 @@ namespace BeatOn
                 {
                     ops.Last().OpFinished += (s,e)=>
                     {
-                        _getConfig().Config = _getEngine().GetCurrentConfig();
                         if (e.Status == OpStatus.Complete)
                         {
                             _showToast($"Mod Installed", $"{modDefinition.Name} was installed and activated", ClientModels.ToastType.Success);
@@ -595,6 +602,11 @@ namespace BeatOn
                     };
                 }
                 ops.ForEach(x => _getEngine().OpManager.QueueOp(x));
+                ops.WaitForFinish();
+                var cfg = _getEngine().GetCurrentConfig();
+                _getConfig().Config = cfg;
+                _triggerConfigChanged();
+
             }
             catch (Exception ex)
             {

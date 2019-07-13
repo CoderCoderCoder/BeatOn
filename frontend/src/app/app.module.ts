@@ -62,6 +62,7 @@ import { NoCustomSongsPipe } from './pipes/no-custom-songs';
 import { OnlyCustomSongsPipe } from './pipes/only-custom-songs';
 import { ImagePickerDialogComponent } from './image-picker-dialog/image-picker-dialog.component';
 import { CdkVirtualScrollViewportPatchDirective } from './cdk-virtual-scroll-viewport-patch.directive';
+import { ColorPickerModule } from 'ngx-color-picker';
 @NgModule({
     declarations: [
         AppComponent,
@@ -138,6 +139,7 @@ import { CdkVirtualScrollViewportPatchDirective } from './cdk-virtual-scroll-vie
         FlexLayoutModule,
         NgxSmartModalModule,
         MatGridListModule,
+        ColorPickerModule,
     ],
     providers: [NgxSmartModalService],
     bootstrap: [AppComponent],

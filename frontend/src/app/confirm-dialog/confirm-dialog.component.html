@@ -6,6 +6,6 @@
     <mat-card-actions>
       <button fast-click (click)="clickButton1()" mat-raised-button color="accent">{{data.button1Text||"OK"}}</button>
       <div style="display: inline-block; width: 50%"></div>
-      <button fast-click (click)="clickCancel()" mat-raised-button>Cancel</button>
+      <button fast-click (click)="clickCancel()" mat-raised-button>{{data.button2Text||"Cancel"}}</button>
     </mat-card-actions>
   </mat-card>
