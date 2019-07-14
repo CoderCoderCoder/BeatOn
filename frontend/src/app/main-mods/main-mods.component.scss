@@ -1,101 +1,110 @@
 .viewport {
- //   width: 600px;
-    height: 49px;
-    overflow-y: auto;
-    margin-left: 300px;
+  //   width: 600px;
+  height: 49px;
+  overflow-y: auto;
+  margin-left: 300px;
 }
-.modContainer h1 {
-    margin-left: 95px;
 
-}
-.modContainer h3 {
-    margin-left: 95px;
-
-}
-.modContainer .mat-line {
-    margin-left: 95px !important;
-}
 .modContainer {
-    height: 115px !important;
+  height: 115px !important;
+  h1,
+  h3 {
+    margin-left: 95px;
+  }
+  .mat-line {
+    margin-left: 95px !important;
+  }
 }
-.modCategory {
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    width: 95px; 
-    height:115px;
-    background-size: cover;
-    background-repeat: no-repeat;
-    border-radius: 5px 0 0 5px;
-}
-.builtinMods {
-    float:right;
-    top: 103px;
 
+.modCategory {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 95px;
+  height: 115px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 5px 0 0 5px;
 }
+
+.builtinMods {
+  float: right;
+  top: 103px;
+}
+
 .colorName {
-    text-shadow: -1.5px 0 2px black, 0 1.5px 2px black, 1.5px 0 2px black, 0 -1.5px 2px black;
+  text-shadow: -1.5px 0 2px black, 0 1.5px 2px black, 1.5px 0 2px black, 0 -1.5px 2px black;
 }
+
 .container {
-    height: 330px;
-    overflow-y: scroll;
-    overflow-x: hidden;
+  height: 330px;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
+
 .description {
-    margin-top: 5px;
-    font-style: italic;
-    margin-left: 5px;
-    text-align: justify;
+  margin-top: 5px;
+  font-style: italic;
+  margin-left: 5px;
+  text-align: justify;
 }
+
 .deleteMod {
-    float: right;
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    color: orangered;
+  float: right;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  color: orangered;
 }
+
 .modUrl a {
-    color: white;  
+  color: white;
 }
+
 .header {
-    margin-top: 20px;
+  margin-top: 20px;
 }
+
 .version {
-    font-size:14px;
-    color:darkgray;
-    margin-left: 5px;
+  font-size: 14px;
+  color: darkgray;
+  margin-left: 5px;
 }
 
 .content {
-    font-style: italic;
-    margin-left: 15px;
-    margin-right: 15px;
-    text-align: justify;
+  font-style: italic;
+  margin-left: 15px;
+  margin-right: 15px;
+  text-align: justify;
 }
+
 .modUrl {
-    float:left;
-    margin-top: 5px;
-    margin-bottom: 0px;
+  float: left;
+  margin-top: 5px;
+  margin-bottom: 0px;
 }
+
 .footer {
-    margin-top: 20px !important;
+  margin-top: 20px !important;
 }
+
 .modId {
-    color: darkgray;
-    font-size: 8px;
-    height: 10px;
-    position: absolute;
-    left: 5px;
-    top: 5px;
+  color: darkgray;
+  font-size: 8px;
+  height: 10px;
+  position: absolute;
+  left: 5px;
+  top: 5px;
 }
-.enabledtext.active {
-    font-weight: bold;
-}
+
 .enabledtext {
-    font-size: 14px;
-    float: right;
-    margin-top: 4px;
-    color: darkgray;
+  font-size: 14px;
+  float: right;
+  margin-top: 4px;
+  color: darkgray;
+  &.active {
+    font-weight: bold;
+  }
 }
 
 .selected {
@@ -108,38 +117,41 @@ mat-list-item {
   position: relative;
   left: 0;
   background-color: #404040;
-  margin: .5em;
-  padding: .3em 0 .9em;
+  margin: 0.5em;
+  padding: 0.3em 0 0.9em;
   height: 1.6em;
   border-radius: 4px;
-}
-
-mat-list-item.selected:hover {
-  background-color: #636363 !important;
-  color: white;
-}
-mat-list-item:hover {
-  background-color: #474747;
-  left: .1em;
+  &:hover {
+    background-color: #474747;
+    left: 0.1em;
+  }
+  &.selected:hover {
+    background-color: #636363 !important;
+    color: white;
+  }
 }
 
 .toggleContainer {
-    display: block;
-    float: right;
-    width: 65px;
-    margin-right: 6px;
+  display: block;
+  float: right;
+  width: 65px;
+  margin-right: 6px;
 }
-.toggle, .toggleSpinner {
-    display: inline-block;
-}
+
+.toggle,
 .toggleSpinner {
-    margin-bottom: -3px;
-    margin-left: 5px;
-    width: 20px;
-    height: 20px;
+  display: inline-block;
 }
+
+.toggleSpinner {
+  margin-bottom: -3px;
+  margin-left: 5px;
+  width: 20px;
+  height: 20px;
+}
+
 .description {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .modal.left .modal-dialog,
@@ -187,5 +199,3 @@ mat-list-item:hover {
   border-bottom-color: #eeeeee;
   background-color: #fafafa;
 }
-
-
