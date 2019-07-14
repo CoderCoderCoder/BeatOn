@@ -1,4 +1,3 @@
-
 .titleText {
   color: white;
   text-shadow: -1.5px 0 2px black, 0 1.5px 2px black, 1.5px 0 2px black, 0 -1.5px 2px black;
@@ -7,6 +6,7 @@
   left: 0px;
   font-size: 14px;
 }
+
 .playlistEdit {
   position: absolute;
   top: 0;
@@ -14,25 +14,33 @@
   border-radius: 50%;
   width: 25px;
   height: 25px;
-  background-color: rgba(0,0,0,200);
+  background-color: rgba(0, 0, 0, 200);
   font-size: 24px;
   color: white;
   cursor: pointer;
 }
+
 .addPlaylist {
   width: 96%;
   height: 38px;
 }
- 
-  .tile {
-    height: 100px;
-    width: 100px;
-    background-color: #ccc;
-    background-size: cover !important;
-  }
-  .zoomedIn {transform: scale(1.0); transition: transform .2s;}
-.zoomedOut {transform: scale(.75); transition: transform .2s;}
 
+.tile {
+  height: 100px;
+  width: 100px;
+  background-color: #ccc;
+  background-size: cover !important;
+}
+
+.zoomedIn {
+  transform: scale(1);
+  transition: transform 0.2s;
+}
+
+.zoomedOut {
+  transform: scale(0.75);
+  transition: transform 0.2s;
+}
 
 .bannerStyle h1 {
   background-color: #ccc;
@@ -40,18 +48,18 @@
   text-align: center;
   line-height: 300px;
 }
+
 .leftRs {
   transform: rotate(180deg);
   position: absolute;
-
   top: 0;
   bottom: 0;
   width: 25px;
   height: 25px;
-  background-color:transparent;
+  background-color: transparent;
   left: 0;
   font-size: 48px;
-  margin-left:35px;
+  margin-left: 35px;
   border: none;
 }
 
@@ -63,44 +71,48 @@
   top: 0;
   left: 0;
 }
+
 .rightRs {
-  
   border: none;
   font-size: 48px;
   position: absolute;
-  margin-left:35px;
+  margin-left: 35px;
   bottom: 0;
   bottom: 0;
   width: 25px;
   height: 25px;
   overflow: hidden;
-  background-color:transparent;
-  border:none;
+  background-color: transparent;
+  border: none;
   left: 0;
 }
 
 .ngucarouselPoint {
-list-style-type: none;
-text-align: center;
-padding: 12px;
-margin: 0;
-white-space: nowrap;
-overflow: auto;
-position: absolute;
-width: 100%;
-bottom: 20px;
-left: 0;
-box-sizing: border-box;
-}
-.ngucarouselPoint li {
-display: inline-block;
-border-radius: 999px;
-background: rgba(255, 255, 255, 0.55);
-padding: 5px;
-margin: 0 3px;
-transition: .4s ease all;
-}
-.ngucarouselPoint li.active {
-  background: white;
-  width: 10px;
+  list-style-type: none;
+  text-align: center;
+  padding: 12px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: auto;
+  position: absolute;
+  width: 100%;
+  bottom: 20px;
+  left: 0;
+  box-sizing: border-box;
+
+  li {
+    display: inline-block;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.55);
+    padding: 5px;
+    margin: 0 3px;
+    transition: 0.4s ease all;
+
+    &.active {
+      background: white;
+      width: 10px;
+    }
+
+  }
+  
 }

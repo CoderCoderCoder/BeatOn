@@ -1,5 +1,5 @@
 form {
-    margin-top: 100px;
+  margin-top: 100px;
 }
 
 .uploadfilecontainer {
@@ -8,14 +8,15 @@ form {
   height: 200px;
   width: 80%;
   margin: 20px auto;
-  border: 2px dashed #1C8ADB;
+  border: 2px dashed #1c8adb;
   border-radius: 10px;
-}
 
-.uploadfilecontainer:hover {
-  cursor: pointer;
-  background-color: #9ecbec !important;
-  opacity: 0.8;
+  &:hover {
+    cursor: pointer;
+    background-color: #9ecbec !important;
+    opacity: 0.8;
+  }
+
 }
 
 .files-list {
@@ -28,14 +29,16 @@ form {
   border-radius: 12px;
   padding: 5px;
   color: #1c8adb;
-}
 
-.files-list .delete-file {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
+  .delete-file {
+    background: transparent;
+    border: none;
+    cursor: pointer;
 
-.files-list .delete-file img {
-  width: 30px;
+    img {
+      width: 30px;
+    }
+
+  }
+  
 }
