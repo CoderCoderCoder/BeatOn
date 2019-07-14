@@ -27,7 +27,7 @@ namespace BeatOn.Core.MessageHandlers
 
         public MessageType HandlesType => MessageType.GetOps;
 
-        public void HandleMessage(MessageBase message)
+        public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
             List<AssetOp> opCopy;
             lock (_opList)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-
+using System.Threading;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -23,7 +23,10 @@ namespace BeatOn.Core.RequestHandlers
         private GetQaeDelegate _getQae;
         private GetBeatOnConfigDelegate _getConfig;
         private Action _triggerConfigChanged;
-        public PostCommitConfig(BeatSaberModder mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged)
+        private Func<bool> _canSync;
+        private Action _killBeatSaber;
+        private Func<bool> _saveCommittedConfig;
+        public PostCommitConfig(BeatSaberModder mod, ShowToastDelegate showToast, SendHostMessageDelegate sendMessage, GetQaeDelegate getQae, GetBeatOnConfigDelegate getConfig, Action triggerConfigChanged, Func<bool> canSync, Action killBeatSaber, Func<bool> saveCommittedConfig)
         {
             _mod = mod;
             _showToast = showToast;
@@ -31,6 +34,9 @@ namespace BeatOn.Core.RequestHandlers
             _getQae = getQae;
             _getConfig = getConfig;
             _triggerConfigChanged = triggerConfigChanged;
+            _canSync = canSync;
+            _killBeatSaber = killBeatSaber;
+            _saveCommittedConfig = saveCommittedConfig;
         }
 
         public void HandleRequest(HttpListenerContext context)
@@ -46,9 +52,21 @@ namespace BeatOn.Core.RequestHandlers
                     _showToast("Can't commit config.", "Modded Beat Saber is not installed!");
                     return;
                 }
+                if (!_canSync())
+                {
+                    Log.LogErr("Attempted to sync while operations are in progress!");
+                    _showToast("Can't Sync Yet", "Operations are still in progress, wait a moment and try again.", ToastType.Warning, 4);
+                    resp.BadRequest("Operations in progress, can't sync");
+                    return;
+                }
+                _killBeatSaber();
                 _showToast("Saving Config", "Do not turn off the Quest or exit the app!", ToastType.Warning, 3);
                 _getQae().Save();
                 _getConfig().IsCommitted = (!_getQae().HasChanges);
+                if (!_saveCommittedConfig())
+                {
+                    Log.LogErr("Attempted to save committed config after commit post, but it failed.");
+                }
                 _triggerConfigChanged();
                 resp.Ok();
             }

@@ -6,7 +6,20 @@
       </div>
       <mat-card-title>Mod Management</mat-card-title>
       <mat-card-subtitle>Manage all mods available for the quest here. Install, uninstall, and configure mods..</mat-card-subtitle>
+      <div class="builtinMods">
+          <mat-chip-list>
+              <mat-chip [ngStyle]="{'background-color': leftColor}" cpPosition="left" [cpPositionOffset]="-30" [cpCmykEnabled]="false" 
+              [(colorPicker)]="leftColor" 
+              [cpAlphaChannel]="true" cpCloseClickOutside="true" cpOutputFormat="rgba"
+              (colorPickerSelect)="leftColorSelected($event)" [cpOKButton]="true" cpOKButtonText="Save Color" selected><span class="colorName">Left Color</span></mat-chip>
+              <mat-chip [ngStyle]="{'background-color': rightColor}" cpPosition="left" [cpPositionOffset]="-30" [cpCmykEnabled]="false" 
+              [(colorPicker)]="rightColor" 
+              [cpAlphaChannel]="true" cpCloseClickOutside="true" cpOutputFormat="rgba"
+              (colorPickerSelect)="rightColorSelected($event)" [cpOKButton]="true" cpOKButtonText="Save Color" selected><span class="colorName">Right Color</span></mat-chip>
+            </mat-chip-list>
+      </div>
     </mat-card-header>
+
   </mat-card>
 </section>
 <section class="container" >
@@ -15,7 +28,7 @@
     <mat-list>
       <!-- [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()" -->
         <mat-list-item class="modContainer" *ngFor="let mod of config.Mods" >
-          <div class="modCategory {{mod.Category}}"></div>
+          <div [ngStyle]="{'background-image': getModBG(mod)}" class="modCategory"></div>
           <div matTooltip="Delete the mod from Beat On." (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
           <h1 matLine> {{ mod.Name }} <span class="version">v{{ mod.Version }}</span></h1>
           <h3 matLine> by {{ mod.Author }}</h3>
@@ -36,6 +49,7 @@
         </mat-list-item>
     </mat-list>
   </div>
+
 </section>
 <ngx-smart-modal #myModal [identifier]="'myModal'">
   <div *ngIf="myModal.hasData()">

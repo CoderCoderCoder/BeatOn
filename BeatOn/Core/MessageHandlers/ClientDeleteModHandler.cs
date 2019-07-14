@@ -29,7 +29,7 @@ namespace BeatOn.Core.MessageHandlers
 
         public MessageType HandlesType => MessageType.DeleteMod;
 
-        public void HandleMessage(MessageBase message)
+        public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
             var msg = message as ClientDeleteMod;
             if (msg == null)

@@ -34,6 +34,16 @@ namespace BeatOn
     {
         public string PackageUrl { get; set; }
     }
+    public class IntentAction
+    {
+        public IntentActionType Type { get; set; }
+        public string PackageName { get; set; }
+    }
+    public enum IntentActionType
+    {
+        Launch,
+        Exit
+    }
 
     public enum BeatOnIntent
     {
@@ -42,7 +52,9 @@ namespace BeatOn
         RestartCore,
         ImportConfigFile,
         InstallPackage,
-        UninstallPackage
+        UninstallPackage,
+        IntentAction,
+        HardQuit
     }
 
     public class BeatOnServiceTransceiver : BroadcastReceiver
@@ -61,6 +73,8 @@ namespace BeatOn
         public event EventHandler<DownloadUrlInfo> DownloadUrlReceived;
         public event EventHandler<PackageInfo> InstallPackageReceived;
         public event EventHandler<PackageInfo> UninstallPackageReceived;
+        public event EventHandler<IntentAction> IntentActionReceived;
+        public event EventHandler HardQuitReceived;
 
         public void RegisterContextForIntents(params BeatOnIntent[] intents)
         {
@@ -76,7 +90,6 @@ namespace BeatOn
             IsRegistered = false;
         }
 
-
         private void SendIntent(BeatOnIntent intent, string json)
         {
             Intent broadCastIntent = new Intent();
@@ -91,6 +104,11 @@ namespace BeatOn
         public void SendServerStatusInfo(ServiceStatusInfo info)
         {
             SendIntent(BeatOnIntent.ServerStatusInfo, JsonConvert.SerializeObject(info));
+        }
+
+        public void SendHardQuit()
+        {
+            SendIntent(BeatOnIntent.HardQuit, "");
         }
 
         public void SendDownloadUrl(DownloadUrlInfo info)
@@ -115,6 +133,11 @@ namespace BeatOn
         public void SendImportConfig(ImportConfigInfo info)
         {
             SendIntent(BeatOnIntent.ImportConfigFile, JsonConvert.SerializeObject(info));
+        }
+
+        public void SendIntentAction(IntentAction action)
+        {
+            SendIntent(BeatOnIntent.IntentAction, JsonConvert.SerializeObject(action));
         }
 
         public override void OnReceive(Context context, Intent intent)
@@ -148,6 +171,12 @@ namespace BeatOn
                         break;
                     case BeatOnIntent.InstallPackage:
                         UninstallPackageReceived?.Invoke(this, JsonConvert.DeserializeObject<PackageInfo>(json));
+                        break;
+                    case BeatOnIntent.IntentAction:
+                        IntentActionReceived?.Invoke(this, JsonConvert.DeserializeObject<IntentAction>(json));
+                        break;
+                    case BeatOnIntent.HardQuit:
+                        HardQuitReceived?.Invoke(this, new EventArgs());
                         break;
                     default:
                         Log.LogErr($"Unhandled enum type in OnReceive: {intentType}");

@@ -26,7 +26,7 @@ namespace BeatOn.Core.MessageHandlers
 
         public MessageType HandlesType => MessageType.DeletePlaylist;
 
-        public void HandleMessage(MessageBase message)
+        public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
             var msg = message as ClientDeletePlaylist;
             if (msg == null)
@@ -35,10 +35,17 @@ namespace BeatOn.Core.MessageHandlers
             var qae = _getQae();
             op.OpFinished += (s, e) =>
             {
+                ActionResponse resp;
                 if (e.Status == OpStatus.Complete)
                 {
                     _getConfig().Config = qae.GetCurrentConfig();
+                    resp = new ActionResponse() { ResponseToMessageID = msg.MessageID, Success = true };
                 }
+                else
+                {
+                    resp = new ActionResponse() { ResponseToMessageID = msg.MessageID, Success = false, ErrorMessage = e.Exception?.Message??"An error occurred" };
+                }
+                sendHostMessage(resp);
             };
             qae.OpManager.QueueOp(op);
         }

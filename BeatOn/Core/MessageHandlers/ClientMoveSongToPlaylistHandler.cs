@@ -28,7 +28,7 @@ namespace BeatOn.Core.MessageHandlers
 
         public MessageType HandlesType => MessageType.MoveSongToPlaylist;
 
-        public void HandleMessage(MessageBase message)
+        public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
             var msg = message as ClientMoveSongToPlaylist;
             if (msg == null)

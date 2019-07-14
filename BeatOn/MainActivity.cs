@@ -58,6 +58,7 @@ namespace BeatOn
                 }
             };
             QuestomAssets.Utils.ImageUtils.Instance = new ImageUtilsDroid();
+
         }
 
    
@@ -149,6 +150,9 @@ namespace BeatOn
             _browserView.Settings.CacheMode = CacheModes.Default;
             _browserView.Focusable = true;
             _browserView.Settings.MediaPlaybackRequiresUserGesture = false;
+            _browserView.Settings.DomStorageEnabled = true;
+            _browserView.Settings.DatabaseEnabled = true;
+            _browserView.Settings.DatabasePath = "/data/data/" + _browserView.Context.PackageName + "/databases/";
 
             _browserView.Download += _webView_Download;
             _toastInjector.Download += _toastInjector_Download;
@@ -217,11 +221,23 @@ namespace BeatOn
                 return base.DispatchKeyEvent(e);
             }
         }
-
+        const int SCROLL_ACCEL_INCREMENT = 50;
+        const int SCROLL_ACCEL_DELAY_MS = 300;
+        private bool? scrollLastDirection;
+        private int scrollAccel = 0;
+        private DateTime scrollLastTime = DateTime.Now;
         private ObjectAnimator _currentScroll = null;
         private void SmoothScrollBrowser(bool down)
         {
-            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 300 : -300));
+            var delay = (DateTime.Now - scrollLastTime).TotalMilliseconds;
+            if (scrollLastDirection.HasValue && scrollLastDirection == down && SCROLL_ACCEL_DELAY_MS > delay)
+                scrollAccel += SCROLL_ACCEL_INCREMENT;
+            else
+                scrollAccel = 0;
+
+            scrollLastTime = DateTime.Now;
+            scrollLastDirection = down;
+            ObjectAnimator anim = ObjectAnimator.OfInt(_browserView, "scrollY", _browserView.ScrollY, _browserView.ScrollY + (down ? 300+ scrollAccel : -300- scrollAccel));
             if (_currentScroll != null)
             {
                 _currentScroll.End();
@@ -285,11 +301,15 @@ namespace BeatOn
                 _browserView.Reload();
             });
         }
-
+        DateTime lastNav = DateTime.Now;
         private void JSInterface_OnNavigateBrowser(object sender, string e)
         {
             RunOnUiThread(() =>
             {
+                if ((DateTime.Now-lastNav).TotalMilliseconds < 800)
+                    return;
+                lastNav = DateTime.Now;
+                _browserView.StopLoading();
                 _browserView.LoadUrl(e);
             });
         }
@@ -340,6 +360,15 @@ namespace BeatOn
 
         private void ContinueLoad()
         {
+            try
+            {
+                ActivityManager am = (ActivityManager)GetSystemService(Context.ActivityService);
+                am.KillBackgroundProcesses("com.beatgames.beatsaber");
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception trying to kill background process for beatsaber.", ex);
+            }
             Intent serviceToStart = new Intent(this, typeof(BeatOnService));
             Log.LogMsg("Starting service");
             StartService(serviceToStart);
@@ -379,6 +408,30 @@ namespace BeatOn
                      {
                          BeatSaberModder m = new BeatSaberModder(this, null, null);
                          m.TriggerPackageInstall(p.PackageUrl);
+                     };
+                    _broadcastReceiver.HardQuitReceived += (s, i) =>
+                    {
+                        Intent serviceToStart = new Intent(this, typeof(BeatOnService));
+                        Log.LogMsg("Stopping service");
+                        StopService(serviceToStart);
+                        Log.LogMsg("Service Stopped");
+                        Log.LogMsg("Killing app");
+                        Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                        Java.Lang.JavaSystem.Exit(0);
+                        Log.LogMsg("Should be dead");
+                    };
+                    _broadcastReceiver.IntentActionReceived += (s, i) =>
+                     {
+                         if (i.Type == IntentActionType.Exit)
+                         {
+                             var intent = new Intent("com.oculus.system_activity");
+                             intent.SetPackage(i.PackageName);
+                             intent.PutExtra("intent_pkg", "com.oculus.vrshell");
+                             intent.PutExtra("intent_cmd", "{\"Command\":\"exitToHome\", \"PlatformUIVersion\":3, \"ToPackage\":\""+ i.PackageName+"\"}");
+                             SendBroadcast(intent);
+                             intent.PutExtra("intent_cmd", "{\"Command\":\"returnToLauncher\", \"PlatformUIVersion\":3, \"ToPackage\":\""+ i.PackageName+"\"}");
+                             SendBroadcast(intent);
+                         }
                      };
                 };
             }

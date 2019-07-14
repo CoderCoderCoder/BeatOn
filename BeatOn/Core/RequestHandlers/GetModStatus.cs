@@ -40,9 +40,20 @@ namespace BeatOn.Core.RequestHandlers
                     });
                     return;
 #else
+                    try
+                    {
+                        _mod.CheckCreateModdedBackup();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr($"what?  I shouldn't get an exception from this here.", ex);
+                    }
                     var model = new ModSetupStatus()
                     {
-                        IsBeatSaberInstalled = _mod.IsBeatSaberInstalled
+                        IsBeatSaberInstalled = _mod.IsBeatSaberInstalled,
+                        BeatOnVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                        HasGoodBackup = _mod.GetHasGoodBackup(),
+                        HasHalfAssBackup = _mod.GetHasCrapBackup()
                     };
 
                     if (model.IsBeatSaberInstalled)

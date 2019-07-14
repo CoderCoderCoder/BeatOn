@@ -196,6 +196,17 @@ namespace BeatOn
             }
         }
 
+        public bool GetHasGoodBackup()
+        {
+            return File.Exists(Constants.BEATSABER_APK_BACKUP_FILE);
+        }
+
+        public bool GetHasCrapBackup()
+        {
+            //CheckCreateModdedBackup();
+            return File.Exists(Constants.BEATSABER_APK_MODDED_BACKUP_FILE);
+        }
+
         /// <summary>
         /// Checks if the backup exists, or creates a very unideal backup of the modded APK for the sake of uninstalling mods
         /// </summary>
@@ -224,6 +235,7 @@ namespace BeatOn
                 Log.LogErr("Copying APK for unideal backup...");
                 try
                 {
+                    MakeFullPath(Constants.BEATSABER_APK_MODDED_BACKUP_FILE.GetDirectoryFwdSlash());
                     File.Copy(apkPath, Constants.BEATSABER_APK_MODDED_BACKUP_FILE, true);
                 }
                 catch (Exception ex)

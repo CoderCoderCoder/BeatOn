@@ -74,9 +74,9 @@
           navigate_before
         </i>
         <!--<i mz-tooltip tooltip="Sort by Recent" position="bottom" class="material-icons right cursor" (click)="sortPack(pack,true)">swap_vert</i>-->
-        <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(pack.PlaylistID)">fitness_center</i>
-        <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(pack.PlaylistID)">face</i>
-        <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(pack.PlaylistID)">sort</i>
+        <i fast-click matTooltip="Sort By Difficulty" matTooltipPosition="below" class="material-icons right cursor" (click)="sortDifficulty(selectedPlaylist.PlaylistID)">fitness_center</i>
+        <i fast-click matTooltip="Sort By Author" matTooltipPosition="below" class="material-icons right cursor" (click)="sortAuthor(selectedPlaylist.PlaylistID)">face</i>
+        <i fast-click matTooltip="Sort Alphabetically" matTooltipPosition="below" class="material-icons right cursor" (click)="sortName(selectedPlaylist.PlaylistID)">sort</i>
         <!--<i matTooltip="Remove Duplicates" matTooltipPosition="below" class="material-icons right cursor" (click)="uniquePack(pack)">filter_1</i>-->
         <i fast-click matTooltip="Edit Playlist" matTooltipPosition="below" (click)="addEditPlaylist(selectedPlaylist)" class="material-icons right cursor" >edit</i>
         <i @winkout fast-click matTooltip="Copy Selected Songs into this pack" matTooltipPosition="below"

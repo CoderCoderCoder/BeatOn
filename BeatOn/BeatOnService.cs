@@ -37,7 +37,20 @@ namespace BeatOn
                     if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage) == Android.Content.PM.Permission.Granted)
                     {
                         //Toast.makeText(getApplicationContext(), "Hello Javatpoint", Toast.LENGTH_SHORT).show();
-                        _core = new BeatOnCore(this, _transciever.SendPackageInstall, _transciever.SendPackageUninstall);
+                        _core = new BeatOnCore(this, _transciever.SendPackageInstall, _transciever.SendPackageUninstall, (x) => { _transciever.SendIntentAction(new IntentAction() { PackageName = x, Type = IntentActionType.Exit }); });
+                        _core.HardQuitTriggered += (s, e) =>
+                         {
+                             _transciever.SendHardQuit();
+                             System.Threading.Timer tmr = null;
+                             tmr = new Timer((z) =>
+                             {
+                                 Log.LogMsg("App didn't kill the service after a miliseconds, service killing itself");
+                                 Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                                 Java.Lang.JavaSystem.Exit(0);
+                                 Log.LogMsg("Should be dead");
+                                 tmr.Dispose();
+                             }, null, 300, Timeout.Infinite);
+                         };
                         _core.Start();
                     }
                 }

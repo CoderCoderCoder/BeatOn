@@ -98,7 +98,7 @@ namespace BeatOn.Core.RequestHandlers
                         foreach (var folder in folders)
                         {
                             string songId = folder.Replace("/", "");
-                            songId = songId.Replace(" ", "");
+                            //songId = songId.Replace(" ", "");
                             if (_getConfig().Config.Playlists.SelectMany(x => x.SongList).Any(x => x.SongID?.ToLower() == songId.ToLower()))
                             {
                                 SendStatusMessage($"Folder {folder} already loaded");

@@ -223,12 +223,12 @@ button.right  {
   scroll-behavior: smooth;
 }
 .material-icons.right.cursor{
-  margin-right: 8px;
+  margin-right: 3px;
   margin-top: -5px;
 }
 .name,.name-top{
   padding-left: 1.2em!important;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .songpackname {
@@ -292,6 +292,7 @@ button.right  {
   padding-right: 10px;
   background: rgba(255,255,255,0.2);
   height: calc(100% - 76px);
+  scroll-behavior: smooth;
   //min-height: 86px;
   //max-height: 400px;
   //overflow: auto;

@@ -11,7 +11,6 @@ import {
     AfterViewChecked,
     ElementRef,
 } from '@angular/core';
-import { DragulaService } from 'ng2-dragula';
 import { Subscription } from 'rxjs/internal/Subscription';
 import { ClientSortPlaylist } from '../models/ClientSortPlaylist';
 import { PlaylistSortMode } from '../models/PlaylistSortMode';
@@ -40,6 +39,7 @@ import { BeatSaberSong } from '../models/BeatSaberSong';
 import { NoCustomSongsPipe } from '../pipes/no-custom-songs';
 import { OnlyCustomSongsPipe } from '../pipes/only-custom-songs';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ExtendedScrollToOptions } from '@angular/cdk/scrolling';
 declare let autoScroll;
 @Component({
     selector: 'app-song-pack-manager',
@@ -74,6 +74,11 @@ export class SongPackManagerComponent implements OnInit {
     lastSongsScrollOffset: number;
     updateSearchResult: Subject<void>;
     updateHack: number = 0;
+    private SCROLL_ACCEL_INCREMENT: number = 50;
+    private SCROLL_ACCEL_DELAY_MS: number = 350;
+    private scrollLastButton;
+    private scrollAccel: number = 0;
+    private scrollLastTime: number = 0;
     public constructor(
         private dialog: MatDialog,
         private configSvc: ConfigService,
@@ -86,27 +91,50 @@ export class SongPackManagerComponent implements OnInit {
         this.subs.add(
             this.integrationService.appButtonPressed.subscribe((be: AppButtonEvent) => {
                 const SCROLL_SIZE: number = 300;
+                if (
+                    this.scrollLastButton == be.button &&
+                    new Date().getTime() - this.scrollLastTime <= this.SCROLL_ACCEL_DELAY_MS
+                ) {
+                    this.scrollAccel = this.scrollAccel + this.SCROLL_ACCEL_INCREMENT;
+                } else {
+                    this.scrollAccel = 0;
+                }
+                this.scrollLastButton = be.button;
+                this.scrollLastTime = new Date().getTime();
                 var scrollFunc = ele => {
                     if (be.button == AppButtonType.Down) {
                         if (ele.scrollTop < ele.scrollHeight - ele.offsetHeight) {
                             var scrollAmt = ele.scrollHeight - ele.offsetHeight - ele.scrollTop;
                             if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
-                            ele.scrollTo(ele.scrollLeft, ele.scrollTop + scrollAmt);
+                            ele.scrollTo(ele.scrollLeft, ele.scrollTop + scrollAmt + this.scrollAccel);
                         }
                     } else if (be.button == AppButtonType.Up) {
                         if (ele.scrollTop > 0) {
                             var scrollAmt: number = ele.scrollTop;
                             if (scrollAmt > SCROLL_SIZE) scrollAmt = SCROLL_SIZE;
-                            ele.scrollTo(ele.scrollLeft, ele.scrollTop - scrollAmt);
+                            ele.scrollTo(ele.scrollLeft, ele.scrollTop - (scrollAmt + this.scrollAccel));
                         }
+                    }
+                };
+                var cdkScrollFunc = ele => {
+                    var ex: ExtendedScrollToOptions = <ExtendedScrollToOptions>{};
+                    ex.left = 0;
+                    if (be.button == AppButtonType.Down) {
+                        ex.bottom = ele.measureScrollOffset('bottom') - (SCROLL_SIZE + this.scrollAccel);
+                        if (ex.bottom < 0) ex.bottom = 0;
+                        ele.scrollTo(ex);
+                    } else if (be.button == AppButtonType.Up) {
+                        ex.top = ele.measureScrollOffset('top') - (SCROLL_SIZE + this.scrollAccel);
+                        if (ex.top < 0) ex.top = 0;
+                        ele.scrollTo(ex);
                     }
                 };
                 var bounds;
                 if (this.song_container) {
-                    bounds = this.song_container.nativeElement.getBoundingClientRect();
+                    bounds = this.song_container.elementRef.nativeElement.getBoundingClientRect();
                     if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
                         //pointer is in the song container when the button was pressed
-                        scrollFunc(this.song_container.nativeElement);
+                        cdkScrollFunc(this.song_container);
                         return;
                     }
                 }
@@ -119,10 +147,10 @@ export class SongPackManagerComponent implements OnInit {
                     }
                 }
                 if (this.pack_song_container) {
-                    bounds = this.pack_song_container.nativeElement.getBoundingClientRect();
+                    bounds = this.pack_song_container.elementRef.nativeElement.getBoundingClientRect();
                     if (be.x >= bounds.left && be.x <= bounds.right && be.y >= bounds.top && be.y <= bounds.bottom) {
                         //pointer is in the packs container when the button was pressed
-                        scrollFunc(this.pack_song_container.nativeElement);
+                        cdkScrollFunc(this.pack_song_container);
                         return;
                     }
                 }
@@ -294,7 +322,9 @@ export class SongPackManagerComponent implements OnInit {
         this.checkboxChecked = false;
     }
     getBackground(SongID) {
-        return AppSettings.API_ENDPOINT + '/host/beatsaber/song/cover?songid=' + SongID;
+        let fixedUri = encodeURIComponent(SongID);
+        fixedUri = fixedUri.replace('(', '%28').replace(')', '%29');
+        return AppSettings.API_ENDPOINT + '/host/beatsaber/song/cover?songid=' + fixedUri;
     }
     updateImages(timeout: number) {
         setTimeout(() => this.updateSearchResult.next(), timeout);

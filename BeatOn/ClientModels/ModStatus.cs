@@ -43,5 +43,9 @@ namespace BeatOn.ClientModels
         public ModSetupStatusType CurrentStatus { get; set; }
 
         public bool IsBeatSaberInstalled { get; set; }
+
+        public string BeatOnVersion { get; set; }
+        public bool HasGoodBackup { get; set; }
+        public bool HasHalfAssBackup { get; set; }
     }
 }

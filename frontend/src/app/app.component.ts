@@ -34,7 +34,7 @@ import { HostDownloadStatus, HostDownloadStatusType } from './models/HostDownloa
 export class AppComponent implements OnInit {
     constructor(
         private beatOnApi: BeatOnApiService,
-        private router: Router,
+        public router: Router,
         private msgSvc: HostMessageService,
         private toastr: ToastrService,
         private cfgSvc: ConfigService,
@@ -42,6 +42,7 @@ export class AppComponent implements OnInit {
         private toolbarEvents: ToolbarEventsService,
         private appIntegration: AppIntegrationService
     ) {
+        this.appIntegrated = appIntegration.isAppLoaded();
         this.msgSvc.opStatusMessage.subscribe((ev: HostOpStatus) => {
             this.opInProgress = ev.Ops.findIndex(x => x.Status != OpStatus.Failed) > -1;
         });
@@ -89,7 +90,7 @@ export class AppComponent implements OnInit {
             }
         });
     }
-
+    appIntegrated: boolean = false;
     opInProgress: boolean = false;
     dlInProgress: boolean = false;
     modStatusLoaded: boolean = false;
@@ -103,7 +104,9 @@ export class AppComponent implements OnInit {
     ngOnInit() {
         this.checkModStatus();
     }
-
+    showWait() {
+        return !this.modStatusLoaded || this.router.url == '/' || this.config.Config == null;
+    }
     commitConfig() {
         const dialogRef = this.dialog.open(ProgressSpinnerDialogComponent, {
             width: '450px',
@@ -119,6 +122,9 @@ export class AppComponent implements OnInit {
                 dialogRef.close();
             }
         );
+    }
+    clickStartBeatSaber() {
+        this.beatOnApi.startBeatSaber().subscribe(() => {});
     }
     private showToast(toastMsg: HostShowToast) {
         if (this.appIntegration.isBrowserShown) {
