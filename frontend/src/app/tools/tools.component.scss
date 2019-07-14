@@ -1,30 +1,30 @@
-@import '../../theme.scss';
+@import "../../theme.scss";
 
 @include mat-core();
 
 button {
-    margin-left: 25px;
+  margin-left: 25px;
 }
 
 .info {
-    position: absolute;
-    right: 30px;
-    top: 10px;
-    font-size: 12px;
-    color: mat-color($my-app-warn);
+  position: absolute;
+  right: 30px;
+  top: 10px;
+  font-size: 12px;
+  color: mat-color($my-app-warn);
 }
+
 .netInfo .url {
-    font-style: normal;
-    font-weight: bold;
-    display: inline;
-    font-size: 14px;
+  font-style: normal;
+  font-weight: bold;
+  display: inline;
+  font-size: 14px;
 }
+
 .descrip {
-    margin-left: 8px;
+  margin-left: 8px;
 }
-
-
 
 li {
-    margin-bottom: 8px;
+  margin-bottom: 8px;
 }
