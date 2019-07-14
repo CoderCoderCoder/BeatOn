@@ -286,7 +286,8 @@ namespace BeatOn.Core
                     ModsStatusFile = Constants.MOD_STATUS_FILE,
                     BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
                     ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE,
-                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME
+                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME,
+                    EmbeddedResourcesFileProvider = new ResourceFileProvider(_context.Assets, "resources")
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;

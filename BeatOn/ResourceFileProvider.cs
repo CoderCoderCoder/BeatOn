@@ -12,15 +12,18 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using QuestomAssets.AssetsChanger;
+using QuestomAssets;
 
 namespace BeatOn
 {
     public class ResourceFileProvider : IFileProvider
     {
         private AssetManager _assetManager;
-        public ResourceFileProvider(AssetManager assetManager)
+        private string _rootPath;
+        public ResourceFileProvider(AssetManager assetManager, string rootPath)
         {
             _assetManager = assetManager;
+            _rootPath = rootPath;
         }
 
         public bool UseCombinedStream => false;
@@ -29,13 +32,13 @@ namespace BeatOn
 
         public bool DirectoryExists(string path)
         {
-            path = path.Trim('/');
+            path = _rootPath.CombineFwdSlash(path).Trim('/');
             return _assetManager.List("").Any(x => x.StartsWith(path));
         }
         
         public bool FileExists(string filename)
         {
-            filename = filename.TrimStart('/');
+            filename = _rootPath.CombineFwdSlash(filename).TrimStart('/');
             return _assetManager.List("").Any(x => x == filename);
         }
 
@@ -50,7 +53,7 @@ namespace BeatOn
             var found = new List<string>();
             foreach (var e in _assetManager.List(""))
             {
-                if (FilePatternMatch(e, pattern))
+                if (FilePatternMatch(_rootPath.CombineFwdSlash(e), pattern))
                     found.Add(e);
             }
             return found;
@@ -58,7 +61,7 @@ namespace BeatOn
 
         public long GetFileSize(string filename)
         {
-            filename = filename.TrimStart('/');
+            filename = _rootPath.CombineFwdSlash(filename).TrimStart('/');
             using (var f = _assetManager.Open(filename))
             {
                 return f.Length;
@@ -67,13 +70,17 @@ namespace BeatOn
 
         public Stream GetReadStream(string filename, bool bypassCache = false)
         {
-            filename = filename.TrimStart('/');
+            filename = _rootPath.CombineFwdSlash(filename).TrimStart('/');
             return _assetManager.Open(filename);
         }
 
         public byte[] Read(string filename)
         {
-            filename = filename.TrimStart('/');
+            foreach (var test in _assetManager.List(_rootPath))
+            {
+                Log.LogMsg(test);
+            }
+            filename = _rootPath.CombineFwdSlash(filename).TrimStart('/');
             using (var f = _assetManager.Open(filename))
             {
                 byte[] b = new byte[f.Length];

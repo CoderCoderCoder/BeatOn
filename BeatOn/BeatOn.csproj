@@ -206,6 +206,8 @@
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.ac3c69c65ac08ba69b42.js" />
+    <AndroidAsset Include="Assets\www\main-es5.1d14f310f8a0dd394bb6.js" />
     <AndroidAsset Include="Assets\www\MaterialIcons-Regular.012cf6a10129e2275d79.woff" />
     <AndroidAsset Include="Assets\www\MaterialIcons-Regular.570eb83859dc23dd0eec.woff2" />
     <AndroidAsset Include="Assets\www\MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf" />
@@ -356,10 +358,10 @@
     <AndroidAsset Include="Assets\www\styles.897db6043558b11e7565.css" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.ac3c69c65ac08ba69b42.js" />
+    <AndroidAsset Include="Assets\resources\Lawless.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.1d14f310f8a0dd394bb6.js" />
+    <AndroidAsset Include="Assets\resources\LightShow.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
