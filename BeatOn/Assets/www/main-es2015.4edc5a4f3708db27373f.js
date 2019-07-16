@@ -9502,7 +9502,7 @@
       const qs = (() => {
         class t {}
         return (
-          (t.DEV_API_ENDPOINT = "http://192.168.1.40:50000"),
+          (t.DEV_API_ENDPOINT = "http://192.168.1.250:50000"),
           (t.DEV_WS_ENDPOINT = null),
           (t.API_ENDPOINT = ""),
           (t.WS_ENDPOINT_OVERRIDE = null),
@@ -46815,9 +46815,9 @@
               NS
             )),
             Uo(1, 1228800, null, 3, IS, [Ln, oa, [2, SS], [2, ES]], null, null),
-            vr(603979776, 8, { _lines: 1 }),
-            vr(603979776, 9, { _avatar: 0 }),
-            vr(603979776, 10, { _icon: 0 }),
+            vr(603979776, 9, { _lines: 1 }),
+            vr(603979776, 10, { _avatar: 0 }),
+            vr(603979776, 11, { _icon: 0 }),
             (t()(),
             Cr(
               5,
@@ -46934,7 +46934,7 @@
               null,
               null
             )),
-            Uo(17, 16384, [[8, 4]], 0, Tf, [], null, null),
+            Uo(17, 16384, [[9, 4]], 0, Tf, [], null, null),
             (t()(), Rr(18, null, [" ", " "])),
             (t()(),
             Cr(
@@ -46967,7 +46967,7 @@
               null,
               null
             )),
-            Uo(22, 16384, [[8, 4]], 0, Tf, [], null, null),
+            Uo(22, 16384, [[9, 4]], 0, Tf, [], null, null),
             (t()(), Rr(23, null, [" by ", ""])),
             (t()(),
             Cr(
@@ -46984,7 +46984,7 @@
               null,
               null
             )),
-            Uo(25, 16384, [[8, 4]], 0, Tf, [], null, null),
+            Uo(25, 16384, [[9, 4]], 0, Tf, [], null, null),
             (t()(), Rr(26, null, [" ", ""])),
             (t()(),
             Cr(
@@ -47001,7 +47001,7 @@
               null,
               null
             )),
-            Uo(28, 16384, [[8, 4]], 0, Tf, [], null, null),
+            Uo(28, 16384, [[9, 4]], 0, Tf, [], null, null),
             (t()(), _r(16777216, null, null, 1, null, HE)),
             Uo(30, 16384, null, 0, yl, [ua, ca], { ngIf: [0, "ngIf"] }, null),
             (t()(),
@@ -47322,7 +47322,7 @@
               function(t, e, n) {
                 var a = !0;
                 return (
-                  "click" === e && (a = !1 !== Io(t.parent, 57).close() && a), a
+                  "click" === e && (a = !1 !== Io(t.parent, 61).close() && a), a
                 );
               },
               null,
@@ -47428,7 +47428,7 @@
               0,
               null,
               null,
-              46,
+              50,
               "section",
               [],
               null,
@@ -47443,7 +47443,7 @@
               0,
               null,
               null,
-              45,
+              49,
               "mat-card",
               [["class", "setup-card mat-card"]],
               null,
@@ -47459,7 +47459,7 @@
               0,
               null,
               0,
-              43,
+              47,
               "mat-card-header",
               [["class", "mat-card-header"]],
               null,
@@ -47558,7 +47558,7 @@
               0,
               null,
               2,
-              30,
+              34,
               "div",
               [["class", "builtinMods"]],
               null,
@@ -47573,7 +47573,7 @@
               0,
               null,
               null,
-              29,
+              16,
               "mat-chip-list",
               [["class", "mat-chip-list"]],
               [
@@ -47751,6 +47751,54 @@
             (t()(),
             Cr(
               34,
+              0,
+              null,
+              null,
+              16,
+              "mat-chip-list",
+              [["class", "mat-chip-list"]],
+              [
+                [1, "tabindex", 0],
+                [1, "aria-describedby", 0],
+                [1, "aria-required", 0],
+                [1, "aria-disabled", 0],
+                [1, "aria-invalid", 0],
+                [1, "aria-multiselectable", 0],
+                [1, "role", 0],
+                [2, "mat-chip-list-disabled", null],
+                [2, "mat-chip-list-invalid", null],
+                [2, "mat-chip-list-required", null],
+                [1, "aria-orientation", 0],
+                [8, "id", 0]
+              ],
+              [[null, "focus"], [null, "blur"], [null, "keydown"]],
+              function(t, e, n) {
+                var a = !0;
+                return (
+                  "focus" === e && (a = !1 !== Io(t, 36).focus() && a),
+                  "blur" === e && (a = !1 !== Io(t, 36)._blur() && a),
+                  "keydown" === e && (a = !1 !== Io(t, 36)._keydown(n) && a),
+                  a
+                );
+              },
+              uE,
+              dE
+            )),
+            Yo(6144, null, nE, null, [tE]),
+            Uo(
+              36,
+              1556480,
+              null,
+              1,
+              tE,
+              [Ln, oa, [2, hp], [2, Ak], [2, Vk], wf, [8, null]],
+              null,
+              null
+            ),
+            vr(603979776, 5, { chips: 1 }),
+            (t()(),
+            Cr(
+              38,
               16777216,
               null,
               0,
@@ -47788,14 +47836,14 @@
                 var a = !0,
                   o = t.component;
                 return (
-                  "click" === e && (a = !1 !== Io(t, 40)._handleClick(n) && a),
+                  "click" === e && (a = !1 !== Io(t, 44)._handleClick(n) && a),
                   "keydown" === e &&
-                    (a = !1 !== Io(t, 40)._handleKeydown(n) && a),
-                  "focus" === e && (a = !1 !== Io(t, 40).focus() && a),
-                  "blur" === e && (a = !1 !== Io(t, 40)._blur() && a),
-                  "click" === e && (a = !1 !== Io(t, 44).handleClick() && a),
-                  "focus" === e && (a = !1 !== Io(t, 44).handleFocus() && a),
-                  "input" === e && (a = !1 !== Io(t, 44).handleInput(n) && a),
+                    (a = !1 !== Io(t, 44)._handleKeydown(n) && a),
+                  "focus" === e && (a = !1 !== Io(t, 44).focus() && a),
+                  "blur" === e && (a = !1 !== Io(t, 44)._blur() && a),
+                  "click" === e && (a = !1 !== Io(t, 48).handleClick() && a),
+                  "focus" === e && (a = !1 !== Io(t, 48).handleFocus() && a),
+                  "input" === e && (a = !1 !== Io(t, 48).handleInput(n) && a),
                   "colorPickerChange" === e &&
                     (a = !1 !== (o.rightColor = n) && a),
                   "colorPickerSelect" === e &&
@@ -47808,7 +47856,7 @@
             )),
             Yo(512, null, El, Il, [Ln, aa, jn]),
             Uo(
-              36,
+              40,
               278528,
               null,
               0,
@@ -47817,9 +47865,9 @@
               { ngStyle: [0, "ngStyle"] },
               null
             ),
-            Ar(37, { "background-color": 0 }),
+            Ar(41, { "background-color": 0 }),
             Uo(
-              38,
+              42,
               933888,
               null,
               0,
@@ -47828,22 +47876,22 @@
               { ngStyle: [0, "ngStyle"] },
               null
             ),
-            Ar(39, { "background-color": 0 }),
+            Ar(43, { "background-color": 0 }),
             Uo(
-              40,
+              44,
               147456,
-              [[1, 4]],
+              [[5, 4]],
               3,
               GS,
               [Ln, Di, Op, [2, Hf]],
               { selected: [0, "selected"] },
               null
             ),
-            vr(603979776, 5, { avatar: 0 }),
-            vr(603979776, 6, { trailingIcon: 0 }),
-            vr(603979776, 7, { removeIcon: 0 }),
+            vr(603979776, 6, { avatar: 0 }),
+            vr(603979776, 7, { trailingIcon: 0 }),
+            vr(603979776, 8, { removeIcon: 0 }),
             Uo(
-              44,
+              48,
               671744,
               null,
               0,
@@ -47867,7 +47915,7 @@
             ),
             (t()(),
             Cr(
-              45,
+              49,
               0,
               null,
               null,
@@ -47883,7 +47931,7 @@
             (t()(), Rr(-1, null, ["Right Color"])),
             (t()(),
             Cr(
-              47,
+              51,
               0,
               null,
               null,
@@ -47897,10 +47945,10 @@
               null
             )),
             (t()(), _r(16777216, null, null, 1, null, BE)),
-            Uo(49, 16384, null, 0, yl, [ua, ca], { ngIf: [0, "ngIf"] }, null),
+            Uo(53, 16384, null, 0, yl, [ua, ca], { ngIf: [0, "ngIf"] }, null),
             (t()(),
             Cr(
-              50,
+              54,
               0,
               null,
               null,
@@ -47914,7 +47962,7 @@
               null
             )),
             Uo(
-              51,
+              55,
               671744,
               null,
               0,
@@ -47925,7 +47973,7 @@
             ),
             (t()(),
             Cr(
-              52,
+              56,
               0,
               null,
               null,
@@ -47938,10 +47986,10 @@
               DS,
               RS
             )),
-            Uo(53, 704512, null, 0, ES, [Ln], null, null),
+            Uo(57, 704512, null, 0, ES, [Ln], null, null),
             (t()(), _r(16777216, null, 0, 1, null, qE)),
             Uo(
-              55,
+              59,
               278528,
               null,
               0,
@@ -47952,7 +48000,7 @@
             ),
             (t()(),
             Cr(
-              56,
+              60,
               0,
               null,
               null,
@@ -47965,7 +48013,7 @@
                 var a = !0;
                 return (
                   "window:resize" === e &&
-                    (a = !1 !== Io(t, 57).targetPlacement() && a),
+                    (a = !1 !== Io(t, 61).targetPlacement() && a),
                   a
                 );
               },
@@ -47973,7 +48021,7 @@
               IE
             )),
             Uo(
-              57,
+              61,
               245760,
               [["myModal", 4]],
               0,
@@ -47983,7 +48031,7 @@
               null
             ),
             (t()(), _r(16777216, null, 0, 1, null, $E)),
-            Uo(59, 16384, null, 0, yl, [ua, ca], { ngIf: [0, "ngIf"] }, null)
+            Uo(63, 16384, null, 0, yl, [ua, ca], { ngIf: [0, "ngIf"] }, null)
           ],
           function(t, e) {
             var n = e.component;
@@ -48006,15 +48054,16 @@
                 -30,
                 !0,
                 "Save Color"
-              );
-            var i = t(e, 37, 0, n.rightColor);
-            t(e, 36, 0, i);
-            var r = t(e, 39, 0, n.rightColor);
-            t(e, 38, 0, r),
-              t(e, 40, 0, ""),
+              ),
+              t(e, 36, 0);
+            var i = t(e, 41, 0, n.rightColor);
+            t(e, 40, 0, i);
+            var r = t(e, 43, 0, n.rightColor);
+            t(e, 42, 0, r),
+              t(e, 44, 0, ""),
               t(
                 e,
-                44,
+                48,
                 0,
                 n.rightColor,
                 !1,
@@ -48026,11 +48075,11 @@
                 !0,
                 "Save Color"
               ),
-              t(e, 49, 0, !n.config),
-              t(e, 51, 0, "50%"),
-              t(e, 55, 0, n.config.Mods),
-              t(e, 57, 0, "myModal"),
-              t(e, 59, 0, Io(e, 57).hasData());
+              t(e, 53, 0, !n.config),
+              t(e, 55, 0, "50%"),
+              t(e, 59, 0, n.config.Mods),
+              t(e, 61, 0, "myModal"),
+              t(e, 63, 0, Io(e, 61).hasData());
           },
           function(t, e) {
             t(
@@ -48069,18 +48118,32 @@
                 Io(e, 27).disabled.toString(),
                 Io(e, 27).ariaSelected
               ),
+              t(e, 34, 1, [
+                Io(e, 36).disabled ? null : Io(e, 36)._tabIndex,
+                Io(e, 36)._ariaDescribedby || null,
+                Io(e, 36).required.toString(),
+                Io(e, 36).disabled.toString(),
+                Io(e, 36).errorState,
+                Io(e, 36).multiple,
+                Io(e, 36).role,
+                Io(e, 36).disabled,
+                Io(e, 36).errorState,
+                Io(e, 36).required,
+                Io(e, 36).ariaOrientation,
+                Io(e, 36)._uid
+              ]),
               t(
                 e,
-                34,
+                38,
                 0,
-                Io(e, 40).disabled ? null : -1,
-                Io(e, 40).selected,
-                Io(e, 40).avatar,
-                Io(e, 40).trailingIcon || Io(e, 40).removeIcon,
-                Io(e, 40).disabled,
-                Io(e, 40).disabled || null,
-                Io(e, 40).disabled.toString(),
-                Io(e, 40).ariaSelected
+                Io(e, 44).disabled ? null : -1,
+                Io(e, 44).selected,
+                Io(e, 44).avatar,
+                Io(e, 44).trailingIcon || Io(e, 44).removeIcon,
+                Io(e, 44).disabled,
+                Io(e, 44).disabled || null,
+                Io(e, 44).disabled.toString(),
+                Io(e, 44).ariaSelected
               );
           }
         );
