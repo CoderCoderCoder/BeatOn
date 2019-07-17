@@ -100,7 +100,7 @@ export class AppComponent implements OnInit {
     showBrowser: boolean = false;
     resultJson = '';
     modStatus = { CurrentStatus: '' };
-    config: BeatOnConfig = { IsCommitted: true, Config: null };
+    config: BeatOnConfig = { IsCommitted: true, Config: null, SyncConfig: null };
     ngOnInit() {
         this.checkModStatus();
     }

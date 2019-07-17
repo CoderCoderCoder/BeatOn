@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FeedReader } from '../models/FeedReader';
 
 @Component({
     selector: 'app-sync-saber-max-songs',
@@ -6,16 +7,19 @@ import { Component, Input, OnInit } from '@angular/core';
     styleUrls: ['./sync-saber-max-songs.component.scss'],
 })
 export class SyncSaberMaxSongsComponent implements OnInit {
-    @Input() maxSongs = 10;
+    @Input() reader: FeedReader;
+    @Output() update = new EventEmitter();
     constructor() {}
 
     ngOnInit() {}
 
     down() {
-        this.maxSongs = this.maxSongs < 1 ? 0 : this.maxSongs - 10;
+        this.reader.MaxSongs = this.reader.MaxSongs < 1 ? 0 : this.reader.MaxSongs - 10;
+        this.update.emit();
     }
 
     up() {
-        this.maxSongs = this.maxSongs > 199 ? 200 : this.maxSongs + 10;
+        this.reader.MaxSongs = this.reader.MaxSongs > 199 ? 200 : this.reader.MaxSongs + 10;
+        this.update.emit();
     }
 }

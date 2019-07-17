@@ -12,71 +12,65 @@
         <div class="left-col">
           <div class="right-select-all">Max Songs</div>
           <h1>What's Popular
-
-            <mat-slide-toggle
-              class="enable-all"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
+            <mat-slide-toggle class="enable-all">
               Enable All
             </mat-slide-toggle>
           </h1>
           <hr>
           <div class="left-padd-gate">
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeatSaver's Hot
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeatSaver's Latest
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeatSaver's Songs by Download
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeastSaber's Curator Recommended
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              ScoreSaber's Top Played
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              ScoreSaber's Trending
-            </mat-slide-toggle>
-
+            <div *ngIf="SyncService_BeatSaverHOT">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_BeatSaverHOT"
+                                        (update)="updateFeedSetting(SyncService_BeatSaverHOT)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeatSaverHOT.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeatSaverHOT)">
+                BeatSaver's Hot
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_BeatSaverLATEST">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_BeatSaverLATEST"
+                                        (update)="updateFeedSetting(SyncService_BeatSaverLATEST)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeatSaverLATEST.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeatSaverLATEST)">
+                BeatSaver's Latest
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_BeatSaverDOWNLOADS">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_BeatSaverDOWNLOADS"
+                                        (update)="updateFeedSetting(SyncService_BeatSaverDOWNLOADS)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeatSaverDOWNLOADS.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeatSaverDOWNLOADS)">
+                BeatSaver's Songs by Download
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_BeastSaberCURATOR_RECOMMENDED">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_BeastSaberCURATOR_RECOMMENDED"
+                                        (update)="updateFeedSetting(SyncService_BeastSaberCURATOR_RECOMMENDED)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeastSaberCURATOR_RECOMMENDED.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeastSaberCURATOR_RECOMMENDED)">
+                BeastSaber's Curator Recommended
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_ScoreSaberTOP_PLAYED">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_ScoreSaberTOP_PLAYED"
+                                        (update)="updateFeedSetting(SyncService_ScoreSaberTOP_PLAYED)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_ScoreSaberTOP_PLAYED.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_ScoreSaberTOP_PLAYED)">
+                ScoreSaber's Top Played
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_ScoreSaberTRENDING">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_ScoreSaberTRENDING"
+                                        (update)="updateFeedSetting(SyncService_ScoreSaberTRENDING)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_ScoreSaberTRENDING.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_ScoreSaberTRENDING)">
+                ScoreSaber's Trending
+              </mat-slide-toggle>
+            </div>
 
           </div>
 
@@ -84,75 +78,72 @@
           <br><br><br>
           <div class="right-select-all">Max Songs</div>
           <h1>For a Challenge
-
-            <mat-slide-toggle
-              class="enable-all"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
+            <mat-slide-toggle class="enable-all">
               Enable All
             </mat-slide-toggle></h1>
           <hr>
           <div class="left-padd-gate">
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              ScoreSaber's Latest
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              ScoreSaber's Top Ranked
-            </mat-slide-toggle>
+            <div *ngIf="SyncService_ScoreSaberTOP_RANKED">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_ScoreSaberLATEST_RANKED"
+                                        (update)="updateFeedSetting(SyncService_ScoreSaberLATEST_RANKED)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_ScoreSaberLATEST_RANKED.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_ScoreSaberLATEST_RANKED)">
+                ScoreSaber's Latest
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_ScoreSaberTOP_RANKED">
+              <app-sync-saber-max-songs class="right"
+                                        [reader]="SyncService_ScoreSaberTOP_RANKED"
+                                        (update)="updateFeedSetting(SyncService_ScoreSaberTOP_RANKED)"
+              ></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_ScoreSaberTOP_RANKED.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_ScoreSaberTOP_RANKED)">
+                ScoreSaber's Top Ranked
+              </mat-slide-toggle>
+            </div>
           </div>
         </div>
         <div class="right-col">
           <div class="right-select-all">Max Songs</div>
           <h1>For Me
-
-            <mat-slide-toggle
-              class="enable-all"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
+            <mat-slide-toggle class="enable-all">
               Enable All
             </mat-slide-toggle></h1>
           <hr>
 
           <div class="left-padd-gate">
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeastSaber's Following
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeastSaber's Bookmarks
-            </mat-slide-toggle>
-            <br><br>
-            <app-sync-saber-max-songs class="right"></app-sync-saber-max-songs>
-            <mat-slide-toggle
-              class="example-margin"
-              [color]="color"
-              [checked]="checked"
-              [disabled]="disabled">
-              BeatSaver's Authors
-            </mat-slide-toggle>
+            <div *ngIf="SyncService_BeastSaberFOLLOWING">
+              <app-sync-saber-max-songs class="right" [reader]="SyncService_BeastSaberFOLLOWING"
+                                        (update)="updateFeedSetting(SyncService_BeastSaberFOLLOWING)"></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeastSaberFOLLOWING.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeastSaberFOLLOWING)">
+                BeastSaber's Following
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+            <div *ngIf="SyncService_BeastSaberBOOKMARKS">
+              <app-sync-saber-max-songs class="right"
+                 [reader]="SyncService_BeastSaberBOOKMARKS"
+                  (update)="updateFeedSetting(SyncService_BeastSaberBOOKMARKS)"
+              ></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeastSaberBOOKMARKS.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeastSaberBOOKMARKS)">
+                BeastSaber's Bookmarks
+              </mat-slide-toggle>
+              <br><br>
+            </div>
+
+            <div *ngIf="SyncService_BeatSaverAUTHOR">
+              <app-sync-saber-max-songs class="right"
+                [reader]="SyncService_BeatSaverAUTHOR"
+                (update)="updateFeedSetting(SyncService_BeatSaverAUTHOR)"
+              ></app-sync-saber-max-songs>
+              <mat-slide-toggle [(ngModel)]="SyncService_BeatSaverAUTHOR.IsEnabled"
+                                (change)="updateFeedSetting(SyncService_BeatSaverAUTHOR)">
+                BeatSaver's Authors
+              </mat-slide-toggle>
+            </div>
           </div>
           <br><br><br>
           <h1>My Username</h1>
@@ -160,7 +151,7 @@
           <div class="username-container">
             <br><br><br>
             <mat-form-field class="input-width">
-              <input matInput placeholder="Beast Saber Username" value="">
+              <input matInput placeholder="Beast Saber Username" [(ngModel)]="BeastSaberUsername" (input)="setBeastSaberUsername()">
             </mat-form-field>
           </div>
         </div>
