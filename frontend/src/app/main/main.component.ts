@@ -59,6 +59,12 @@ export class MainComponent implements OnInit {
                 index: 1,
             });
         }
+
+        this.navLinks.push({
+            label: 'SyncSaber',
+            path: './sync-saber',
+            index: 1,
+        });
         this.navLinks.push({
             label: 'Mods',
             path: './mods',

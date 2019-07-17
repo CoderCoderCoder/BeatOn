@@ -1,0 +1,43 @@
+.right-select-all{
+  float: right;
+  margin-top: 2.5em;
+  margin-right: 2.5em;
+}
+.right-align{
+  text-align: right;
+}
+.left-padd-gate{
+  padding-left: 2em;
+  padding-right: 2em;
+}
+.right{
+  float: right;
+}
+.enable-all{
+  font-size: 0.5em;
+  font-weight: normal;
+  margin-left: 2em;
+}
+
+.left-col,
+.right-col {
+  width: calc(50% - 15px);
+  display: inline-block;
+  height: 100%;
+  margin-left: 10px;
+  margin-right: 5px;
+  vertical-align: top;
+}
+
+.outer-container {
+  height: calc(100% - 10px);
+  overflow: hidden;
+  margin-top: -10px;
+  color: white;
+}
+.username-container{
+  text-align: center;
+}
+.input-width{
+  width: 400px;
+}

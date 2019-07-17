@@ -52,12 +52,13 @@ button.right {
 }
 
 .collection-song {
-  line-height: 1rem;
+  line-height: 2rem;
   padding: 10px 10px;
   margin: 0;
   border-bottom: 1px solid #e0e0e0;
   user-select: none;
   max-width: 100%;
+  position: relative;
 
   .avatar {
     height: 65px;
@@ -119,11 +120,11 @@ button.right {
 
 .collection-song.avatar:not(.circle-clipper) > .circle,
 .collection-song.avatar :not(.circle-clipper) > .circle {
-  position: absolute;
+  //position: absolute;
+  float: left;
   width: 42px;
   height: 42px;
   overflow: hidden;
-  left: 15px;
   display: inline-block;
   vertical-align: middle;
 }
@@ -156,6 +157,9 @@ button.right {
   font-size: 2rem;
   line-height: 3rem;
   vertical-align: middle;
+}
+.drag-indicator.handle{
+  float: left;
 }
 
 .truncate {
@@ -390,6 +394,7 @@ div.collection-song {
   margin-top: -10px;
   font-size: 0.8rem;
   font-style: italic;
+  margin-bottom: 0;
 }
 
 .playlist-check {

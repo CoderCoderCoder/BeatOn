@@ -11,6 +11,7 @@ import { ToolsComponent } from './tools/tools.component';
 import { RemoteUploadComponent } from './remote-upload/remote-upload.component';
 import { CreditsComponent } from './credits/credits.component';
 import { MainModsComponent } from './main-mods/main-mods.component';
+import { SyncSaberComponent } from './sync-saber/sync-saber.component';
 
 const routes: Routes = [
     { path: 'setup', component: SetupComponent },
@@ -26,6 +27,7 @@ const routes: Routes = [
             { path: 'tools', component: ToolsComponent },
             { path: 'upload', component: RemoteUploadComponent },
             { path: 'credits', component: CreditsComponent },
+            { path: 'sync-saber', component: SyncSaberComponent },
             { path: 'mods', component: MainModsComponent },
         ],
     },
