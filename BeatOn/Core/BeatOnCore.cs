@@ -238,8 +238,10 @@ namespace BeatOn.Core
 
                         _currentConfig = new BeatOnConfig()
                         {
-                            Config = config
+                            Config = config,
+                            SyncConfig = SyncManager.SyncConfig
                         };
+
                         _currentConfig.IsCommitted = !Engine.HasChanges;
                         _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
                     }

@@ -86,6 +86,7 @@ namespace BeatOn
                     }
                     try
                     {
+                        sync.LastSyncAttempt = DateTime.Now;
                         var songs = sync.GetSongs();
                         var playlist = cfg.Config.Playlists.FirstOrDefault(x => x.PlaylistID == sync.PlaylistID);
                         if (playlist == null)
@@ -103,7 +104,6 @@ namespace BeatOn
                             _getConfig().Config = qae.GetCurrentConfig();
                             cfg = _getConfig();
                         }
-                        int i = 0;
                         var toAdd = songs.Where(x => !playlist.SongList.Any(y => y.SongID.ToLower().StartsWith(x.Key.ToLower()))).ToList();
                         var toRemove = playlist.SongList.Where(x => !songs.Any(y => x.SongID.ToLower().StartsWith(y.Key.ToLower()))).ToList();
                         toAdd.ForEach(x => {
@@ -121,6 +121,7 @@ namespace BeatOn
                             var d = new DeleteSongOp(x.SongID);
                             qae.OpManager.QueueOp(d);
                         });
+                        sync.LastSyncSuccess = DateTime.Now;
                     }
                     catch (Exception ex)
                     {
@@ -134,6 +135,7 @@ namespace BeatOn
                 Log.LogErr("Exception syncing!", ex);
                 _showToast($"Failed Sync!", "There was an error syncing.", ClientModels.ToastType.Error, 3);
             }
+            Save();
         }
 
         private void LoadConfig()
@@ -183,11 +185,24 @@ namespace BeatOn
                 if (!SyncConfig.FeedReaders.Any(x => (x is ScoreSaberFeedConfig) && (x as ScoreSaberFeedConfig).FeedType == feed))
                     SyncConfig.FeedReaders.Add(new ScoreSaberFeedConfig() { FeedType = feed, IsEnabled = false });
             };
+
+            Action<BeatSaverFeeds> checkMakeBV = (BeatSaverFeeds feed) =>
+            {
+                if (!SyncConfig.FeedReaders.Any(x => (x is BeatSaverFeedConfig) && (x as BeatSaverFeedConfig).FeedType == feed))
+                    SyncConfig.FeedReaders.Add(new BeatSaverFeedConfig() { FeedType = feed, IsEnabled = false });
+            };
+
             foreach (BeastSaberFeeds feed in Enum.GetValues(typeof(BeastSaberFeeds)))
                 checkMakeBS(feed);
 
             foreach (ScoreSaberFeeds feed in Enum.GetValues(typeof(ScoreSaberFeeds)))
                 checkMakeSS(feed);
+
+            foreach (BeatSaverFeeds feed in Enum.GetValues(typeof(BeatSaverFeeds)))
+            {
+                if (feed != BeatSaverFeeds.SEARCH)
+                    checkMakeBV(feed);
+            }                
         }
 
 

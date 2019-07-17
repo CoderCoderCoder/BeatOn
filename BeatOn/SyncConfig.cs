@@ -32,18 +32,13 @@ namespace BeatOn
         public string BeastSaberUsername { get; set; }
 
         /// <summary>
-        /// The last date/time that a sync was run
-        /// </summary>
-        public DateTime? LastSyncDate { get; set; }
-
-        /// <summary>
         /// True to check all existing songs for any updates to the song itself.  This will likely be extremely slow.
         /// </summary>
         public bool CheckExistingSongsUpdated { get; set; } = false;
 
         private ObservableCollection<FeedConfig> _feedReaders;
 
-       
+
 
         /// <summary>
         /// List of definitions and settings for feed readers that will sync.
@@ -122,6 +117,32 @@ namespace BeatOn
             }
         }
 
+        private int _maxSongs = 100;
+        public int MaxSongs
+        {
+            get
+            {
+                return _maxSongs;
+            }
+            set
+            {
+                bool changed = _maxSongs != value;
+                _maxSongs = value;
+                if (changed)
+                    PropChanged(nameof(MaxSongs));
+            }
+        }
+
+        /// <summary>
+        /// The last date/time that a sync was run
+        /// </summary>
+        public DateTime? LastSyncAttempt { get; set; }
+
+        /// <summary>
+        /// The last date/time that a sync was run
+        /// </summary>
+        public DateTime? LastSyncSuccess { get; set; }
+
         private bool _isEnabled;
 
         public bool IsEnabled
@@ -151,9 +172,14 @@ namespace BeatOn
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
 
-        public Dictionary<string, ScrapedSong> GetSongs()
+        /// <summary>
+        /// Keyed Dictionary<PlaylistID, Dictionary<SongHash, scrapedsong>>
+        /// </summary>
+        public virtual Dictionary<string, Dictionary<string, ScrapedSong>> GetSongsByPlaylist()
         {
-            return FeedReader.GetSongsFromFeed(FeedSettings);
+            var dict = new Dictionary<string, Dictionary<string, ScrapedSong>>();
+            dict.Add(PlaylistID, FeedReader.GetSongsFromFeed(FeedSettings));
+            return dict;
         }
     }
 
@@ -222,6 +248,76 @@ namespace BeatOn
         }
     }
 
+    public class BeatSaverFeedConfig : FeedConfig
+    {
+        private BeatSaverFeeds _feedType;
+        public BeatSaverFeeds FeedType
+        {
+            get
+            {
+                return _feedType;
+            }
+            set
+            {
+                bool changed = value != _feedType;
+                _feedType = value;
+                if (changed)
+                    PropChanged(nameof(FeedType));
+            }
+        }
+
+        public List<string> Authors { get; set; }
+        public override string PlaylistID => $"SyncService_BeatSaver{FeedType.ToString()}";
+
+        public override string DisplayName
+        {
+            get
+            {
+                switch (FeedType)
+                {
+                    case BeatSaverFeeds.DOWNLOADS:
+                        return "Top Downloads";
+                    case BeatSaverFeeds.HOT:
+                        return "Hot";
+                    case BeatSaverFeeds.LATEST:
+                        return "Latest";
+                    case BeatSaverFeeds.PLAYS:
+                        return "Top Played";
+                    case BeatSaverFeeds.AUTHOR:
+                        return $"By Authors"; //todo: consider {((Authors == null) ? "(none)" : ((Authors.Count > 1) ? string.Join(", ", Authors) : Authors.First()))}";
+                    case BeatSaverFeeds.SEARCH:
+                        throw new NotImplementedException();
+                    default:
+                        Log.LogErr($"Unhandled Score Saber FeedType {FeedType}");
+                        return "Sync";
+                }
+            }
+        }
+        private BeatSaverReader _feedReader;
+        protected override IFeedReader FeedReader
+        {
+            get
+            {
+                if (_feedReader == null)                
+                    _feedReader = new BeatSaverReader();
+
+                return _feedReader;                
+            }
+        }
+
+        protected override IFeedSettings FeedSettings
+        {
+            get
+            {
+                return new BeatSaverFeedSettings((int)FeedType)
+                {
+                    MaxSongs = MaxSongs,
+                    Authors = Authors?.ToArray()
+                };
+            }
+        }
+    }
+
     public class ScoreSaberFeedConfig : FeedConfig
     {
         public override string PlaylistID => $"SyncService_ScoreSaber{FeedType.ToString()}";
@@ -243,22 +339,6 @@ namespace BeatOn
                         Log.LogErr($"Unhandled Score Saber FeedType {FeedType}");
                         return "Sync";
                 }
-            }
-        }
-
-        private int _maxSongs = 100;
-        public int MaxSongs
-        {
-            get
-            {
-                return _maxSongs;
-            }
-            set
-            {
-                bool changed = _maxSongs != value;
-                _maxSongs = value;
-                if (changed)
-                    PropChanged(nameof(MaxSongs));
             }
         }
 
