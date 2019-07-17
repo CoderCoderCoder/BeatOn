@@ -4,3 +4,6 @@
 [submodule "beatsaber-hook"]
 	path = beatsaber-hook
 	url = https://github.com/emulamer/beatsaber-hook
+[submodule "SyncSaberService"]
+	path = SyncSaberService
+	url = https://github.com/Zingabopp/SyncSaberService/

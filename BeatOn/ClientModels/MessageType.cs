@@ -34,6 +34,8 @@ namespace BeatOn.ClientModels
         MoveSongInPlaylist,
         MovePlaylist,
         DeleteMod,
-        ChangeColor
+        ChangeColor,
+        SyncSaber,
+        UpdateSyncFeedConfig
     }
 }

@@ -110,6 +110,7 @@
     <Compile Include="BeatOnService.cs" />
     <Compile Include="BeatOnServiceTransciever.cs" />
     <Compile Include="BeatOnUtils.cs" />
+    <Compile Include="BeatSaverUtils.cs" />
     <Compile Include="BPList.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
     <Compile Include="ClientModels\ClientChangeColor.cs" />
@@ -125,6 +126,8 @@
     <Compile Include="ClientModels\ClientDeleteSong.cs" />
     <Compile Include="ClientModels\ClientMoveSongToPlaylist.cs" />
     <Compile Include="ClientModels\ActionResponse.cs" />
+    <Compile Include="ClientModels\ClientSyncSaber.cs" />
+    <Compile Include="ClientModels\ClientUpdateSyncFeedConfig.cs" />
     <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
     <Compile Include="ClientModels\HostOp.cs" />
@@ -153,8 +156,12 @@
     <Compile Include="Core\MessageHandlers\ClientMoveSongToPlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientUpdateSyncFeedConfigHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSyncSaberHandler.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
     <Compile Include="Core\RequestHandlers\GetModCover.cs" />
+    <Compile Include="Core\RequestHandlers\PostSyncSync.cs" />
+    <Compile Include="Core\RequestHandlers\GetSyncConfig.cs" />
     <Compile Include="Core\RequestHandlers\PostExit.cs" />
     <Compile Include="Core\RequestHandlers\PostConfigRestore.cs" />
     <Compile Include="Core\RequestHandlers\PostPackageAction.cs" />
@@ -202,6 +209,9 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="SimpleRouter.cs" />
     <Compile Include="StatusUpdateLogSink.cs" />
+    <Compile Include="SyncConfig.cs" />
+    <Compile Include="SyncException.cs" />
+    <Compile Include="SyncManager.cs" />
     <Compile Include="ToastInjectorWebViewClient.cs" />
     <Compile Include="WebServer.cs" />
   </ItemGroup>
@@ -268,6 +278,10 @@
     <ProjectReference Include="..\QuestomAssets\QuestomAssets\QuestomAssets.csproj">
       <Project>{e6acae1d-f608-4d45-a73c-3d2ebc22d7d4}</Project>
       <Name>QuestomAssets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SyncSaberService\FeedReader\FeedReader.csproj">
+      <Project>{d846c41a-95f1-468b-8b29-738cf3d92c3e}</Project>
+      <Name>FeedReader</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -353,13 +367,13 @@
     <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.897db6043558b11e7565.css" />
+    <AndroidAsset Include="Assets\www\main-es2015.abc10ad845673db52760.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.ac3c69c65ac08ba69b42.js" />
+    <AndroidAsset Include="Assets\www\main-es5.241a1a357dbc0a48a4a8.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.1d14f310f8a0dd394bb6.js" />
+    <AndroidAsset Include="Assets\www\styles.00f63c1921c850968e3f.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

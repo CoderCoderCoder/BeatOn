@@ -24,6 +24,8 @@ namespace BeatOn
     {
         public int PercentageComplete { get; private set; }
         public Guid ID { get; } = Guid.NewGuid();
+        public string TargetPlaylistID { get; set; }
+        public bool SuppressToast { get; set; } = false;
         private UrlWebClient _client = new UrlWebClient();
         internal bool ProcessAfterDownload { get; private set; }
         public event EventHandler<DownloadStatusChangeArgs> StatusChanged;

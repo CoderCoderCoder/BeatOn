@@ -61,6 +61,20 @@ namespace BeatOn.ClientModels
             }
         }
 
+        private SyncConfig _syncConfig;
+        public SyncConfig SyncConfig
+        {
+            get
+            {
+                return _syncConfig;
+            }
+            set
+            {
+                _syncConfig = value;
+                PropChanged(nameof(SyncConfig));
+            }
+        }
+
         private void Config_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             PropChanged(nameof(Config));

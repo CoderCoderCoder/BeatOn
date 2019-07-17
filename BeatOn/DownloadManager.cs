@@ -33,13 +33,13 @@ namespace BeatOn
 
         private int _maxConcurrentDownloads;
         
-        public DownloadManager(ImportManager importManager, int maxConcurrentDownloads = 5)
+        public DownloadManager(ImportManager importManager, int maxConcurrentDownloads = 15)
         {
             _importManager = importManager;
             _maxConcurrentDownloads = maxConcurrentDownloads;
         }
 
-        public Download DownloadFile(string url, bool processAfterDownload = true)
+        public Download DownloadFile(string url, bool processAfterDownload = true, string toPlaylistID = null, bool suppressToast = false)
         {
             //prevent the same URL from going in the queue twice.
             var exists = false;
@@ -52,11 +52,14 @@ namespace BeatOn
             {
                 var deadDl = new Download(url);
                 deadDl.StatusChanged += StatusChangeHandler;
-                deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
+                deadDl.SuppressToast = suppressToast;
+                deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");                
                 return deadDl;
             }            
             
             Download dl = new Download(url, processAfterDownload);
+            dl.TargetPlaylistID = toPlaylistID;
+            dl.SuppressToast = suppressToast;
             lock (_downloads)
                 _downloads.Add(dl);
 
@@ -109,7 +112,7 @@ namespace BeatOn
                                                 {
                                                     provider.Dispose();
                                                     ms.Dispose();
-                                                });
+                                                }, dl.TargetPlaylistID, dl.SuppressToast);
                                             }
                                             catch
                                             {
