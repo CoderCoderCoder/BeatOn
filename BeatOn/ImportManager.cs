@@ -524,7 +524,7 @@ namespace BeatOn
                 catch (Exception ex)
                 {
                     Log.LogErr($"Exception trying to load mod from provider {provider.SourceName}", ex);
-                    throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it does not appear to be a valid mod file.", ex);
+                    throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it may be an invalid file or another mod of the same type failed to uninstall.", ex);
                 }
             }
         }

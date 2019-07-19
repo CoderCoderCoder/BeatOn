@@ -9,6 +9,7 @@ export class ModDefinition {
     TargetBeatSaberVersion: string;
     Version: string;
     CoverImageFilename: string;
+    Porter: string;
 }
 
 export enum ModStatusType {
