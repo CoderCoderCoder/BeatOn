@@ -9,6 +9,10 @@ import { ClientAutoCreatePlaylists } from '../models/ClientAutoCreatePlaylists';
 import { HostMessageService } from '../services/host-message.service';
 import { ClientSetBeastSaberUsername } from '../models/ClientSetBeastSaberUsername';
 import { ClientUpdateFeedReader } from '../models/ClientUpdateFeedReader';
+import { ClientSyncSaberSync } from '../models/ClientSyncSaberSync';
+import { HostActionResponse } from '../models/HostActionResponse';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatChipInputEvent } from '@angular/material';
 
 @Component({
     selector: 'app-sync-saber',
@@ -28,7 +32,9 @@ export class SyncSaberComponent implements OnInit {
     SyncService_BeatSaverLATEST: FeedReader;
     SyncService_BeatSaverHOT: FeedReader;
     SyncService_BeatSaverDOWNLOADS: FeedReader;
+    syncDisabled: boolean = false;
     nameUpdateTimeout: Timer;
+    readonly separatorKeysCodes: number[] = [ENTER, COMMA];
     constructor(private beatOnApi: BeatOnApiService, private configSvc: ConfigService, private msgSvc: HostMessageService) {}
 
     ngOnInit() {
@@ -39,20 +45,53 @@ export class SyncSaberComponent implements OnInit {
     setBeastSaberUsername() {
         clearTimeout(this.nameUpdateTimeout);
         this.nameUpdateTimeout = setTimeout(() => {
-            // const msg = new ClientSetBeastSaberUsername();
-            // msg.BeastSaberUsername = this.BeastSaberUsername;
-            // this.msgSvc.sendClientMessage(msg);
+            const msg = new ClientSetBeastSaberUsername();
+            msg.BeastSaberUsername = this.BeastSaberUsername;
+            this.msgSvc.sendClientMessage(msg);
         }, 750);
     }
-
+    feedSettingTimeouts: any = {};
     updateFeedSetting(reader: FeedReader) {
-        // const msg = new ClientUpdateFeedReader();
-        // msg.MaxSongs = reader.MaxSongs;
-        // msg.ID = reader.ID;
-        // msg.IsEnabled = reader.IsEnabled;
-        // this.msgSvc.sendClientMessage(msg);
+        if (this.feedSettingTimeouts[reader.ID]) {
+            clearTimeout(this.feedSettingTimeouts[reader.ID]);
+            this.feedSettingTimeouts[reader.ID] = null;
+        }
+        this.feedSettingTimeouts[reader.ID] = setTimeout(() => {
+            const msg = new ClientUpdateFeedReader();
+            msg.FeedConfig = reader;
+            msg.ID = reader.ID;
+            this.msgSvc.sendClientMessage(msg);
+        }, 750);
     }
+    clickSyncNow() {
+        const msg = new ClientSyncSaberSync();
+        this.msgSvc.actionResponseMessage.subscribe((rsp: HostActionResponse) => {
+            if (rsp.ResponseToMessageID == msg.MessageID) {
+                this.syncDisabled = false;
+            }
+        });
+        this.syncDisabled = true;
+        this.msgSvc.sendClientMessage(msg);
+    }
+    addAuthor(event: MatChipInputEvent) {
+        const input = event.input;
+        const value = event.value;
+        if ((value || '').trim()) {
+            this.SyncService_BeatSaverAUTHOR.Authors.push(value.trim());
+        }
+        if (input) {
+            input.value = '';
+        }
+        this.updateFeedSetting(this.SyncService_BeatSaverAUTHOR);
+    }
+    removeAuthor(author) {
+        const index = this.SyncService_BeatSaverAUTHOR.Authors.indexOf(author);
 
+        if (index >= 0) {
+            this.SyncService_BeatSaverAUTHOR.Authors.splice(index, 1);
+        }
+        this.updateFeedSetting(this.SyncService_BeatSaverAUTHOR);
+    }
     handleConfig(cfg: BeatOnConfig) {
         this.BeastSaberUsername = cfg.SyncConfig.BeastSaberUsername;
         cfg.SyncConfig.FeedReaders.forEach((reader: FeedReader) => {

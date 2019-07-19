@@ -13,22 +13,24 @@ using BeatOn.ClientModels;
 
 namespace BeatOn.Core.MessageHandlers
 {
-    public class ClientSyncSaberHandler : IMessageHandler
+    [MessageHandler(MessageType.SetBeastSaberUsername)]
+    public class ClientSetBeastSaberUsernameHandler : IMessageHandler
     {
         private Func<SyncManager> _getSyncManager;
-        public ClientSyncSaberHandler(Func<SyncManager> getSyncManager)
+        public ClientSetBeastSaberUsernameHandler(Func<SyncManager> getSyncManager)
         {
             _getSyncManager = getSyncManager;
         }
-        public MessageType HandlesType => MessageType.SyncSaber;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
-            var msg = message as ClientSyncSaber;
+            var msg = message as ClientSetBeastSaberUsername;
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
 
-            _getSyncManager().Sync(msg.SyncOnlyID);            
+            _getSyncManager().SyncConfig.BeastSaberUsername = msg.BeastSaberUsername;
+            //todo: save here?
+            _getSyncManager().Save();
         }
     }
 }

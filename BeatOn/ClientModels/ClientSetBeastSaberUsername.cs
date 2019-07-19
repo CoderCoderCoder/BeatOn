@@ -13,14 +13,9 @@ using Newtonsoft.Json.Linq;
 
 namespace BeatOn.ClientModels
 {
-    public class ClientUpdateSyncFeedConfig : MessageBase
+    [Message(MessageType.SetBeastSaberUsername)]
+    public class ClientSetBeastSaberUsername : MessageBase
     {
-        public override MessageType Type => MessageType.UpdateSyncFeedConfig;
-
-        public Guid ID { get; set; }
-        
-        //will this work?
-        public JObject FeedConfig { get; set; }
-
+        public string BeastSaberUsername { get; set; }
     }
 }

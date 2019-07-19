@@ -522,9 +522,12 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.DeleteMod, new ClientDeleteModHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.AddMessageHandler(MessageType.ChangeColor, new ClientChangeColorHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.SetBeastSaberUsername, new ClientSetBeastSaberUsernameHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.UpdateFeedReader, new ClientUpdateFeedReaderHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.SyncSaberSync, new ClientSyncSaberSyncHandler(() => SyncManager));
             _webServer.Start();
-
         }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

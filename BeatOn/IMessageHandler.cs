@@ -16,6 +16,5 @@ namespace BeatOn
     public interface IMessageHandler
     {
         void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage);
-        MessageType HandlesType { get; }
     }
 }

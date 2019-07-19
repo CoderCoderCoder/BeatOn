@@ -1,3 +1,3 @@
 <div class="vertical-align">
-  <mat-icon (click)="down()">navigate_before</mat-icon>{{reader.MaxSongs === 0 ? '∞' : reader.MaxSongs}} <mat-icon (click)="up()">navigate_next</mat-icon>
+  <mat-icon (click)="down()">navigate_before</mat-icon><div class="number">{{reader.MaxSongs === 0 ? '∞' : reader.MaxSongs}}</div><mat-icon (click)="up()">navigate_next</mat-icon>
 </div>

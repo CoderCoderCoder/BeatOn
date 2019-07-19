@@ -59,6 +59,7 @@ button.right {
   user-select: none;
   max-width: 100%;
   position: relative;
+  min-height: 50px;
 
   .avatar {
     height: 65px;
@@ -116,6 +117,7 @@ button.right {
   vertical-align: middle;
   user-select: none;
   margin-top: 29px;
+  margin-bottom: 23px;
 }
 
 .collection-song.avatar:not(.circle-clipper) > .circle,
@@ -327,7 +329,17 @@ button.right {
     margin: 0px;
   }
 
+} 
+
+.pack-container .collection-song.cdk-drag-placeholder {
+  height: 0px !important;
+  width: 0px !important;
+  overflow: hidden;
+  padding: 0px;
+  margin: 0px;
+  min-height: 0px;
 }
+
 
 .pack-song-container-outer {
   border-top: 1px solid #e0e0e0;
@@ -337,7 +349,7 @@ button.right {
 }
 
 .pack-container > li.collection-song,
-div.collection-song {
+div.collection-song, div.packOuter {
   transform: none !important;
 }
 

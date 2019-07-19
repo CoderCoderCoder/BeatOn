@@ -14,6 +14,7 @@ using QuestomAssets.AssetOps;
 
 namespace BeatOn.Core.MessageHandlers
 {
+    [MessageHandler(MessageType.GetOps)]
     public class ClientGetOpsHandler : IMessageHandler
     {
         private List<AssetOp> _opList;
@@ -24,8 +25,6 @@ namespace BeatOn.Core.MessageHandlers
             _opList = opList;
             _messageSender = messageSender;
         }
-
-        public MessageType HandlesType => MessageType.GetOps;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {

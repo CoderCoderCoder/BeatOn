@@ -12,9 +12,9 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.DeletePlaylist)]
     public class ClientDeletePlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.DeletePlaylist;
         public string PlaylistID { get; set; }
     }
 }

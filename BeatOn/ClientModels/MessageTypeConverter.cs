@@ -11,6 +11,7 @@ using Android.Views;
 using Android.Widget;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using QuestomAssets;
 
 namespace BeatOn.ClientModels
 {
@@ -22,25 +23,40 @@ namespace BeatOn.ClientModels
         }
 
         public override bool CanWrite { get { return false; } }
-
-        private static Dictionary<MessageType, Type> _classMap = new Dictionary<MessageType, Type>()
-        { {MessageType.AddOrUpdatePlaylist, typeof(ClientAddOrUpdatePlaylist)},
-            {MessageType.DeletePlaylist, typeof(ClientDeletePlaylist) },
-            {MessageType.DeleteSong, typeof(ClientDeleteSong) },
-            {MessageType.MoveSongToPlaylist, typeof(ClientMoveSongToPlaylist) },
-            {MessageType.GetOps, typeof(ClientGetOps) },
-            {MessageType.SortPlaylist, typeof(ClientSortPlaylist) },
-            {MessageType.AutoCreatePlaylists, typeof(ClientAutoCreatePlaylists) },
-            {MessageType.SetModStatus, typeof(ClientSetModStatus) },
-            {MessageType.MovePlaylist, typeof(ClientMovePlaylist) },
-            {MessageType.MoveSongInPlaylist, typeof(ClientMoveSongInPlaylist) },
-            {MessageType.DeleteMod, typeof(ClientDeleteMod) },
-            {MessageType.ChangeColor, typeof(ClientChangeColor) }
-        };
+        private object _classMapLock = new object();
+        private static Dictionary<MessageType, Type> _classMap = null;
 
         //todo: make this class map stuff dynamic, the type is on the base type, I can figure it out with reflection and cache it
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            lock (_classMapLock)
+            {
+                if (_classMap == null)
+                {
+                    try
+                    {
+                        var map = new Dictionary<MessageType, Type>();
+                        foreach (var msgType in System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where(x => x.CustomAttributes.Any(y => y.AttributeType == typeof(MessageAttribute))))
+                        {
+                            var attr = Attribute.GetCustomAttribute(msgType, typeof(MessageAttribute)) as MessageAttribute;
+                            if (map.ContainsKey(attr.MessageType))
+                            {
+                                Log.LogErr($"WARNING: class {msgType.Name} will not be parsed by messagetypeconverter because MessageType {attr.MessageType} is already registered to another class!");
+                            }
+                            else
+                            {
+                                map.Add(attr.MessageType, msgType);
+                            }
+                        }
+                        _classMap = map;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogErr("Exception loading class map in the message type converter!", ex);
+                        throw;
+                    }
+                }
+            }
             var token = JToken.Load(reader);
             var typeToken = token["Type"];
             if (typeToken == null)

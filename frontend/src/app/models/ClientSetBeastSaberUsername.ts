@@ -4,6 +4,6 @@ export class ClientSetBeastSaberUsername extends MessageBase {
     constructor() {
         super();
     }
-    readonly Type: MessageType = MessageType.BeastSaberUsername;
+    readonly Type: MessageType = MessageType.SetBeastSaberUsername;
     BeastSaberUsername: string;
 }

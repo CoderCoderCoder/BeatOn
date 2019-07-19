@@ -47,6 +47,7 @@
   font-style: italic;
   margin-left: 5px;
   text-align: justify;
+  white-space: pre-line !important;
 }
 
 .deleteMod {
@@ -152,6 +153,7 @@ mat-list-item {
 
 .description {
   font-size: 12px;
+  white-space: pre-wrap;
 }
 
 .modal.left .modal-dialog,

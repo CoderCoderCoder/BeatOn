@@ -18,6 +18,15 @@ namespace BeatOn.ClientModels
     {
         public Guid MessageID { get; set; } = Guid.NewGuid();
         public Guid? ResponseToMessageID { get; set; }
-        public abstract MessageType Type { get; }
+        public virtual MessageType Type
+        {
+            get
+            {
+                var attr = Attribute.GetCustomAttribute(this.GetType(), typeof(MessageAttribute)) as MessageAttribute;
+                if (attr == null)
+                    throw new Exception($"MessageBase.Type is not overridden in type {this.GetType()} and also does not have a MessageAttribute set.");
+                return attr.MessageType;
+            }
+        }
     }
 }

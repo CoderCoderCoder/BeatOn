@@ -5,16 +5,18 @@
     </div>
     <mat-card-title>SyncSaber Feeds</mat-card-title>
     <mat-card-subtitle>Automatic feed sync from online song feeds.</mat-card-subtitle>
+    <button class="syncButton" mat-raised-button [disabled]="syncDisabled" (click)="clickSyncNow()" color="accent"><mat-spinner *ngIf="syncDisabled" class="syncSpinner" diameter="18"></mat-spinner>Start Sync</button>
   </mat-card-header>
   <mat-card-content>
+    <div class="innerScroll">
     <mat-card>
       <div class="outer-container">
         <div class="left-col">
           <div class="right-select-all">Max Songs</div>
           <h1>What's Popular
-            <mat-slide-toggle class="enable-all">
+            <!-- <mat-slide-toggle class="enable-all">
               Enable All
-            </mat-slide-toggle>
+            </mat-slide-toggle> -->
           </h1>
           <hr>
           <div class="left-padd-gate">
@@ -78,9 +80,10 @@
           <br><br><br>
           <div class="right-select-all">Max Songs</div>
           <h1>For a Challenge
-            <mat-slide-toggle class="enable-all">
+            <!-- <mat-slide-toggle class="enable-all">
               Enable All
-            </mat-slide-toggle></h1>
+            </mat-slide-toggle> -->
+          </h1>
           <hr>
           <div class="left-padd-gate">
             <div *ngIf="SyncService_ScoreSaberTOP_RANKED">
@@ -107,9 +110,10 @@
         <div class="right-col">
           <div class="right-select-all">Max Songs</div>
           <h1>For Me
-            <mat-slide-toggle class="enable-all">
+            <!-- <mat-slide-toggle class="enable-all">
               Enable All
-            </mat-slide-toggle></h1>
+            </ma-slide-toggle> -->
+          </h1> 
           <hr>
 
           <div class="left-padd-gate">
@@ -144,6 +148,18 @@
                 BeatSaver's Authors
               </mat-slide-toggle>
             </div>
+            <mat-chip-list #chipList class="authorList" >
+              <mat-chip *ngFor="let author of SyncService_BeatSaverAUTHOR.Authors" [selectable]="selectable"
+                       removable="true" (removed)="removeAuthor(author)">
+                {{author}}
+                <mat-icon matChipRemove>cancel</mat-icon>
+              </mat-chip>
+              <input placeholder="New Author..."
+                     [matChipInputFor]="chipList"
+                     [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                     matChipInputAddOnBlur="true"
+                     (matChipInputTokenEnd)="addAuthor($event)">
+            </mat-chip-list>
           </div>
           <br><br><br>
           <h1>My Username</h1>
@@ -162,6 +178,7 @@
         <!--<button color="primary" mat-raised-button>Sync Now</button>-->
       </mat-card-actions>
     </mat-card>
+  </div>
   </mat-card-content>
 
 </mat-card>

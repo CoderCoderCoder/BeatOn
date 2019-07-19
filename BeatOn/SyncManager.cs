@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -32,6 +34,8 @@ namespace BeatOn
                 }
             }
         }
+        public List<FeedSyncStatus> ActiveSyncs { get { return _activeSyncs.ToList(); } }
+        private ConcurrentBag<FeedSyncStatus> _activeSyncs = new ConcurrentBag<FeedSyncStatus>();
         private DownloadManager _downloadManager;
         private GetBeatOnConfigDelegate _getConfig;
         private GetQaeDelegate _getQae;
@@ -44,7 +48,31 @@ namespace BeatOn
             _getQae = getQae;
             _showToast = showToast;
             _config = config;
+            WebUtils.Initialize(new System.Net.Http.HttpClient());
         }
+
+        public class FeedSyncStatus
+        {
+            public FeedSyncStatus(FeedConfig config)
+            {
+                FeedConfig = config;
+            }
+
+            public FeedConfig FeedConfig {get; private set;}
+            
+            public FeedSyncStatusType StatusType { get; set; }
+
+            public string ErrorMessage { get; set; }
+
+            public enum FeedSyncStatusType
+            {
+                Started,
+                Finished,
+                Failed
+            }
+        }
+
+        public event EventHandler<FeedSyncStatus> SyncStatusUpdate;
 
         private object _configLock = new object();
         public void Save()
@@ -67,75 +95,108 @@ namespace BeatOn
             }
         }
 
-        public void Sync(Guid? onlyID = null)
+        public List<FeedSyncStatus> Sync(Guid? onlyID = null)
         {
+            var feedStatus = new List<FeedSyncStatus>();
             try
             {
                 var cfg = _getConfig();
                 var qae = _getQae();
+                List<Task> tasks = new List<Task>();
                 foreach (var sync in SyncConfig.FeedReaders)
                 {
                     if (!sync.IsEnabled || (onlyID.HasValue && sync.ID != onlyID))
                         continue;
-
-                    //seems bad to have this here doing this, but whatever it'll work until it doesn't, then I'll fix it.
-                    var bsSync = sync as BeastSaberFeedConfig;
-                    if (bsSync != null)
+                    FeedSyncStatus fss = new FeedSyncStatus(sync);
+                    Task syncTask = new Task(() =>
                     {
-                        bsSync.BeastSaberUsername = SyncConfig.BeastSaberUsername;
-                    }
-                    try
-                    {
-                        sync.LastSyncAttempt = DateTime.Now;
-                        var songs = sync.GetSongs();
-                        var playlist = cfg.Config.Playlists.FirstOrDefault(x => x.PlaylistID == sync.PlaylistID);
-                        if (playlist == null)
+                        
+                        
+                        //seems bad to have this here doing this, but whatever it'll work until it doesn't, then I'll fix it.
+                        var bsSync = sync as BeastSaberFeedConfig;
+                        if (bsSync != null)
                         {
-                            playlist = new QuestomAssets.Models.BeatSaberPlaylist()
-                            {
-                                PlaylistID = sync.PlaylistID,
-                                PlaylistName = sync.DisplayName
-                            };
-                            var op = new AddOrUpdatePlaylistOp(playlist);
-                            qae.OpManager.QueueOp(op);
-                            op.FinishedEvent.WaitOne();
-                            if (op.Status != OpStatus.Complete)
-                                throw new SyncException($"Failed to create playlist for {sync.DisplayName}!");
-                            _getConfig().Config = qae.GetCurrentConfig();
-                            cfg = _getConfig();
+                            bsSync.BeastSaberUsername = SyncConfig.BeastSaberUsername;
                         }
-                        var toAdd = songs.Where(x => !playlist.SongList.Any(y => y.SongID.ToLower().StartsWith(x.Key.ToLower()))).ToList();
-                        var toRemove = playlist.SongList.Where(x => !songs.Any(y => x.SongID.ToLower().StartsWith(y.Key.ToLower()))).ToList();
-                        toAdd.ForEach(x => {
-                            try
+                        
+                        fss.StatusType = FeedSyncStatus.FeedSyncStatusType.Started;
+                        try
+                        {                            
+                            _activeSyncs.Add(fss);
+                            SyncStatusUpdate?.Invoke(this, fss);
+                            sync.LastSyncAttempt = DateTime.Now;
+                            var songsPl = sync.GetSongsByPlaylist();
+                            foreach (var spl in songsPl)
                             {
-                                _downloadManager.DownloadFile(x.Value.DownloadUrl.ToLower(), true, sync.PlaylistID, true);
+                                var playlist = cfg.Config.Playlists.FirstOrDefault(x => x.PlaylistID == spl.Key);
+                                if (playlist == null)
+                                {
+                                    playlist = new QuestomAssets.Models.BeatSaberPlaylist()
+                                    {
+                                        PlaylistID = spl.Key,
+                                        PlaylistName = spl.Value.Item1
+                                    };
+                                    var op = new AddOrUpdatePlaylistOp(playlist);
+                                    qae.OpManager.QueueOp(op);
+                                    op.FinishedEvent.WaitOne();
+                                    if (op.Status != OpStatus.Complete)
+                                        throw new SyncException($"Failed to create playlist for {sync.DisplayName}!");
+                                    _getConfig().Config = qae.GetCurrentConfig();
+                                    cfg = _getConfig();
+                                }
+
+                                var toAdd = spl.Value.Item2.Where(x => !playlist.SongList.Any(y => y.SongID.ToLower().StartsWith(x.Key.ToLower()))).ToList();
+                                var toRemove = playlist.SongList.Where(x => !spl.Value.Item2.Any(y => x.SongID.ToLower().StartsWith(y.Key.ToLower()))).ToList();
+                                toAdd.ForEach(x =>
+                                {
+                                    try
+                                    {
+                                        _downloadManager.DownloadFile(x.Value.DownloadUrl.ToLower(), true, spl.Key, true);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.LogErr($"Exception trying to start download of {x.Value.DownloadUrl}", ex);
+                                    }
+                                });
+                                toRemove.ForEach(x =>
+                                {
+                                    var d = new DeleteSongOp(x.SongID);
+                                    qae.OpManager.QueueOp(d);
+                                });
                             }
-                            catch (Exception ex)
-                            {
-                                Log.LogErr($"Exception trying to start download of {x.Value.DownloadUrl}", ex);
-                            }
-                        });
-                        toRemove.ForEach(x =>
+                            sync.LastSyncSuccess = DateTime.Now;
+                            fss.StatusType = FeedSyncStatus.FeedSyncStatusType.Finished;
+                        }
+                        catch (Exception ex)
                         {
-                            var d = new DeleteSongOp(x.SongID);
-                            qae.OpManager.QueueOp(d);
-                        });
-                        sync.LastSyncSuccess = DateTime.Now;
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogErr($"Exception syncing from {sync.DisplayName}!", ex);
-                        _showToast($"Sync {sync.DisplayName} Failed", "", ClientModels.ToastType.Error, 2);
-                    }
+                            Log.LogErr($"Exception syncing from {sync.DisplayName}!", ex);
+                            _showToast($"Sync {sync.DisplayName} Failed", "", ClientModels.ToastType.Error, 2);
+                            fss.StatusType = FeedSyncStatus.FeedSyncStatusType.Failed;
+                            fss.ErrorMessage = ex.Message;
+                        }
+                        finally
+                        {
+                            FeedSyncStatus f;
+                            _activeSyncs.TryTake(out f);
+                            SyncStatusUpdate?.Invoke(this, fss);
+                        }
+                    });
+                    tasks.Add(syncTask);
+                    feedStatus.Add(fss);
                 }
+                tasks.ForEach(x => x.Start());
+                Task.WhenAll(tasks).ContinueWith((t) =>
+                {
+                    t.Wait();
+                    Save();
+                });
             }
             catch (Exception ex)
             {
                 Log.LogErr("Exception syncing!", ex);
                 _showToast($"Failed Sync!", "There was an error syncing.", ClientModels.ToastType.Error, 3);
             }
-            Save();
+            return feedStatus;     
         }
 
         private void LoadConfig()

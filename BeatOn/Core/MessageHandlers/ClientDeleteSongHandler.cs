@@ -14,6 +14,7 @@ using QuestomAssets.AssetOps;
 
 namespace BeatOn.Core.MessageHandlers
 {
+    [MessageHandler(MessageType.DeleteSong)]
     public class ClientDeleteSongHandler : IMessageHandler
     {
         private GetQaeDelegate _getQae;
@@ -23,8 +24,6 @@ namespace BeatOn.Core.MessageHandlers
             _getQae = getQae;
             _getConfig = getConfig;
         }
-
-        public MessageType HandlesType => MessageType.DeleteSong;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {

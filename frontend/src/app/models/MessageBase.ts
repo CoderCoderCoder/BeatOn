@@ -32,6 +32,7 @@ export enum MessageType {
     MovePlaylist = <any>'MovePlaylist',
     DeleteMod = <any>'DeleteMod',
     ChangeColor = <any>'ChangeColor',
-    BeastSaberUsername = <any>'BeastSaberUsername',
+    SetBeastSaberUsername = <any>'SetBeastSaberUsername',
     UpdateFeedReader = <any>'UpdateFeedReader',
+    SyncSaberSync = <any>'SyncSaberSync',
 }

@@ -9,17 +9,17 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using QuestomAssets.AssetOps;
-using QuestomAssets.Models;
+using Newtonsoft.Json.Linq;
 
 namespace BeatOn.ClientModels
 {
-    [Message(MessageType.ChangeColor)]
-    public class ClientChangeColor : MessageBase
+    [Message(MessageType.UpdateFeedReader)]
+    public class ClientUpdateFeedReader : MessageBase
     {
-        public BeatSaberColor Color { get; set; }
+        public Guid ID { get; set; }
+        
+        //will this work?
+        public JObject FeedConfig { get; set; }
 
-        public ColorType ColorType { get; set; }
     }
-
 }

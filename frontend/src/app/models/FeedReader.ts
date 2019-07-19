@@ -7,4 +7,5 @@ export interface FeedReader {
     LastSyncSuccess: string;
     PlaylistID: string;
     MaxSongs: number;
+    Authors: string[];
 }

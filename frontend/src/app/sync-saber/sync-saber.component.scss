@@ -18,7 +18,28 @@
   font-weight: normal;
   margin-left: 2em;
 }
-
+.innerScroll {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.authorList {
+  line-height: 40px;
+  font-size: 14px;
+}
+.authorList input {
+  margin-top: 10px;
+}
+.syncButton {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+}
+.syncSpinner {
+  display: inline-block;
+  margin-top: -1px;
+  margin-right: 5px;
+}
 .left-col,
 .right-col {
   width: calc(50% - 15px);

@@ -12,11 +12,9 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.SyncSaberSync)]
     public class ClientSyncSaber : MessageBase
     {
-        public override MessageType Type => MessageType.SyncSaber;
-
         public Guid? SyncOnlyID { get; set; }
-
     }
 }

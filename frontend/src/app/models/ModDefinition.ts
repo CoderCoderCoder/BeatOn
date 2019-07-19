@@ -19,5 +19,7 @@ export enum ModStatusType {
 export enum ModCategory {
     Saber = 'Saber',
     Gameplay = 'Gameplay',
+    Note = 'Note',
+    Library = 'Library',
     Other = 'Other',
 }

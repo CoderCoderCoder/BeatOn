@@ -38,9 +38,7 @@ namespace BeatOn
 
         private ObservableCollection<FeedConfig> _feedReaders;
 
-
-
-        /// <summary>
+         /// <summary>
         /// List of definitions and settings for feed readers that will sync.
         /// </summary>
         public ObservableCollection<FeedConfig> FeedReaders
@@ -117,7 +115,7 @@ namespace BeatOn
             }
         }
 
-        private int _maxSongs = 100;
+        private int _maxSongs = 30;
         public int MaxSongs
         {
             get
@@ -173,12 +171,12 @@ namespace BeatOn
         }
 
         /// <summary>
-        /// Keyed Dictionary<PlaylistID, Dictionary<SongHash, scrapedsong>>
+        /// Keyed Dictionary<PlaylistID, Tuple<PlaylistName, Dictionary<SongHash, scrapedsong>>>.  Yes I should just make a class.
         /// </summary>
-        public virtual Dictionary<string, Dictionary<string, ScrapedSong>> GetSongsByPlaylist()
+        public virtual Dictionary<string, Tuple<string, Dictionary<string, ScrapedSong>>> GetSongsByPlaylist()
         {
-            var dict = new Dictionary<string, Dictionary<string, ScrapedSong>>();
-            dict.Add(PlaylistID, FeedReader.GetSongsFromFeed(FeedSettings));
+            var dict = new Dictionary<string, Tuple<string, Dictionary<string, ScrapedSong>>>();
+            dict.Add(PlaylistID, new Tuple<string, Dictionary<string, ScrapedSong>>(DisplayName, FeedReader.GetSongsFromFeed(FeedSettings)));
             return dict;
         }
     }
@@ -250,6 +248,17 @@ namespace BeatOn
 
     public class BeatSaverFeedConfig : FeedConfig
     {
+        public BeatSaverFeedConfig()
+        {
+            Authors = new ObservableCollection<string>();
+            Authors.CollectionChanged += Authors_CollectionChanged;
+        }
+
+        private void Authors_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            PropChanged("Authors");
+        }
+
         private BeatSaverFeeds _feedType;
         public BeatSaverFeeds FeedType
         {
@@ -266,7 +275,7 @@ namespace BeatOn
             }
         }
 
-        public List<string> Authors { get; set; }
+        public ObservableCollection<string> Authors { get; private set; }
         public override string PlaylistID => $"SyncService_BeatSaver{FeedType.ToString()}";
 
         public override string DisplayName
@@ -315,6 +324,36 @@ namespace BeatOn
                     Authors = Authors?.ToArray()
                 };
             }
+        }
+        /// <summary>
+        /// Keyed Dictionary<PlaylistID, Tuple<PlaylistName, Dictionary<SongHash, scrapedsong>>>.  Yes I should just make a class.
+        /// </summary>
+        public override Dictionary<string, Tuple<string, Dictionary<string, ScrapedSong>>> GetSongsByPlaylist()
+        {
+            if (FeedType != BeatSaverFeeds.AUTHOR)
+                return base.GetSongsByPlaylist();
+
+            var dict = new Dictionary<string, Tuple<string, Dictionary<string, ScrapedSong>>>();
+            var songs = FeedReader.GetSongsFromFeed(FeedSettings);
+            foreach (var song in songs)
+            {
+                var plID = PlaylistID + "_" + song.Value.MapperName.Replace(" ", "");
+                Tuple<string, Dictionary<string, ScrapedSong>> authorPL;
+                if (!dict.ContainsKey(plID))
+                {
+                    authorPL = new Tuple<string, Dictionary<string, ScrapedSong>>($"Author {song.Value.MapperName}", new Dictionary<string, ScrapedSong>());
+                    dict.Add(plID, authorPL);
+                }
+                else
+                {
+                    authorPL = dict[plID];
+                }
+                if (!authorPL.Item2.ContainsKey(song.Key))
+                {
+                    authorPL.Item2.Add(song.Key, song.Value);
+                }
+            }
+            return dict;
         }
     }
 

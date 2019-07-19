@@ -14,18 +14,18 @@ using QuestomAssets;
 
 namespace BeatOn.Core.MessageHandlers
 {
-    public class ClientUpdateSyncFeedConfigHandler : IMessageHandler
+    [MessageHandler(MessageType.UpdateFeedReader)]
+    public class ClientUpdateFeedReaderHandler : IMessageHandler
     {
         private Func<SyncManager> _getSyncManager;
-        public ClientUpdateSyncFeedConfigHandler(Func<SyncManager> getSyncManager)
+        public ClientUpdateFeedReaderHandler(Func<SyncManager> getSyncManager)
         {
             _getSyncManager = getSyncManager;
         }
-        public MessageType HandlesType => MessageType.SyncSaber;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
-            var msg = message as ClientUpdateSyncFeedConfig;
+            var msg = message as ClientUpdateFeedReader;
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
             var mgr = _getSyncManager();
@@ -45,6 +45,7 @@ namespace BeatOn.Core.MessageHandlers
                 if (idx >= mgr.SyncConfig.FeedReaders.Count)
                     idx--;
                 mgr.SyncConfig.FeedReaders.Add(typedConfig as FeedConfig);
+                mgr.Save();
             }
             catch (Exception ex)
             {

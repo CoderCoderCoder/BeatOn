@@ -15,6 +15,7 @@ using QuestomAssets.AssetOps;
 
 namespace BeatOn.Core.MessageHandlers
 {
+    [MessageHandler(MessageType.SetModStatus)]
     public class ClientSetModStatusHandler : IMessageHandler
     {
         private GetQaeDelegate _getQae;
@@ -26,8 +27,6 @@ namespace BeatOn.Core.MessageHandlers
             _getConfig = getConfig;
             _sendHostMessage = sendHostMessage;
         }
-
-        public MessageType HandlesType => MessageType.SetModStatus;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {

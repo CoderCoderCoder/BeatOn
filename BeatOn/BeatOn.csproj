@@ -127,11 +127,13 @@
     <Compile Include="ClientModels\ClientMoveSongToPlaylist.cs" />
     <Compile Include="ClientModels\ActionResponse.cs" />
     <Compile Include="ClientModels\ClientSyncSaber.cs" />
-    <Compile Include="ClientModels\ClientUpdateSyncFeedConfig.cs" />
+    <Compile Include="ClientModels\ClientSetBeastSaberUsername.cs" />
+    <Compile Include="ClientModels\ClientUpdateFeedReader.cs" />
     <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
     <Compile Include="ClientModels\HostOp.cs" />
     <Compile Include="ClientModels\HostOpStatus.cs" />
+    <Compile Include="ClientModels\MessageAttribute.cs" />
     <Compile Include="ClientModels\MessageBase.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />
     <Compile Include="ClientModels\HostDownloadStatus.cs" />
@@ -156,8 +158,10 @@
     <Compile Include="Core\MessageHandlers\ClientMoveSongToPlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
-    <Compile Include="Core\MessageHandlers\ClientUpdateSyncFeedConfigHandler.cs" />
-    <Compile Include="Core\MessageHandlers\ClientSyncSaberHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSetBeastSaberUsernameHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientUpdateFeedReaderHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSyncSaberSyncHandler.cs" />
+    <Compile Include="Core\MessageHandlers\MessageHandlerAttribute.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
     <Compile Include="Core\RequestHandlers\GetModCover.cs" />
     <Compile Include="Core\RequestHandlers\PostSyncSync.cs" />
@@ -367,13 +371,19 @@
     <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.abc10ad845673db52760.js" />
+    <AndroidAsset Include="Assets\www\assets\library.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.241a1a357dbc0a48a4a8.js" />
+    <AndroidAsset Include="Assets\www\assets\note.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.00f63c1921c850968e3f.css" />
+    <AndroidAsset Include="Assets\www\main-es5.cdde60106da1a196bd2b.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.c463a2c58d5bd7fc4ea0.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles.c6e01a63cc411e900bea.css" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
