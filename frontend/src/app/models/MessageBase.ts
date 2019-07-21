@@ -35,4 +35,5 @@ export enum MessageType {
     SetBeastSaberUsername = <any>'SetBeastSaberUsername',
     UpdateFeedReader = <any>'UpdateFeedReader',
     SyncSaberSync = <any>'SyncSaberSync',
+    StopDownloads = <any>'StopDownloads',
 }

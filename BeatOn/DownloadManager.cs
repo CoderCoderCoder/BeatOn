@@ -80,6 +80,7 @@ namespace BeatOn
                 var dl = sender as Download;
                 switch (args.Status)
                 {
+                    case DownloadStatus.Aborted:
                     case DownloadStatus.Failed:
                         _downloads.Remove(dl);
                         break;

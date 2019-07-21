@@ -226,22 +226,15 @@ namespace BeatOn
         {
             get
             {
-                return new BeastSaberFeedSettings((int)FeedType);
+                return new BeastSaberFeedSettings((int)FeedType) { MaxSongs = this.MaxSongs };
             }
         }
 
-        private BeastSaberReader _bsaberReader;
-        private string _readerUsername;
         protected override IFeedReader FeedReader
         {
             get
             {
-                if (_bsaberReader == null || _readerUsername != BeastSaberUsername)
-                {
-                    _bsaberReader = new BeastSaberReader(BeastSaberUsername, MAX_CONCURRENCY);
-                    _readerUsername = BeastSaberUsername;
-                }
-                return _bsaberReader;
+                return new BeastSaberReader(BeastSaberUsername, MAX_CONCURRENCY);
             }
         }
     }
@@ -302,15 +295,12 @@ namespace BeatOn
                 }
             }
         }
-        private BeatSaverReader _feedReader;
+
         protected override IFeedReader FeedReader
         {
             get
             {
-                if (_feedReader == null)                
-                    _feedReader = new BeatSaverReader();
-
-                return _feedReader;                
+                return new BeatSaverReader();
             }
         }
 
@@ -398,16 +388,11 @@ namespace BeatOn
             }
         }
 
-        private ScoreSaberReader _ssReader;
         protected override IFeedReader FeedReader
         {
             get
             {
-                if (_ssReader == null)
-                {
-                    _ssReader = new ScoreSaberReader();
-                }
-                return _ssReader;
+                return new ScoreSaberReader();
             }
         }
 

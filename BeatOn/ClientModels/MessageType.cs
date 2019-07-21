@@ -37,6 +37,7 @@ namespace BeatOn.ClientModels
         ChangeColor,
         SyncSaberSync,
         UpdateFeedReader,
-        SetBeastSaberUsername
+        SetBeastSaberUsername,
+        StopDownloads
     }
 }

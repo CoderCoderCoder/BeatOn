@@ -5,13 +5,18 @@
     </div>
     <mat-card-title>SyncSaber Feeds</mat-card-title>
     <mat-card-subtitle>Automatic feed sync from online song feeds.</mat-card-subtitle>
+      <div class="username-container">
+        <mat-form-field class="input-width">
+          <input matInput placeholder="Beast Saber Username" [(ngModel)]="BeastSaberUsername" (input)="setBeastSaberUsername()">
+        </mat-form-field>
+      </div>
     <button class="syncButton" mat-raised-button [disabled]="syncDisabled" (click)="clickSyncNow()" color="accent"><mat-spinner *ngIf="syncDisabled" class="syncSpinner" diameter="18"></mat-spinner>Start Sync</button>
   </mat-card-header>
   <mat-card-content>
     <div class="innerScroll">
     <mat-card>
       <div class="outer-container">
-        <div class="left-col">
+        <div class="left-col"> 
           <div class="right-select-all">Max Songs</div>
           <h1>What's Popular
             <!-- <mat-slide-toggle class="enable-all">
@@ -162,14 +167,7 @@
             </mat-chip-list>
           </div>
           <br><br><br>
-          <h1>My Username</h1>
-          <hr>
-          <div class="username-container">
-            <br><br><br>
-            <mat-form-field class="input-width">
-              <input matInput placeholder="Beast Saber Username" [(ngModel)]="BeastSaberUsername" (input)="setBeastSaberUsername()">
-            </mat-form-field>
-          </div>
+         
         </div>
       </div>
 

@@ -294,7 +294,8 @@ namespace BeatOn.Core
                     ModsStatusFile = Constants.MOD_STATUS_FILE,
                     BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
                     ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE,
-                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME
+                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME,
+                    EmbeddedResourcesFileProvider = new ResourceFileProvider(_context.Assets)
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -413,6 +414,8 @@ namespace BeatOn.Core
                     case DownloadStatus.Downloading:
                         //ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
                         break;
+                    case DownloadStatus.Aborted:
+                        break;
                     case DownloadStatus.Failed:
                         if (!dl.SuppressToast)
                             ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
@@ -525,6 +528,7 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.SetBeastSaberUsername, new ClientSetBeastSaberUsernameHandler(() => SyncManager));
             _webServer.AddMessageHandler(MessageType.UpdateFeedReader, new ClientUpdateFeedReaderHandler(() => SyncManager));
             _webServer.AddMessageHandler(MessageType.SyncSaberSync, new ClientSyncSaberSyncHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.StopDownloads, new ClientStopDownloadsHandler(() => _SongDownloadManager));
             _webServer.Start();
         }
 

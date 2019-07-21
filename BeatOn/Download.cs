@@ -91,10 +91,14 @@ namespace BeatOn
 
         public void Start()
         {
+            if (Status == DownloadStatus.Aborted)
+                return;
             if (DownloadUrl.IsAbsoluteUri)
             {
                 _client.DownloadDataCompleted += (s, dlArgs) =>
                 {
+                    if (Status == DownloadStatus.Aborted)
+                        return;
                     System.Threading.Tasks.Task.Run(() =>
                     {
                         try
@@ -134,7 +138,16 @@ namespace BeatOn
         public void SetStatus(DownloadStatus status, string message = null)
         {
             StatusChange(status, message);
-            if (status == DownloadStatus.Processed || status == DownloadStatus.Failed)
+            if (status == DownloadStatus.Aborted)
+            {
+                try
+                {
+                    _client.CancelAsync();
+                }
+                catch
+                { }
+            }
+            if (status == DownloadStatus.Processed || status == DownloadStatus.Failed || status == DownloadStatus.Aborted)
                 DownloadFinishedHandle.Set();
         }
 
