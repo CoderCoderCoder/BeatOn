@@ -13,9 +13,9 @@ using QuestomAssets.Mods;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.SetModStatus)]
     public class ClientSetModStatus : MessageBase
     {
-        public override MessageType Type => MessageType.SetModStatus;
         public string ModID { get; set; }
         public ModStatusType Status { get; set; }
     }

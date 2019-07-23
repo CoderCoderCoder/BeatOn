@@ -26,14 +26,14 @@
 </section>
 <section class="container" >
   <div *ngIf="!config">No Mods!</div>
-  <div fxFlex="50%">
+  <div fxFlex="60%">
     <mat-list>
       <!-- [class.selected]="mod === selectedMod" (click)="onSelect(mod); myModal.open()" -->
         <mat-list-item class="modContainer" *ngFor="let mod of config.Mods" >
           <div [ngStyle]="{'background-image': getModBG(mod)}" class="modCategory"></div>
           <div matTooltip="Delete the mod from Beat On." (click)="clickDeleteMod(mod)" class="deleteMod"><mat-icon>delete_forever</mat-icon></div>
-          <h1 matLine> {{ mod.Name }} <span class="version">v{{ mod.Version }}</span></h1>
-          <h3 matLine> by {{ mod.Author }}</h3>
+          <h1 matLine> {{ mod.Name }} <span class="version">{{ mod.Version }}</span></h1>
+          <h4 matLine> by {{ mod.Author }}<span *ngIf="mod.Porter">, ported by: {{ mod.Porter }}</span></h4>
           <div matLine class="description"> {{ mod.Description }}</div>
           
 
@@ -61,7 +61,7 @@
     </div>
     <div class="modal-body">
       <section class="mat-typography">
-        <h3 class="mat-display-1" *ngIf="selectedMod"> Created by: {{ selectedMod.Author }} </h3>
+        <h3 class="mat-display-1" *ngIf="selectedMod"> Created by: {{ selectedMod.Author }}</h3>
         <p *ngIf="selectedMod"> {{ selectedMod.Description }} </p>
         <button mat-raised-button="" class="md-raised md-primary">Install</button>
         <a *ngIf="selectedMod" href="{{ selectedMod.InfoUrl }}" > More Info </a>

@@ -7,8 +7,11 @@
 
 <mat-menu [class]="'browserNavMenu'" #menu="matMenu">
   <div mat-menu-item>
+  <button mat-raised-button class="linkbutton" fast-click (click)="clickUrl()">
+      <div class="title">URL..</div>    
+  </button>  
   <button mat-raised-button class="linkbutton" fast-click *ngFor="let link of browserLinks"  (click)="clickLink(link)">
     <div class="title">{{ link.title }}</div>    
-  </button>
-</div>
+  </button>  
+  </div>
 </mat-menu>

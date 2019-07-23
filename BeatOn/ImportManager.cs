@@ -100,7 +100,6 @@ namespace BeatOn
                         throw new Exception("Playlist op finished with a completely unexpected status.");
                     }
 
-                    WebClient client = new WebClient();
                     var downloads = new List<Download>();
                     var ops = new ConcurrentBag<AssetOp>();
                     Debouncey<bool> configDebouncer = new Debouncey<bool>(5000, false);
@@ -129,9 +128,7 @@ namespace BeatOn
                         }
                         try
                         {
-                            var bsaver = client.DownloadString(url);
-                            JToken jt = JToken.Parse(bsaver);
-                            var downloadUrl = jt.Value<string>("downloadURL");
+                            var downloadUrl = BeatSaverUtils.GetDownloadUrl(url);
                             if (string.IsNullOrWhiteSpace(downloadUrl))
                             {
                                 Log.LogErr($"Song '{song.SongName ?? "(null)"}' in playlist '{bplist.PlaylistTitle}' did not have a downloadURL in the response from beat saver.");
@@ -256,7 +253,8 @@ namespace BeatOn
         /// </summary>
         /// <param name="provider">The file provider containing the data at its root</param>
         /// <param name="completionCallback">A completion callback for when the operations have all completed.  Will not be called if there's an exception during initial processing, but will be called if a background operation fails</param>
-        public void ImportFromFileProvider(IFileProvider provider, Action completionCallback)
+        /// <param name="targetPlaylistID">Optionally the playlist to add the song to, if the download is a song</param>
+        public void ImportFromFileProvider(IFileProvider provider, Action completionCallback, string targetPlaylistID = null, bool suppressToast = false)
         {
             try
             {
@@ -272,7 +270,12 @@ namespace BeatOn
                         completionCallback?.Invoke();
                         break;
                     case DownloadType.SongFile:
-                        ImportSongFile(provider, completionCallback);
+                        BeatSaberPlaylist playlist = null;
+
+                        if (targetPlaylistID != null)
+                            playlist = _getConfig().Config.Playlists.FirstOrDefault(x => x.PlaylistID == targetPlaylistID);
+
+                        ImportSongFile(provider, completionCallback, playlist, suppressToast);
                         break;
                     case DownloadType.Playlist:
                         ImportPlaylistFilesFromProvider(provider);
@@ -285,13 +288,15 @@ namespace BeatOn
             }
             catch (ImportException iex)
             {
-                _showToast("File Failed to Process!", $"The file {provider.SourceName} could not be processed: {iex.FriendlyMessage}", ClientModels.ToastType.Error, 5);
+                if (!suppressToast)
+                    _showToast("File Failed to Process!", $"The file {provider.SourceName} could not be processed: {iex.FriendlyMessage}", ClientModels.ToastType.Error, 5);
                 throw;
             }
             catch (Exception ex)
             {
                 Log.LogErr($"Unhandled exception importing file from provider {provider.SourceName}", ex);
-                _showToast("File Failed to Process!", $"The file {provider.SourceName} could not be processed!", ClientModels.ToastType.Error, 5);
+                if (!suppressToast)
+                    _showToast("File Failed to Process!", $"The file {provider.SourceName} could not be processed!", ClientModels.ToastType.Error, 5);
                 throw new ImportException($"Unhandled exception importing file from provider {provider.SourceName}", $"Unable to load file {provider.SourceName}!", ex);
             }
         }
@@ -519,7 +524,7 @@ namespace BeatOn
                 catch (Exception ex)
                 {
                     Log.LogErr($"Exception trying to load mod from provider {provider.SourceName}", ex);
-                    throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it does not appear to be a valid mod file.", ex);
+                    throw new ImportException($"Exception trying to load mod from provider {provider.SourceName}", $"Unable to load mod from {provider.SourceName}, it may be an invalid file or another mod of the same type failed to uninstall.", ex);
                 }
             }
         }
@@ -542,11 +547,13 @@ namespace BeatOn
 
             addOp.OpFinished += (s, op) =>
             {
-                //TODO: i'd like for this to come back out of the config rather than being added here
-                if (!playlist.SongList.Any(x=> x.SongID == bsSong.SongID))                
-                    playlist.SongList.Add(bsSong);
+
                 if (op.Status == OpStatus.Complete)
                 {
+                    //TODO: i'd like for this to come back out of the config rather than being added here
+                    if (!playlist.SongList.Any(x => x.SongID == bsSong.SongID))
+                        playlist.SongList.Add(bsSong);
+
                     if (!suppressToast)
                         _showToast($"Song Added", $"{songID} was downloaded and added successfully", ClientModels.ToastType.Success);
                 }

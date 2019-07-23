@@ -1,14 +1,14 @@
-<!-- [matMenuTriggerFor]="menu" -->
-<button fast-click mat-raised-button  mat-button color="{{getColor()}}" >
+
+<button [matMenuTriggerFor]="menu" fast-click mat-raised-button  mat-button color="{{getColor()}}" >
 
     <mat-icon>cloud_download</mat-icon>
     <div class="downloadCount">{{ downloads.Downloads.length }}</div>
 
 </button> 
-<!-- 
+
 <mat-menu #menu="matMenu">
   <p class="nodownloads" color="primary" *ngIf="downloads.Downloads.length < 1">No active downloads</p>
-  <button fast-click *ngFor="let dl of downloads.Downloads" mat-menu-item>
-    <div>{{dl.Url}}</div>
+  <button *ngIf="downloads.Downloads.length > 0" fast-click mat-menu-item (click)="cancelAllDownloads()">
+    <div>Cancel All Downloads</div>
   </button>
-</mat-menu> -->
+</mat-menu>

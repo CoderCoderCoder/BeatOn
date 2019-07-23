@@ -13,10 +13,9 @@ using QuestomAssets.Models;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.AddOrUpdatePlaylist)]
     public class ClientAddOrUpdatePlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.AddOrUpdatePlaylist;
-
         public BeatSaberPlaylist Playlist { get; set; }
     }
 }

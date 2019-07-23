@@ -16,7 +16,7 @@ namespace BeatOn
             Bitmap bitmap = BitmapFactory.DecodeByteArray(imageData, 0, imageData.Length);
 
             byte[] textureBytes = MipmapToRGBBytes(bitmap, targetWidth, targetHeight, targetMips, out actualMips);
-            targetTexture.TextureFormat = Texture2DObject.TextureFormatType.RGB24;
+            targetTexture.TextureFormat = bitmap.HasAlpha?Texture2DObject.TextureFormatType.ARGB32:Texture2DObject.TextureFormatType.RGB24;
 
             targetTexture.ForcedFallbackFormat = 4;
             targetTexture.DownscaleFallback = false;
@@ -51,12 +51,12 @@ namespace BeatOn
 
         public byte[] TextureToPngBytes(Texture2DObject texture)
         {
-            if (texture.TextureFormat == Texture2DObject.TextureFormatType.RGB24)
+            if (texture.TextureFormat == Texture2DObject.TextureFormatType.RGB24 || texture.TextureFormat == Texture2DObject.TextureFormatType.ARGB32)
             {
                 //what's the quality setting here?
                 using (MemoryStream msPng = new MemoryStream())
                 {
-                    RGBBytesToBitmap(texture.ImageData, texture.Width, texture.Height).Compress(Bitmap.CompressFormat.Png, 90, msPng);
+                    RGBBytesToBitmap(texture.ImageData, texture.Width, texture.Height, (texture.TextureFormat == Texture2DObject.TextureFormatType.ARGB32)).Compress(Bitmap.CompressFormat.Png, 90, msPng);
                     return msPng.ToArray();
                 }
             }
@@ -153,7 +153,6 @@ namespace BeatOn
             Bitmap curBitmap = bitmap;
             if (bitmap.Width != targetWidth || bitmap.Height != targetHeight)
             {
-
                 curBitmap = Bitmap.CreateScaledBitmap(curBitmap, targetWidth, targetHeight, filterResize);
             }
 
@@ -164,7 +163,7 @@ namespace BeatOn
                 int mipCount = 0;
                 do
                 {
-                    byte[] mipData = CreateRGBFromBitmap(curBitmap);
+                    byte[] mipData = CreateRGBFromBitmap(curBitmap, bitmap.HasAlpha);
                     msMips.Write(mipData, 0, mipData.Length);
                     currentWidth /= 2;
                     currentHeight /= 2;

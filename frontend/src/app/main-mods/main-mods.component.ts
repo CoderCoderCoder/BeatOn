@@ -143,8 +143,12 @@ export class MainModsComponent implements OnInit, AfterViewInit {
         if (!mod.CoverImageFilename) {
             if (mod.Category == ModCategory.Saber) {
                 return 'url(../../assets/saber.png)';
+            } else if (mod.Category == ModCategory.Note) {
+                return 'url(../../assets/note.png)';
             } else if (mod.Category == ModCategory.Gameplay) {
                 return 'url(../../assets/gameplay.png)';
+            } else if (mod.Category == ModCategory.Library) {
+                return 'url(../../assets/library.png)';
             } else {
                 return 'url(../../assets/other.png)';
             }

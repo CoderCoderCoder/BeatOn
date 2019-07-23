@@ -63,6 +63,10 @@ import { OnlyCustomSongsPipe } from './pipes/only-custom-songs';
 import { ImagePickerDialogComponent } from './image-picker-dialog/image-picker-dialog.component';
 import { CdkVirtualScrollViewportPatchDirective } from './cdk-virtual-scroll-viewport-patch.directive';
 import { ColorPickerModule } from 'ngx-color-picker';
+import { SyncSaberComponent } from './sync-saber/sync-saber.component';
+import { SyncSaberMaxSongsComponent } from './sync-saber-max-songs/sync-saber-max-songs.component';
+import { InputBoxComponent } from './input-box/input-box.component';
+import { CookieService } from 'ngx-cookie-service';
 @NgModule({
     declarations: [
         AppComponent,
@@ -93,12 +97,16 @@ import { ColorPickerModule } from 'ngx-color-picker';
         MainModsComponent,
         ImagePickerDialogComponent,
         CdkVirtualScrollViewportPatchDirective,
+        SyncSaberComponent,
+        SyncSaberMaxSongsComponent,
+        InputBoxComponent,
     ],
     entryComponents: [
         ProgressSpinnerDialogComponent,
         AddEditPlaylistDialogComponent,
         ConfirmDialogComponent,
         ImagePickerDialogComponent,
+        InputBoxComponent,
     ],
     imports: [
         ToastrModule.forRoot({
@@ -141,7 +149,7 @@ import { ColorPickerModule } from 'ngx-color-picker';
         MatGridListModule,
         ColorPickerModule,
     ],
-    providers: [NgxSmartModalService],
+    providers: [NgxSmartModalService, CookieService],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

@@ -12,10 +12,9 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.MoveSongToPlaylist)]
     public class ClientMoveSongToPlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.MoveSongToPlaylist;
-
         public string SongID { get; set; }
         public string ToPlaylistID { get; set; }
         public int? Index { get; set; }

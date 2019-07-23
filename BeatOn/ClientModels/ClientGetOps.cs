@@ -12,11 +12,9 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.GetOps)]
     public class ClientGetOps : MessageBase
     {
-        public override MessageType Type => MessageType.GetOps;
-
         public bool ClearFailedOps { get; set; }
-
     }
 }

@@ -13,9 +13,9 @@ using QuestomAssets.BeatSaber;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.AutoCreatePlaylists)]
     public class ClientAutoCreatePlaylists : MessageBase
     {
-        public override MessageType Type => MessageType.AutoCreatePlaylists;
         public PlaylistSortMode SortMode { get; set; }
         public int? MaxPerNamePlaylist { get; set; }
         public bool RemoveEmptyPlaylists { get; set; }

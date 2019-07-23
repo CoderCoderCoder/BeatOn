@@ -1,3 +1,5 @@
+import { ClientSetBeastSaberUsername } from './ClientSetBeastSaberUsername';
+
 export abstract class MessageBase {
     constructor() {
         this.MessageID = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -30,4 +32,8 @@ export enum MessageType {
     MovePlaylist = <any>'MovePlaylist',
     DeleteMod = <any>'DeleteMod',
     ChangeColor = <any>'ChangeColor',
+    SetBeastSaberUsername = <any>'SetBeastSaberUsername',
+    UpdateFeedReader = <any>'UpdateFeedReader',
+    SyncSaberSync = <any>'SyncSaberSync',
+    StopDownloads = <any>'StopDownloads',
 }

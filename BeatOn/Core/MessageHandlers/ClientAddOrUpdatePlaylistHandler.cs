@@ -15,6 +15,7 @@ using QuestomAssets.Models;
 
 namespace BeatOn.Core.MessageHandlers
 {
+    [MessageHandler(MessageType.AddOrUpdatePlaylist)]
     public class ClientAddOrUpdatePlaylistHandler : IMessageHandler
     {
         private GetQaeDelegate _getQae;
@@ -25,8 +26,6 @@ namespace BeatOn.Core.MessageHandlers
             _getQae = getQae;
             _getConfig = getConfig;
         }
-
-        public MessageType HandlesType => MessageType.AddOrUpdatePlaylist;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {
@@ -45,8 +44,6 @@ namespace BeatOn.Core.MessageHandlers
                 }
             };
             qae.OpManager.QueueOp(op);
-        }
-
-        
+        }        
     }
 }

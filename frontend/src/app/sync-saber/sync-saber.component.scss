@@ -1,0 +1,65 @@
+.right-select-all{
+  float: right;
+  margin-top: 2.5em;
+  margin-right: 2.5em;
+}
+.right-align{
+  text-align: right;
+}
+.left-padd-gate{
+  padding-left: 2em;
+  padding-right: 2em;
+}
+.right{
+  float: right;
+}
+.enable-all{
+  font-size: 0.5em;
+  font-weight: normal;
+  margin-left: 2em;
+}
+.innerScroll {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.authorList {
+  line-height: 40px;
+  font-size: 14px;
+}
+.authorList input {
+  margin-top: 10px;
+}
+.syncButton {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+}
+.syncSpinner {
+  display: inline-block;
+  margin-top: -1px;
+  margin-right: 5px;
+}
+.left-col,
+.right-col {
+  width: calc(50% - 15px);
+  display: inline-block;
+  height: 100%;
+  margin-left: 10px;
+  margin-right: 5px;
+  vertical-align: top;
+}
+
+.outer-container {
+  height: calc(100% - 10px);
+  overflow: hidden;
+  margin-top: -10px;
+  color: white;
+}
+.username-container{
+  text-align: center;
+  margin-left: 50px;
+}
+.input-width{
+  width: 400px;
+}

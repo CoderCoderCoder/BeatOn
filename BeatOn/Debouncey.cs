@@ -52,7 +52,8 @@ namespace BeatOn
                             {
                                 try
                                 {
-                                    _timer.Dispose();
+                                    if (_timer != null)
+                                        _timer.Dispose();
                                 }
                                 catch { }
                                 _timer = null;

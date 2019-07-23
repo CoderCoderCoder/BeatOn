@@ -13,9 +13,9 @@ using QuestomAssets.BeatSaber;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.SortPlaylist)]
     public class ClientSortPlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.SortPlaylist;
         public string PlaylistID { get; set; }
         public PlaylistSortMode SortMode { get; set; }
         public bool Reverse { get; set; }

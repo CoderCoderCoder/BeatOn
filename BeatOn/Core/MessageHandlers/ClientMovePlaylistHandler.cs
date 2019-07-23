@@ -16,6 +16,7 @@ using QuestomAssets.AssetOps;
 
 namespace BeatOn.Core.MessageHandlers
 {
+    [MessageHandler(MessageType.MovePlaylist)]
     public class ClientMovePlaylistHandler : IMessageHandler
     {
         private GetQaeDelegate _getQae;
@@ -25,8 +26,6 @@ namespace BeatOn.Core.MessageHandlers
             _getQae = getQae;
             _getConfig = getConfig;
         }
-
-        public MessageType HandlesType => MessageType.MovePlaylist;
 
         public void HandleMessage(MessageBase message, SendHostMessageDelegate sendHostMessage)
         {

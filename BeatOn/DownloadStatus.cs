@@ -22,6 +22,7 @@ namespace BeatOn
         Downloaded,
         Processing,
         Processed,
-        Failed
+        Failed,
+        Aborted
     }
 }

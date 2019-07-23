@@ -14,10 +14,9 @@ using QuestomAssets.Models;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.ChangeColor)]
     public class ClientChangeColor : MessageBase
     {
-        public override MessageType Type => MessageType.ChangeColor;
-
         public BeatSaberColor Color { get; set; }
 
         public ColorType ColorType { get; set; }

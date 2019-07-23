@@ -27,6 +27,7 @@ namespace BeatOn.Core
     {
         private Context _context;
         public ImportManager ImportManager { get; private set; }
+        public SyncManager SyncManager { get; private set; }
 
         public BeatOnCore(Context context, Action<string> triggerPackageInstall, Action<string> triggerPackageUninstall, Action<string> triggerStopPackage)
         {
@@ -38,6 +39,7 @@ namespace BeatOn.Core
             _SongDownloadManager.StatusChanged += _SongDownloadManager_StatusChanged;
             _triggerStopPackage = triggerStopPackage;
             ImageUtils.Instance = new ImageUtilsDroid();
+            SyncManager = new SyncManager(_qaeConfig, _SongDownloadManager, () => CurrentConfig, () => Engine, ShowToast);
             KillBeatSaber();
         }
 
@@ -138,6 +140,10 @@ namespace BeatOn.Core
         /// </summary>
         private bool SaveCommittedConfigToDisk()
         {
+            //todo: this is SO the wrong place for this.  Suppose I'll move it after I put it here for testing.  probably should save instantly on update and not be part of sync
+            SyncManager.Save();
+
+
             if (!CurrentConfig.IsCommitted || Engine.HasChanges)
                 return false;
             lock (_configFileLock)
@@ -232,8 +238,10 @@ namespace BeatOn.Core
 
                         _currentConfig = new BeatOnConfig()
                         {
-                            Config = config
+                            Config = config,
+                            SyncConfig = SyncManager.SyncConfig
                         };
+
                         _currentConfig.IsCommitted = !Engine.HasChanges;
                         _currentConfig.PropertyChanged += CurrentConfig_PropertyChanged;
                     }
@@ -286,7 +294,8 @@ namespace BeatOn.Core
                     ModsStatusFile = Constants.MOD_STATUS_FILE,
                     BackupApkFileAbsolutePath = Constants.BEATSABER_APK_BACKUP_FILE,
                     ModdedFallbackBackupPath = Constants.BEATSABER_APK_MODDED_BACKUP_FILE,
-                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME
+                    PlaylistsPath = Constants.PLAYLISTS_FOLDER_NAME,
+                    EmbeddedResourcesFileProvider = new ResourceFileProvider(_context.Assets, "resources")
                 };
                 q.SongFileProvider = q.RootFileProvider;
                 return q;
@@ -405,8 +414,11 @@ namespace BeatOn.Core
                     case DownloadStatus.Downloading:
                         //ShowToast("Downloading file...", dl.DownloadUrl.ToString(), ToastType.Info, 3);
                         break;
+                    case DownloadStatus.Aborted:
+                        break;
                     case DownloadStatus.Failed:
-                        ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
+                        if (!dl.SuppressToast)
+                            ShowToast("Download failed", dl.DownloadUrl.ToString(), ToastType.Error, 5);
                         break;
                     case DownloadStatus.Processed:
                         //ShowToast("Download Processed", dl.DownloadUrl.ToString(), ToastType.Success, 3);
@@ -493,7 +505,11 @@ namespace BeatOn.Core
             _webServer.Router.AddRoute("POST", "/mod/exit", new PostExit(HardQuit));
             _webServer.Router.AddRoute("POST", "/mod/package", new PostPackageAction(SendPackageLaunch, SendPackageStop));
             _webServer.Router.AddRoute("PUT", "/beatsaber/config", new PutConfig(() => Engine, () => CurrentConfig, SendConfigChangeMessage));
-            _webServer.Router.AddRoute("POST", "beatsaber/config/restore", new PostConfigRestore(() => Engine, () => _qaeConfig, ()=> CurrentConfig, SendConfigChangeMessage));
+            _webServer.Router.AddRoute("POST", "/beatsaber/config/restore", new PostConfigRestore(() => Engine, () => _qaeConfig, ()=> CurrentConfig, SendConfigChangeMessage));
+
+            //TEST ONE
+            _webServer.Router.AddRoute("GET", "/beatsaber/sync", new GetSyncConfig(() => SyncManager));
+            _webServer.Router.AddRoute("POST", "/beatsaber/sync", new PostSyncSync(() => SyncManager));
 
 
             //if you add a new MessageType and a handler here, make sure the type is added in MessageTypeConverter.cs
@@ -509,9 +525,13 @@ namespace BeatOn.Core
             _webServer.AddMessageHandler(MessageType.MovePlaylist, new ClientMovePlaylistHandler(() => Engine, () => CurrentConfig));
             _webServer.AddMessageHandler(MessageType.DeleteMod, new ClientDeleteModHandler(() => Engine, () => CurrentConfig, SendMessageToClient));
             _webServer.AddMessageHandler(MessageType.ChangeColor, new ClientChangeColorHandler(() => Engine, () => CurrentConfig));
+            _webServer.AddMessageHandler(MessageType.SetBeastSaberUsername, new ClientSetBeastSaberUsernameHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.UpdateFeedReader, new ClientUpdateFeedReaderHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.SyncSaberSync, new ClientSyncSaberSyncHandler(() => SyncManager));
+            _webServer.AddMessageHandler(MessageType.StopDownloads, new ClientStopDownloadsHandler(() => _SongDownloadManager));
             _webServer.Start();
-
         }
+
 
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls

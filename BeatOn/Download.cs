@@ -24,6 +24,8 @@ namespace BeatOn
     {
         public int PercentageComplete { get; private set; }
         public Guid ID { get; } = Guid.NewGuid();
+        public string TargetPlaylistID { get; set; }
+        public bool SuppressToast { get; set; } = false;
         private UrlWebClient _client = new UrlWebClient();
         internal bool ProcessAfterDownload { get; private set; }
         public event EventHandler<DownloadStatusChangeArgs> StatusChanged;
@@ -89,50 +91,79 @@ namespace BeatOn
 
         public void Start()
         {
-            if (DownloadUrl.IsAbsoluteUri)
+            if (Status == DownloadStatus.Aborted)
+                return;
+            try
             {
-                _client.DownloadDataCompleted += (s, dlArgs) =>
+                if (DownloadUrl.IsAbsoluteUri)
                 {
-                    System.Threading.Tasks.Task.Run(() =>
+                    _client.DownloadDataCompleted += (s, dlArgs) =>
                     {
                         try
                         {
-                            if (dlArgs.Error != null)
-                            {
-                                Log.LogErr($"Error downloading file '{DownloadUrl}'", dlArgs.Error);
-                                StatusChange(DownloadStatus.Failed, "Download file failed!");
+                            if (Status == DownloadStatus.Aborted)
                                 return;
-                            }
-                            if (dlArgs.Cancelled)
+                            System.Threading.Tasks.Task.Run(() =>
                             {
-                                Log.LogErr($"Download of '{DownloadUrl}' was cancelled.");
-                                StatusChange(DownloadStatus.Failed, "Download was cancelled");
-                                return;
-                            }
-                            DownloadedData = dlArgs.Result;
-                            DownloadedFilename = (s as UrlWebClient).ResponseUrl.LocalPath;
-                            StatusChange(DownloadStatus.Downloaded);
+                                try
+                                {
+                                    if (dlArgs.Error != null)
+                                    {
+                                        Log.LogErr($"Error downloading file '{DownloadUrl}'", dlArgs.Error);
+                                        StatusChange(DownloadStatus.Failed, "Download file failed!");
+                                        return;
+                                    }
+                                    if (dlArgs.Cancelled)
+                                    {
+                                        Log.LogErr($"Download of '{DownloadUrl}' was cancelled.");
+                                        StatusChange(DownloadStatus.Failed, "Download was cancelled");
+                                        return;
+                                    }
+                                    DownloadedData = dlArgs.Result;
+                                    DownloadedFilename = (s as UrlWebClient).ResponseUrl.LocalPath;
+                                    StatusChange(DownloadStatus.Downloaded);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.LogErr($"Exception downloading file from {DownloadUrl}!", ex);
+                                    StatusChange(DownloadStatus.Failed, "Unable to extract file");
+                                }
+                            });
                         }
                         catch (Exception ex)
                         {
-                            Log.LogErr($"Exception downloading file from {DownloadUrl}!", ex);
-                            StatusChange(DownloadStatus.Failed, "Unable to extract file");
+                            Log.LogErr($"Exception raised handling download", ex);
+                            SetStatus(DownloadStatus.Failed, "Error during download.");
                         }
-                    });
-                };
-                StatusChange(DownloadStatus.Downloading);
-                _client.DownloadProgressChanged += (sender, e) =>
-                {
-                    PercentCompleteChange(e.ProgressPercentage);
-                };
-                _client.DownloadDataAsync(DownloadUrl);
+                    };
+                    StatusChange(DownloadStatus.Downloading);
+                    _client.DownloadProgressChanged += (sender, e) =>
+                    {
+                        PercentCompleteChange(e.ProgressPercentage);
+                    };
+                    _client.DownloadDataAsync(DownloadUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr($"Exception raised handling download", ex);
+                SetStatus(DownloadStatus.Failed, "Error during download.");
             }
         }
         
         public void SetStatus(DownloadStatus status, string message = null)
         {
             StatusChange(status, message);
-            if (status == DownloadStatus.Processed || status == DownloadStatus.Failed)
+            if (status == DownloadStatus.Aborted)
+            {
+                try
+                {
+                    _client.CancelAsync();
+                }
+                catch
+                { }
+            }
+            if (status == DownloadStatus.Processed || status == DownloadStatus.Failed || status == DownloadStatus.Aborted)
                 DownloadFinishedHandle.Set();
         }
 

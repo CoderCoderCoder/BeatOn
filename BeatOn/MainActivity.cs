@@ -144,6 +144,7 @@ namespace BeatOn
             _browserView= FindViewById<WebView>(Resource.Id.webView2);
             _toastInjector = new ToastInjectorWebViewClient(_browserView);
             _browserView.SetWebViewClient(_toastInjector);
+            _browserView.Settings.UserAgentString += " BeatOn_Quest/" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             _browserView.SetWebChromeClient(new WebChromeClient());
             _browserView.Settings.JavaScriptEnabled = true;
             _browserView.Settings.AllowContentAccess = true;
@@ -164,7 +165,7 @@ namespace BeatOn
             _webViewClient.JSInterface.OnRefreshBrowser += JSInterface_OnRefreshBrowser;
             _webViewClient.JSInterface.OnShowBrowser += JSInterface_OnShowBrowser;
             _webViewClient.JSInterface.OnToast += JSInterface_OnToast;
-
+            _webView.Settings.UserAgentString += " BeatOn_Quest/" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             if (CheckSelfPermission(Android.Manifest.Permission.WriteExternalStorage)
                 != Android.Content.PM.Permission.Granted)
             {

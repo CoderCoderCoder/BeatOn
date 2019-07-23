@@ -13,10 +13,9 @@ using QuestomAssets.Models;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.MovePlaylist)]
     public class ClientMovePlaylist : MessageBase
     {
-        public override MessageType Type => MessageType.MovePlaylist;
-
         public string PlaylistID { get; set; }
         public int Index { get; set; }
     }

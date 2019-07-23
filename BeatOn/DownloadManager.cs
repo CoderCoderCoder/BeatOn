@@ -29,17 +29,37 @@ namespace BeatOn
                 }
             }
         }
+        public void CancelDownloads(List<Guid> IDs)
+        {
+            try
+            {
+                lock (_downloads)
+                {
+                    foreach (var dl in _downloads.OrderBy(x => { switch (x.Status) { case DownloadStatus.NotStarted: return 0; case DownloadStatus.Downloading: return 1; case DownloadStatus.Downloaded: return 2; default: return 3; } }))
+                    {
+                        if (IDs == null || IDs.Count < 1 || (IDs.Contains(dl.ID) && (dl.Status == DownloadStatus.Downloading || dl.Status == DownloadStatus.NotStarted || dl.Status == DownloadStatus.Downloaded)))
+                        {
+                            dl.SetStatus(DownloadStatus.Aborted);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception cancelling downloads", ex);
+            }
+        }
         private ImportManager _importManager;
 
         private int _maxConcurrentDownloads;
         
-        public DownloadManager(ImportManager importManager, int maxConcurrentDownloads = 5)
+        public DownloadManager(ImportManager importManager, int maxConcurrentDownloads = 15)
         {
             _importManager = importManager;
             _maxConcurrentDownloads = maxConcurrentDownloads;
         }
 
-        public Download DownloadFile(string url, bool processAfterDownload = true)
+        public Download DownloadFile(string url, bool processAfterDownload = true, string toPlaylistID = null, bool suppressToast = false)
         {
             //prevent the same URL from going in the queue twice.
             var exists = false;
@@ -52,11 +72,14 @@ namespace BeatOn
             {
                 var deadDl = new Download(url);
                 deadDl.StatusChanged += StatusChangeHandler;
-                deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");
+                deadDl.SuppressToast = suppressToast;
+                deadDl.SetStatus(DownloadStatus.Failed, "File is already being downloaded.");                
                 return deadDl;
             }            
             
             Download dl = new Download(url, processAfterDownload);
+            dl.TargetPlaylistID = toPlaylistID;
+            dl.SuppressToast = suppressToast;
             lock (_downloads)
                 _downloads.Add(dl);
 
@@ -77,6 +100,7 @@ namespace BeatOn
                 var dl = sender as Download;
                 switch (args.Status)
                 {
+                    case DownloadStatus.Aborted:
                     case DownloadStatus.Failed:
                         _downloads.Remove(dl);
                         break;
@@ -109,7 +133,7 @@ namespace BeatOn
                                                 {
                                                     provider.Dispose();
                                                     ms.Dispose();
-                                                });
+                                                }, dl.TargetPlaylistID, dl.SuppressToast);
                                             }
                                             catch
                                             {

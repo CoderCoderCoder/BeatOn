@@ -12,10 +12,9 @@ using Android.Widget;
 
 namespace BeatOn.ClientModels
 {
+    [Message(MessageType.DeleteSong)]
     public class ClientDeleteSong : MessageBase
     {
-        public override MessageType Type => MessageType.DeleteSong;
-
         public string SongID { get; set; }
     }
 }

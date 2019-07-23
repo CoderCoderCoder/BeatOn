@@ -48,21 +48,23 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <MonoSymbolArchive>false</MonoSymbolArchive>
-    <DebugSymbols>True</DebugSymbols>
+    <DebugSymbols>false</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AotAssemblies>false</AotAssemblies>
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
-    <AndroidSupportedAbis />
+    <AndroidSupportedAbis>
+    </AndroidSupportedAbis>
     <AndroidEnableMultiDex>false</AndroidEnableMultiDex>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Emulator Debug|AnyCPU'">
@@ -77,6 +79,10 @@
     <AotAssemblies>false</AotAssemblies>
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <AndroidSupportedAbis>armeabi-v7a;x86</AndroidSupportedAbis>
+    <Debugger>Xamarin</Debugger>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Profiler|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -110,6 +116,7 @@
     <Compile Include="BeatOnService.cs" />
     <Compile Include="BeatOnServiceTransciever.cs" />
     <Compile Include="BeatOnUtils.cs" />
+    <Compile Include="BeatSaverUtils.cs" />
     <Compile Include="BPList.cs" />
     <Compile Include="ClientModels\BeatOnConfig.cs" />
     <Compile Include="ClientModels\ClientChangeColor.cs" />
@@ -125,10 +132,15 @@
     <Compile Include="ClientModels\ClientDeleteSong.cs" />
     <Compile Include="ClientModels\ClientMoveSongToPlaylist.cs" />
     <Compile Include="ClientModels\ActionResponse.cs" />
+    <Compile Include="ClientModels\ClientStopDownloads.cs" />
+    <Compile Include="ClientModels\ClientSyncSaber.cs" />
+    <Compile Include="ClientModels\ClientSetBeastSaberUsername.cs" />
+    <Compile Include="ClientModels\ClientUpdateFeedReader.cs" />
     <Compile Include="ClientModels\HostConfigChangeEvent.cs" />
     <Compile Include="ClientModels\HostDownload.cs" />
     <Compile Include="ClientModels\HostOp.cs" />
     <Compile Include="ClientModels\HostOpStatus.cs" />
+    <Compile Include="ClientModels\MessageAttribute.cs" />
     <Compile Include="ClientModels\MessageBase.cs" />
     <Compile Include="ClientModels\HostSetupEvent.cs" />
     <Compile Include="ClientModels\HostDownloadStatus.cs" />
@@ -153,8 +165,15 @@
     <Compile Include="Core\MessageHandlers\ClientMoveSongToPlaylistHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientAutoCreatePlaylistsHandler.cs" />
     <Compile Include="Core\MessageHandlers\ClientSortPlaylistHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSetBeastSaberUsernameHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientStopDownloadsHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientUpdateFeedReaderHandler.cs" />
+    <Compile Include="Core\MessageHandlers\ClientSyncSaberSyncHandler.cs" />
+    <Compile Include="Core\MessageHandlers\MessageHandlerAttribute.cs" />
     <Compile Include="Core\RequestHandlers\GetConfig.cs" />
     <Compile Include="Core\RequestHandlers\GetModCover.cs" />
+    <Compile Include="Core\RequestHandlers\PostSyncSync.cs" />
+    <Compile Include="Core\RequestHandlers\GetSyncConfig.cs" />
     <Compile Include="Core\RequestHandlers\PostExit.cs" />
     <Compile Include="Core\RequestHandlers\PostConfigRestore.cs" />
     <Compile Include="Core\RequestHandlers\PostPackageAction.cs" />
@@ -202,14 +221,17 @@
     <Compile Include="Delegates.cs" />
     <Compile Include="SimpleRouter.cs" />
     <Compile Include="StatusUpdateLogSink.cs" />
+    <Compile Include="SyncConfig.cs" />
+    <Compile Include="SyncException.cs" />
+    <Compile Include="SyncManager.cs" />
     <Compile Include="ToastInjectorWebViewClient.cs" />
     <Compile Include="WebServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.012cf6a10129e2275d79.woff" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.570eb83859dc23dd0eec.woff2" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.a37b0c01c0baf1888ca8.ttf" />
-    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.e79bfd88537def476913.eot" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.eot" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.ttf" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff" />
+    <AndroidAsset Include="Assets\www\MaterialIcons-Regular.woff2" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
@@ -269,6 +291,10 @@
       <Project>{e6acae1d-f608-4d45-a73c-3d2ebc22d7d4}</Project>
       <Name>QuestomAssets</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SyncSaberService\FeedReader\FeedReader.csproj">
+      <Project>{d846c41a-95f1-468b-8b29-738cf3d92c3e}</Project>
+      <Name>FeedReader</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\xml\provider_paths.xml" />
@@ -323,21 +349,6 @@
     <AndroidAsset Include="Assets\www\3rdpartylicenses.txt" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\logo.6c1a8c36d9fd1df75fae.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es2015.858f8dd898b75fe86926.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\runtime-es5.741402d1d47331ce975c.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\upload.53eaa2f2d099aadddfb6.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es2015.4aaaf8cdea71ba6ebdaf.js" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidAsset Include="Assets\www\assets\default-pack-cover.png" />
   </ItemGroup>
   <ItemGroup>
@@ -350,16 +361,43 @@
     <AndroidAsset Include="Assets\www\assets\saber.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\polyfills-es5.27d81060418231ff91d8.js" />
+    <AndroidAsset Include="Assets\www\assets\library.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\styles.897db6043558b11e7565.css" />
+    <AndroidAsset Include="Assets\www\assets\note.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es2015.ac3c69c65ac08ba69b42.js" />
+    <AndroidAsset Include="Assets\resources\Lawless.png" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="Assets\www\main-es5.1d14f310f8a0dd394bb6.js" />
+    <AndroidAsset Include="Assets\resources\LightShow.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\main-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\polyfills-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es2015.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\runtime-es5.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\styles.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="Assets\www\upload.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
