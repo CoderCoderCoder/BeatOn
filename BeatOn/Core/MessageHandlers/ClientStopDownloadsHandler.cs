@@ -28,12 +28,7 @@ namespace BeatOn.Core.MessageHandlers
             if (msg == null)
                 throw new ArgumentException("Message is not the right type");
             var dlmgr = _getDownloadManager();
-            foreach (var dl in dlmgr.Downloads)
-            {
-                if ((msg.DownloadsToStop == null || msg.DownloadsToStop.Count < 1 || msg.DownloadsToStop.Contains(dl.ID)) && (dl.Status == DownloadStatus.Downloading || dl.Status == DownloadStatus.NotStarted || dl.Status == DownloadStatus.Downloaded))
-                    dl.SetStatus(DownloadStatus.Aborted);
-            }
-           
+            dlmgr.CancelDownloads(msg.DownloadsToStop);           
         }
     }
 }

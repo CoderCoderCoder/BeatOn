@@ -547,11 +547,13 @@ namespace BeatOn
 
             addOp.OpFinished += (s, op) =>
             {
-                //TODO: i'd like for this to come back out of the config rather than being added here
-                if (!playlist.SongList.Any(x=> x.SongID == bsSong.SongID))                
-                    playlist.SongList.Add(bsSong);
+
                 if (op.Status == OpStatus.Complete)
                 {
+                    //TODO: i'd like for this to come back out of the config rather than being added here
+                    if (!playlist.SongList.Any(x => x.SongID == bsSong.SongID))
+                        playlist.SongList.Add(bsSong);
+
                     if (!suppressToast)
                         _showToast($"Song Added", $"{songID} was downloaded and added successfully", ClientModels.ToastType.Success);
                 }

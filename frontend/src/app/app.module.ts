@@ -65,6 +65,8 @@ import { CdkVirtualScrollViewportPatchDirective } from './cdk-virtual-scroll-vie
 import { ColorPickerModule } from 'ngx-color-picker';
 import { SyncSaberComponent } from './sync-saber/sync-saber.component';
 import { SyncSaberMaxSongsComponent } from './sync-saber-max-songs/sync-saber-max-songs.component';
+import { InputBoxComponent } from './input-box/input-box.component';
+import { CookieService } from 'ngx-cookie-service';
 @NgModule({
     declarations: [
         AppComponent,
@@ -97,12 +99,14 @@ import { SyncSaberMaxSongsComponent } from './sync-saber-max-songs/sync-saber-ma
         CdkVirtualScrollViewportPatchDirective,
         SyncSaberComponent,
         SyncSaberMaxSongsComponent,
+        InputBoxComponent,
     ],
     entryComponents: [
         ProgressSpinnerDialogComponent,
         AddEditPlaylistDialogComponent,
         ConfirmDialogComponent,
         ImagePickerDialogComponent,
+        InputBoxComponent,
     ],
     imports: [
         ToastrModule.forRoot({
@@ -145,7 +149,7 @@ import { SyncSaberMaxSongsComponent } from './sync-saber-max-songs/sync-saber-ma
         MatGridListModule,
         ColorPickerModule,
     ],
-    providers: [NgxSmartModalService],
+    providers: [NgxSmartModalService, CookieService],
     bootstrap: [AppComponent],
 })
 export class AppModule {}

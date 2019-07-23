@@ -48,7 +48,6 @@ namespace BeatOn.Core.RequestHandlers
                     tag = "unknown";
                 }
                 bool success = false;
-                string logstring = null;
                 for (int i = 0; i < 3; i++)
                 {
                     //try 3 times to open the log file
@@ -98,9 +97,7 @@ namespace BeatOn.Core.RequestHandlers
                     { }
                 }
 
-                if (string.IsNullOrEmpty(logstring))
-                    throw new Exception("Failed to read logfile!");
-                
+
                 resp.Ok();
             }
             catch (Exception ex)

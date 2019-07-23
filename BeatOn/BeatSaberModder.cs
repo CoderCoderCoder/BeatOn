@@ -496,7 +496,7 @@ namespace BeatOn
 
             ExtractAssetsFromApkToExternalStorage(bsApkPath, new List<string>() {
                     "Managed",
-                    "boot.config" });
+                    "boot.config" }, false);
         }
 
         public void UninstallBeatSaber()
@@ -680,10 +680,10 @@ namespace BeatOn
             }
         }
 
-        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null, bool fromBakFiles = false)
+        private void ExtractAssetsFromApkToExternalStorage(string apkFilename, List<string> excludePaths = null, bool renameAssets = true)
         {
             UpdateStatus("Extracting assets files from the APK to external storage...");
-            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, false, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
+            using (var apk = new ZipFileProvider(apkFilename, FileCacheMode.None, renameAssets, QuestomAssets.Utils.FileUtils.GetTempDirectory()))
             {
                 foreach (var assetFilename in apk.FindFiles(APK_ASSETS_PATH + "*"))
                 {
@@ -725,7 +725,7 @@ namespace BeatOn
                                 readStream.CopyTo(fs);
                             }
                         }
-                        if (!assetFilename.EndsWith(".bobak"))
+                        if (!assetFilename.EndsWith(".bobak") && renameAssets)
                             apk.Rename(assetFilename, assetFilename + ".bobak");
                     }
                     catch (Exception ex)
@@ -735,7 +735,8 @@ namespace BeatOn
                         throw new ModException($"Failed to extract {assetFilename} to {targetFile}", ex);
                     }
                 }
-                apk.Save();
+                if (renameAssets)
+                    apk.Save();
             }
         }
 

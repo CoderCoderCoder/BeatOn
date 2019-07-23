@@ -55,3 +55,12 @@ app-sync-saber {
   height: 100%;
   overflow-y: scroll;
 }
+
+.histButton span.mat-button-wrapper {
+  width: 100%;
+  max-width: 100%;
+  float: left;
+  text-align: left;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

@@ -29,6 +29,26 @@ namespace BeatOn
                 }
             }
         }
+        public void CancelDownloads(List<Guid> IDs)
+        {
+            try
+            {
+                lock (_downloads)
+                {
+                    foreach (var dl in _downloads.OrderBy(x => { switch (x.Status) { case DownloadStatus.NotStarted: return 0; case DownloadStatus.Downloading: return 1; case DownloadStatus.Downloaded: return 2; default: return 3; } }))
+                    {
+                        if (IDs == null || IDs.Count < 1 || (IDs.Contains(dl.ID) && (dl.Status == DownloadStatus.Downloading || dl.Status == DownloadStatus.NotStarted || dl.Status == DownloadStatus.Downloaded)))
+                        {
+                            dl.SetStatus(DownloadStatus.Aborted);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogErr("Exception cancelling downloads", ex);
+            }
+        }
         private ImportManager _importManager;
 
         private int _maxConcurrentDownloads;

@@ -144,25 +144,37 @@ namespace BeatOn
                                     _getConfig().Config = qae.GetCurrentConfig();
                                     cfg = _getConfig();
                                 }
-
                                 var toAdd = spl.Value.Item2.Where(x => !playlist.SongList.Any(y => y.SongID.ToLower().StartsWith(x.Key.ToLower()))).ToList();
                                 var toRemove = playlist.SongList.Where(x => !spl.Value.Item2.Any(y => x.SongID.ToLower().StartsWith(y.Key.ToLower()))).ToList();
                                 toAdd.ForEach(x =>
                                 {
                                     try
                                     {
-                                        _downloadManager.DownloadFile(x.Value.DownloadUrl.ToLower(), true, spl.Key, true);
+                                        if (cfg.Config.Playlists.SelectMany(z => z.SongList).Any(z => z.SongID.ToLower().StartsWith(x.Key.ToLower())))
+                                        {
+                                            Log.LogErr($"Syncing playlist ID {spl.Key} includes songID {x.Key} which is already elsewhere in the library, skipping it.");
+                                        }
+                                        else
+                                        {
+                                            _downloadManager.DownloadFile(x.Value.DownloadUrl.ToLower(), true, spl.Key, true);
+                                        }
                                     }
                                     catch (Exception ex)
                                     {
                                         Log.LogErr($"Exception trying to start download of {x.Value.DownloadUrl}", ex);
                                     }
                                 });
+                                List<AssetOp> delOps = new List<AssetOp>();
                                 toRemove.ForEach(x =>
                                 {
                                     var d = new DeleteSongOp(x.SongID);
                                     qae.OpManager.QueueOp(d);
+                                    delOps.Add(d);
                                 });
+                                if (delOps.Count > 0) {
+                                    delOps.WaitForFinish();
+                                    _getConfig().Config = qae.GetCurrentConfig();
+                                }
                             }
                             sync.LastSyncSuccess = DateTime.Now;
                             fss.StatusType = FeedSyncStatus.FeedSyncStatusType.Finished;
