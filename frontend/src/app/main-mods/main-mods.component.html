@@ -12,6 +12,8 @@
               [(colorPicker)]="leftColor" 
               [cpAlphaChannel]="true" cpCloseClickOutside="true" cpOutputFormat="rgba"
               (colorPickerSelect)="leftColorSelected($event)" [cpOKButton]="true" cpOKButtonText="Save Color" selected><span class="colorName">Left Color</span></mat-chip>
+          </mat-chip-list>
+          <mat-chip-list>
               <mat-chip [ngStyle]="{'background-color': rightColor}" cpPosition="left" [cpPositionOffset]="-30" [cpCmykEnabled]="false" 
               [(colorPicker)]="rightColor" 
               [cpAlphaChannel]="true" cpCloseClickOutside="true" cpOutputFormat="rgba"
